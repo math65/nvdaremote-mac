@@ -14,8 +14,9 @@ any other system language falls back to English.
 ## Features
 
 - **Connection** through the public relay `nvdaremote.com`, another relay, or a PC
-  that hosts the connection itself ("Host locally" in NVDA). Paste the link from
-  NVDA's "Copy link", or type a server and a key. Recent connections are remembered.
+  that hosts the connection itself ("Host locally" in NVDA). Click an
+  `nvdaremote://` link, such as the one from NVDA's "Copy link", to connect at once,
+  or type a server and a key. Recent connections are remembered.
 - **Speech**: NVDA's speech is spoken on the Mac with the system voices, with
   immediate interruption, language switching, and an adjustable rate in words per
   minute.
@@ -26,7 +27,8 @@ any other system language falls back to English.
   included. Caps Lock, Right Option or fn can act as the NVDA key.
 - **Clipboard**: text the PC sends arrives in the Mac clipboard; a global shortcut
   sends the Mac clipboard to the PC.
-- **Menu bar and Dock**: the app lives in the menu bar, the Dock, or both.
+- **Menu bar and Dock**: the app lives in the menu bar, the Dock, or both. Closing
+  the Connection window (Command-W) tucks the app away in the menu bar.
 
 Not yet available: braille, and pitch/rate/volume commands embedded in NVDA's speech.
 
@@ -42,8 +44,8 @@ Not yet available: braille, and pitch/rate/volume commands embedded in NVDA's sp
 
 1. On the PC, in NVDA's Remote Access menu, choose to allow this computer to be
    controlled, and note the key (or use "Copy link").
-2. On the Mac, open the Connection window, type the key (leave the server empty for
-   `nvdaremote.com`) or paste the link, and press Return.
+2. On the Mac, click the link, or open the Connection window, type the key (leave
+   the server empty for `nvdaremote.com`) or paste the link, and press Return.
 3. Press **Control-Command-R** to control the PC. Press it again to come back to the
    Mac. A high beep means the PC has the keyboard, a low beep means the Mac has it.
 4. Press **Control-Command-C** to send the Mac clipboard to the PC.
@@ -105,7 +107,7 @@ cd NVDARemote && swift run -c release nvdaremote --verbose 'nvdaremote://nvdarem
 
 | Path | Contents |
 |---|---|
-| `NVDARemote.xcodeproj`, `App/` | The macOS app (SwiftUI) |
+| `NVDARemote.xcodeproj`, `App/`, `Config/` | The macOS app (SwiftUI) and its `Info.plist` additions |
 | `NVDARemote/` | Swift package: the `RemoteCore` library (protocol, speech, sounds, keyboard) and the `nvdaremote` tool |
 | `docs/` | Feasibility study and measurements |
 | `spikes/` | Standalone benchmarks that validated speech and keyboard capture |

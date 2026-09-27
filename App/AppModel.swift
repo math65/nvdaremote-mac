@@ -37,6 +37,8 @@ final class AppModel {
 	private(set) var phase = Phase.idle
 	private(set) var status = String(localized: "Not connected.")
 	var pendingTrust: PendingTrust?
+	/// The last input error, so the window can move focus to the faulty field.
+	private(set) var inputError: ConnectionInfoError?
 	private(set) var recents: [RecentConnection]
 
 	var isActive: Bool { phase != .idle }
@@ -106,13 +108,23 @@ final class AppModel {
 	var showsInDock: Bool {
 		didSet {
 			defaults.set(showsInDock, forKey: Keys.showsInDock)
-			Self.applyDockVisibility(showsInDock)
+			updateDockIcon()
+			// Becoming an accessory app deactivates it: bring it back so the Settings
+			// window stays under the user's fingers.
+			NSApp?.activate()
 		}
 	}
 
 	var showsInMenuBar: Bool {
-		didSet { defaults.set(showsInMenuBar, forKey: Keys.showsInMenuBar) }
+		didSet {
+			defaults.set(showsInMenuBar, forKey: Keys.showsInMenuBar)
+			updateDockIcon()
+		}
 	}
+
+	/// The Dock icon follows the Connection window: closing it tucks the app away in the
+	/// menu bar.
+	@ObservationIgnored private var isConnectionWindowOpen = false
 
 	@ObservationIgnored private let defaults = UserDefaults.standard
 	@ObservationIgnored private let speech: SpeechOutput
@@ -188,11 +200,27 @@ final class AppModel {
 		})
 	}
 
-	static func applyDockVisibility(_ visible: Bool) {
+	// MARK: - Dock and menu bar
+
+	func connectionWindowDidOpen() {
+		isConnectionWindowOpen = true
+		updateDockIcon()
+	}
+
+	/// Closing the window (Command-W) hides the app into the menu bar and gives focus
+	/// back to the previous app. Without a menu bar icon, the app stays in the Dock,
+	/// or it could not be reached any more.
+	func connectionWindowDidClose() {
+		isConnectionWindowOpen = false
+		updateDockIcon()
+		if showsInMenuBar {
+			NSApp?.hide(nil)
+		}
+	}
+
+	private func updateDockIcon() {
+		let visible = showsInDock && (isConnectionWindowOpen || !showsInMenuBar)
 		NSApp?.setActivationPolicy(visible ? .regular : .accessory)
-		// Becoming an accessory app deactivates it: bring it back so the Settings
-		// window stays under the user's fingers.
-		NSApp?.activate()
 	}
 
 	// MARK: - Connection
@@ -205,6 +233,7 @@ final class AppModel {
 	@discardableResult
 	func connect(server: String, keyOrLink: String) -> ConnectionInfo? {
 		let keyOrLink = keyOrLink.trimmingCharacters(in: .whitespacesAndNewlines)
+		inputError = nil
 		do {
 			let info = keyOrLink.lowercased().hasPrefix("nvdaremote:")
 				? try ConnectionInfo(url: keyOrLink)
@@ -215,6 +244,7 @@ final class AppModel {
 			start(info)
 			return info
 		} catch {
+			inputError = error
 			announce(error.localizedDescription)
 			return nil
 		}
@@ -251,6 +281,8 @@ final class AppModel {
 	}
 
 	private func start(_ info: ConnectionInfo) {
+		// A new connection, for example from a link, must first give the keyboard back.
+		switchToMac(announcing: false)
 		session?.stop()
 		let session = LeaderSession(
 			info: info,
@@ -342,6 +374,12 @@ final class AppModel {
 	func shortcutName(for command: GlobalCommand) -> String {
 		guard let shortcut = shortcuts[command] else { return "" }
 		return shortcut.displayName(characters: capture.layout.characters(for: shortcut.keyCode))
+	}
+
+	/// The shortcut spelled out, for speech, braille and menu titles.
+	func spokenShortcutName(for command: GlobalCommand) -> String {
+		guard let shortcut = shortcuts[command] else { return "" }
+		return shortcut.spokenName(characters: capture.layout.characters(for: shortcut.keyCode))
 	}
 
 	func pushClipboard() {

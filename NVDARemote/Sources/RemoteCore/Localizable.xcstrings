@@ -11,6 +11,16 @@
         }
       }
     },
+    "Command": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Commande"
+          }
+        }
+      }
+    },
     "connection refused": {
       "localizations": {
         "fr": {
@@ -27,6 +37,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "connexion interrompue par le serveur"
+          }
+        }
+      }
+    },
+    "Control": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Contrôle"
           }
         }
       }
@@ -197,6 +217,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "NVDA n'est pas connecté sur le PC"
+          }
+        }
+      }
+    },
+    "Option": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Option"
           }
         }
       }

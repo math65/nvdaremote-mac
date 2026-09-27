@@ -52,16 +52,16 @@ struct RemoteMenu: View {
 	}
 
 	/// Global shortcuts are handled by the keyboard capture, not by the menu:
-	/// they are only shown in the title.
+	/// they are only shown in the title, spelled out so VoiceOver reads them well.
 	private var controlTitle: String {
 		let action = model.isControllingPC
 			? String(localized: "Control the Mac")
 			: String(localized: "Control the PC")
-		return "\(action) (\(model.shortcutName(for: .toggleControl)))"
+		return "\(action) (\(model.spokenShortcutName(for: .toggleControl)))"
 	}
 
 	private var clipboardTitle: String {
-		"\(GlobalCommand.pushClipboard.label) (\(model.shortcutName(for: .pushClipboard)))"
+		"\(GlobalCommand.pushClipboard.label) (\(model.spokenShortcutName(for: .pushClipboard)))"
 	}
 
 	private func showConnectionWindow() {

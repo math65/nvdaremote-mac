@@ -31,6 +31,16 @@
         }
       }
     },
+    "As in NVDA: the PC's speech and sounds stop while you work on the Mac.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comme dans NVDA : la parole et les sons du PC s'arrêtent pendant que vous travaillez sur le Mac."
+          }
+        }
+      }
+    },
     "Browse mode, focus mode, errors and other NVDA sounds.": {
       "localizations": {
         "fr": {
@@ -381,6 +391,16 @@
         }
       }
     },
+    "One of the two always stays visible. With the menu bar icon, the Dock icon only shows while the Connection window is open.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "L'une des deux reste toujours visible. Avec l'icône de la barre des menus, l'icône du Dock n'apparaît que lorsque la fenêtre de connexion est ouverte."
+          }
+        }
+      }
+    },
     "PC": {
       "localizations": {
         "fr": {
@@ -477,16 +497,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Enregistrement annulé."
-          }
-        }
-      }
-    },
-    "Records a new shortcut.": {
-      "localizations": {
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Enregistre un nouveau raccourci."
           }
         }
       }
@@ -621,6 +631,26 @@
         }
       }
     },
+    "The layout set in Windows on the PC, used to type punctuation correctly.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La disposition réglée dans Windows sur le PC, pour taper correctement la ponctuation."
+          }
+        }
+      }
+    },
+    "The Mac key that acts as NVDA's Insert key on the PC.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La touche du Mac qui joue le rôle de la touche Insert de NVDA sur le PC."
+          }
+        }
+      }
+    },
     "The PC hosts the connection itself and presents its own certificate. Only trust it if you are expecting this PC.\n\nFingerprint: %@": {
       "localizations": {
         "fr": {
@@ -727,6 +757,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Pendant le contrôle du PC, Verrouillage majuscules devient la touche NVDA et ne verrouille plus les majuscules du Mac."
+          }
+        }
+      }
+    },
+    "Works from any app. Press to record a new shortcut.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fonctionne depuis n'importe quelle application. Activez pour enregistrer un nouveau raccourci."
           }
         }
       }

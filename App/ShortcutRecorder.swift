@@ -18,7 +18,10 @@ struct ShortcutRecorder: View {
 				Text("Type the new shortcut, or Escape to cancel")
 			}
 		}
-		.accessibilityHint(Text("Records a new shortcut."))
+		.accessibilityLabel(monitor == nil
+			? Text("\(command.label): \(model.spokenShortcutName(for: command))")
+			: Text("Type the new shortcut, or Escape to cancel"))
+		.accessibilityHint(Text("Works from any app. Press to record a new shortcut."))
 		.onDisappear(perform: stopRecording)
 	}
 
@@ -64,7 +67,7 @@ struct ShortcutRecorder: View {
 		}
 		model.shortcuts[command] = shortcut
 		stopRecording()
-		model.announce(String(localized: "New shortcut: \(model.shortcutName(for: command))."))
+		model.announce(String(localized: "New shortcut: \(model.spokenShortcutName(for: command))."))
 	}
 
 	private func stopRecording() {

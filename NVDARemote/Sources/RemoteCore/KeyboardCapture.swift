@@ -40,6 +40,18 @@ public struct KeyShortcut: Codable, Equatable, Sendable {
 		return parts.joined(separator: "+")
 	}
 
+	/// Name spelled out for speech and braille, for example "Control-Command-R":
+	/// VoiceOver reads the short form as "Ctrl plus Cmd plus R".
+	public func spokenName(characters: KeyTranslator.Characters?) -> String {
+		var parts: [String] = []
+		if control { parts.append(localized("Control")) }
+		if option { parts.append(localized("Option")) }
+		if shift { parts.append(localized("Shift")) }
+		if command { parts.append(localized("Command")) }
+		parts.append(Self.keyName(keyCode, characters: characters))
+		return parts.joined(separator: "-")
+	}
+
 	private static func keyName(_ keyCode: UInt16, characters: KeyTranslator.Characters?) -> String {
 		let names: [UInt16: String] = [
 			MacKeyCode.returnKey: localized("Return"), MacKeyCode.tab: localized("Tab"),

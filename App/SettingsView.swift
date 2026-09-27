@@ -24,9 +24,11 @@ private struct GeneralSettings: View {
 			// At least one of the two must stay visible, or the app could not be reached.
 			Toggle("Show in the Dock", isOn: $model.showsInDock)
 				.disabled(!model.showsInMenuBar)
+				.accessibilityHint(Text("One of the two always stays visible. With the menu bar icon, the Dock icon only shows while the Connection window is open."))
 			Toggle("Show in the menu bar", isOn: $model.showsInMenuBar)
 				.disabled(!model.showsInDock)
-			Text("One of the two always stays visible.")
+				.accessibilityHint(Text("One of the two always stays visible."))
+			Text("One of the two always stays visible. With the menu bar icon, the Dock icon only shows while the Connection window is open.")
 				.font(.callout)
 				.foregroundStyle(.secondary)
 		}
@@ -55,6 +57,7 @@ private struct SpeechSettings: View {
 				.foregroundStyle(.secondary)
 				.accessibilityHidden(true)
 			Toggle("Mute the PC when controlling the Mac", isOn: $model.mutesOnLocalControl)
+				.accessibilityHint(Text("As in NVDA: the PC's speech and sounds stop while you work on the Mac."))
 		}
 		.formStyle(.grouped)
 	}
@@ -90,6 +93,9 @@ private struct KeyboardSettings: View {
 						Text(choice.label).tag(choice)
 					}
 				}
+				.accessibilityHint(model.nvdaKey == .capsLock
+					? Text("While controlling the PC, Caps Lock becomes the NVDA key and no longer locks capitals on the Mac.")
+					: Text("The Mac key that acts as NVDA's Insert key on the PC."))
 				if model.nvdaKey == .capsLock {
 					Text("While controlling the PC, Caps Lock becomes the NVDA key and no longer locks capitals on the Mac.")
 						.font(.callout)
@@ -100,6 +106,7 @@ private struct KeyboardSettings: View {
 						Text(layout.label).tag(layout)
 					}
 				}
+				.accessibilityHint(Text("The layout set in Windows on the PC, used to type punctuation correctly."))
 			}
 		}
 		.formStyle(.grouped)
@@ -113,10 +120,12 @@ private struct SoundSettings: View {
 		@Bindable var model = model
 		Form {
 			Toggle("Play PC sounds", isOn: $model.playsRemoteSounds)
+				.accessibilityHint(Text("Browse mode, focus mode, errors and other NVDA sounds."))
 			Text("Browse mode, focus mode, errors and other NVDA sounds.")
 				.font(.callout)
 				.foregroundStyle(.secondary)
 			Toggle("Play app sounds", isOn: $model.playsAppSounds)
+				.accessibilityHint(Text("Connection, clipboard, and switching between Mac and PC."))
 			Text("Connection, clipboard, and switching between Mac and PC.")
 				.font(.callout)
 				.foregroundStyle(.secondary)

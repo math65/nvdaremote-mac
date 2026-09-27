@@ -89,6 +89,7 @@ import Testing
 		#expect(!shortcut.matches(keyCode: 15, flags: [.maskControl, .maskCommand, .maskShift]))
 		#expect(!shortcut.matches(keyCode: 15, flags: [.maskControl]))
 		#expect(shortcut.displayName(characters: .init(plain: "r", shifted: "R")) == "Ctrl+Cmd+R")
+		#expect(shortcut.spokenName(characters: .init(plain: "r", shifted: "R")) == "Control-Command-R")
 	}
 
 	@Test func keyMessage() throws {
