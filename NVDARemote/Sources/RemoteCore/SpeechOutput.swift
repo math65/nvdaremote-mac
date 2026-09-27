@@ -13,10 +13,16 @@ public final class SpeechOutput {
 	private var voicesByLanguage: [String: AVSpeechSynthesisVoice?] = [:]
 	private var rate: Float
 
+	/// Débit visé, converti avec la courbe mesurée. S'applique aux énoncés suivants.
+	public var wordsPerMinute: Int {
+		didSet { rate = Self.rate(forWordsPerMinute: wordsPerMinute) }
+	}
+
 	/// - Parameters:
 	///   - wordsPerMinute: débit visé, converti avec la courbe mesurée.
 	///   - voice: identifiant ou nom de voix ; `nil` choisit la meilleure voix de la langue du système.
 	public init(wordsPerMinute: Int = 300, voice: String? = nil) {
+		self.wordsPerMinute = wordsPerMinute
 		rate = Self.rate(forWordsPerMinute: wordsPerMinute)
 		defaultVoice = voice.flatMap(Self.findVoice(named:))
 			?? Self.bestVoice(for: AVSpeechSynthesisVoice.currentLanguageCode())

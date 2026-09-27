@@ -22,6 +22,42 @@ public struct ConnectionInfo: Equatable, Sendable {
 		host.contains(":") ? "[\(host)]:\(port)" : "\(host):\(port)"
 	}
 
+	/// Lit un serveur saisi à la main : `hôte`, `hôte:port`, `[ipv6]:port` ou une IPv6 seule.
+	public init(server: String, key: String) throws(ConnectionInfoError) {
+		let server = server.trimmingCharacters(in: .whitespacesAndNewlines)
+		let key = key.trimmingCharacters(in: .whitespacesAndNewlines)
+		guard !server.isEmpty else { throw .missingHost }
+		guard !key.isEmpty else { throw .missingKey }
+
+		var host = server
+		var rawPort: Substring?
+		if server.hasPrefix("["), let close = server.firstIndex(of: "]") {
+			host = String(server[server.index(after: server.startIndex)..<close])
+			let rest = server[server.index(after: close)...]
+			if rest.hasPrefix(":") {
+				rawPort = rest.dropFirst()
+			} else if !rest.isEmpty {
+				throw .invalidPort
+			}
+		} else if server.filter({ $0 == ":" }).count == 1, let colon = server.firstIndex(of: ":") {
+			host = String(server[..<colon])
+			rawPort = server[server.index(after: colon)...]
+		}
+		guard !host.isEmpty else { throw .missingHost }
+
+		var port = Self.defaultPort
+		if let rawPort {
+			guard let parsed = UInt16(rawPort), parsed != 0 else { throw .invalidPort }
+			port = parsed
+		}
+		self.init(host: host, port: port, key: key)
+	}
+
+	/// Le serveur tel qu'on l'afficherait dans un champ de saisie : le port n'apparaît que s'il n'est pas celui par défaut.
+	public var serverDescription: String {
+		port == Self.defaultPort ? host : address
+	}
+
 	/// Lit un lien `nvdaremote://hôte:port/?key=…&mode=master`,
 	/// tel que le produit « Copier le lien » sur le PC contrôlé.
 	public init(url string: String) throws(ConnectionInfoError) {

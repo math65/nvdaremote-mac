@@ -22,6 +22,26 @@ import Testing
 		#expect(info.address == "[::1]:6837")
 	}
 
+	@Test func readsTypedServer() throws {
+		#expect(try ConnectionInfo(server: " nvdaremote.com ", key: " k ")
+			== ConnectionInfo(host: "nvdaremote.com", port: 6837, key: "k"))
+		#expect(try ConnectionInfo(server: "192.168.1.20:7000", key: "k").port == 7000)
+		#expect(try ConnectionInfo(server: "[fe80::1]:7000", key: "k")
+			== ConnectionInfo(host: "fe80::1", port: 7000, key: "k"))
+		#expect(try ConnectionInfo(server: "fe80::1", key: "k").host == "fe80::1")
+		#expect(try ConnectionInfo(server: "monpc.local:6837", key: "k").serverDescription == "monpc.local")
+		#expect(try ConnectionInfo(server: "monpc.local:7000", key: "k").serverDescription == "monpc.local:7000")
+	}
+
+	@Test func rejectsBadTypedServer() {
+		#expect(throws: ConnectionInfoError.missingHost) { try ConnectionInfo(server: "  ", key: "k") }
+		#expect(throws: ConnectionInfoError.missingHost) { try ConnectionInfo(server: ":6837", key: "k") }
+		#expect(throws: ConnectionInfoError.missingKey) { try ConnectionInfo(server: "h", key: "") }
+		#expect(throws: ConnectionInfoError.invalidPort) { try ConnectionInfo(server: "h:abc", key: "k") }
+		#expect(throws: ConnectionInfoError.invalidPort) { try ConnectionInfo(server: "h:0", key: "k") }
+		#expect(throws: ConnectionInfoError.invalidPort) { try ConnectionInfo(server: "[::1]x", key: "k") }
+	}
+
 	@Test func rejectsBadLinks() {
 		#expect(throws: ConnectionInfoError.notARemoteLink) { try ConnectionInfo(url: "https://nvdaremote.com") }
 		#expect(throws: ConnectionInfoError.missingKey) { try ConnectionInfo(url: "nvdaremote://h/?mode=master") }
