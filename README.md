@@ -9,9 +9,9 @@ ne permet de capter la parole de VoiceOver.
 
 ## Où on en est
 
-La première tranche de l'application existe : **le Mac se connecte au PC et prononce
-la parole de NVDA**, avec ses bips. Elle se pilote pour l'instant en ligne de
-commande, voir plus bas. Pas encore de clavier ni de braille.
+L'application **NVDA Remote** pilote le PC depuis le Mac : elle prononce la parole
+de NVDA avec ses bips, et envoie le clavier au PC. Validé le 27 septembre 2026 avec
+un vrai PC sous NVDA. Pas encore de braille, ni de sons, ni de presse-papiers.
 
 Les deux risques structurants du projet sont levés :
 
@@ -26,28 +26,50 @@ parole en 40 millisecondes ; un `CGEventTap` posé au niveau HID capture tout, y
 compris les commandes VoiceOver ; et Verrouillage majuscules devient utilisable
 en la remappant vers F18 avec `hidutil`.
 
-## Première tranche : entendre NVDA depuis le Mac
+## L'application
 
-Le paquet [NVDARemote/](NVDARemote) contient une bibliothèque `RemoteCore`, destinée
-à être reprise telle quelle par l'application, et un exécutable `nvdaremote` pour
-l'essayer dès maintenant.
-
-Sur le PC, dans NVDA, Remote Access, choisir « Permettre à cette machine d'être
-contrôlée », puis « Copier le lien ». Sur le Mac :
+Ouvrir `NVDARemote.xcodeproj` dans Xcode, schéma **NVDA Remote**, ou compiler en
+ligne de commande :
 
 ```bash
-cd NVDARemote && swift run -c release nvdaremote 'nvdaremote://nvdaremote.com:6837/?key=…&mode=master'
+xcodebuild -project NVDARemote.xcodeproj -scheme "NVDA Remote" -derivedDataPath build/DerivedData build
 ```
 
-Options utiles : `--wpm 400` règle le débit en mots par minute, `--voice Audrey`
-choisit la voix, `--list-voices fr` liste les voix françaises, `--verbose` affiche
-chaque message reçu du PC. Contrôle+C pour quitter.
+Signature : `com.math65.nvdaremote`, équipe `633EG76YX5`, runtime renforcé, sans bac
+à sable, qui interdirait la capture du clavier. L'identité de signature est stable,
+donc les autorisations clavier survivent aux recompilations.
 
-Si le PC héberge lui-même la connexion, son certificat est auto-signé : le premier
-essai s'arrête en affichant l'empreinte du certificat. Après l'avoir vérifiée,
-relancer avec `--trust <empreinte>`. Elle est mémorisée comme le fait NVDA.
+Sur le PC, dans NVDA, Remote Access, choisir « Permettre à cette machine d'être
+contrôlée ». Sur le Mac, saisir le serveur (vide pour `nvdaremote.com`) et la clé, ou
+coller dans le champ Clé le lien obtenu par « Copier le lien ».
 
-Ce qui est pris en charge :
+### Clavier
+
+Il faut autoriser l'application dans Réglages Système, Confidentialité et sécurité,
+à la fois en Accessibilité et en Surveillance de l'entrée.
+
+| Réglage | Par défaut | Remarques |
+|---|---|---|
+| Raccourci de bascule Mac / PC | Ctrl+Cmd+R | Réglable, actif depuis n'importe quelle application |
+| Touche NVDA | Verr. maj. | Ou Option droite, ou fn. Verr. maj. est remappée en F18 seulement pendant le contrôle du PC |
+| Disposition du clavier du PC | Français | Ou américain |
+
+Correspondance des modificateurs : Contrôle reste Contrôle, Option devient Alt,
+Commande devient la touche Windows. Les lettres suivent le caractère produit, les
+chiffres fonctionnent aussi sur la rangée du haut en azerty, et le pavé numérique
+suit la disposition « ordinateur de bureau » de NVDA.
+
+Limite connue sur Mac azerty : sans Majuscule, la touche `!` donne `_` sur le PC et
+la touche `§` donne `-`, en échange de chiffres fiables avec Majuscule.
+
+Au retour sur le Mac, toutes les touches encore enfoncées côté PC y sont relâchées,
+précédées de la touche neutre de NVDA. Le retour est automatique si le PC part ou si
+la connexion tombe. Si l'application se figeait, macOS désactive seul le tap et rend
+le clavier au Mac. Un remappage de Verr. maj. resté en place après un plantage est
+retiré au lancement suivant ; si un autre remappage existe déjà, l'application refuse
+de l'écraser.
+
+### Parole
 
 | Message du PC | Traitement |
 |---|---|
@@ -55,21 +77,26 @@ Ce qui est pris en charge :
 | `cancel` | Coupure immédiate |
 | `pause_speech` | Pause et reprise |
 | `tone` | Bips, avec la balance gauche droite |
-| `client_joined`, `client_left` | Annonce de l'arrivée et du départ du PC, déclaration « pas de braille » |
 
 Pas encore traités : les sons de NVDA (`wave`), le presse-papiers, et les commandes
 de débit, de hauteur et de volume incluses dans la parole. Une parole interrompue
 par une priorité immédiate n'est pas reprise ensuite, contrairement à NVDA.
 
-Validation : 16 tests unitaires (`cd NVDARemote && swift test`), un essai de bout en
-bout sur le relais public avec un faux PC qui envoie de vrais messages NVDA, un
-essai de refus puis d'acceptation d'un certificat auto-signé, et surtout **un essai
-réussi avec un vrai PC sous NVDA** le 27 septembre 2026, via `nvdaremote.com`.
+### Outil en ligne de commande
+
+Le paquet [NVDARemote/](NVDARemote) contient la bibliothèque `RemoteCore`, partagée
+avec l'application, et un outil `nvdaremote` qui écoute le PC sans clavier :
+
+```bash
+cd NVDARemote && swift run -c release nvdaremote --verbose 'nvdaremote://nvdaremote.com:6837/?key=…&mode=master'
+```
+
+Tests : `cd NVDARemote && swift test`, 34 tests.
 
 ## Prochaine étape proposée
 
-Attaquer le clavier : c'est ce qui transforme
-l'écoute en contrôle, et le banc `KeyboardTap` a déjà levé les incertitudes.
+Au choix : les sons de NVDA et le presse-papiers, qui complètent l'usage quotidien ;
+ou le braille, dernier point dur de l'étude.
 
 ## Documentation
 
@@ -108,7 +135,8 @@ retirer après. La procédure figure dans [docs/mesures-clavier.md](docs/mesures
 
 | Chemin | Contenu |
 |---|---|
-| `NVDARemote/` | Paquet Swift de l'application : `RemoteCore` et l'outil `nvdaremote` |
+| `NVDARemote.xcodeproj`, `App/` | Application macOS |
+| `NVDARemote/` | Paquet Swift : bibliothèque `RemoteCore` et outil `nvdaremote` |
 | `docs/` | Étude de faisabilité et mesures |
 | `spikes/` | Bancs d'essai Swift |
 | `nvda/` | Clone de référence de NVDA, non versionné |

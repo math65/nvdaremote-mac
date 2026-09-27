@@ -1,3 +1,4 @@
+import RemoteCore
 import SwiftUI
 
 struct ContentView: View {
@@ -30,6 +31,37 @@ struct ContentView: View {
 				.accessibilityAddTraits(.isStaticText)
 				.accessibilityLabel("État")
 				.accessibilityValue(model.status)
+				Button(
+					model.isControllingPC ? "Revenir au Mac" : "Contrôler le PC",
+					action: model.toggleComputerControl,
+				)
+				.disabled(model.phase != .connected)
+			}
+			Section("Clavier") {
+				if !model.hasKeyboardPermissions {
+					Text("""
+						Pour piloter le PC, l'application doit pouvoir intercepter le clavier. \
+						Autorisez-la dans Réglages Système, Confidentialité et sécurité, \
+						à la fois dans Accessibilité et dans Surveillance de l'entrée.
+						""")
+					Button("Demander les autorisations", action: model.requestKeyboardPermissions)
+				}
+				ShortcutRecorder()
+				Picker("Touche NVDA", selection: $model.nvdaKey) {
+					ForEach(NVDAKeyChoice.allCases, id: \.self) { choice in
+						Text(choice.label).tag(choice)
+					}
+				}
+				if model.nvdaKey == .capsLock {
+					Text("Pendant le contrôle du PC, Verrouillage majuscules devient la touche NVDA et ne verrouille plus les majuscules du Mac.")
+						.font(.callout)
+						.foregroundStyle(.secondary)
+				}
+				Picker("Disposition du clavier du PC", selection: $model.pcLayout) {
+					ForEach(PCLayout.allCases, id: \.self) { layout in
+						Text(layout.label).tag(layout)
+					}
+				}
 			}
 			Section("Parole") {
 				Slider(

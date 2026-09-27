@@ -43,6 +43,14 @@ public final class LeaderSession {
 		transport.start()
 	}
 
+	/// Nombre de PC contrôlables présents sur le canal.
+	public var followerCount: Int { followers.count }
+
+	/// Envoie une touche au PC. Sans effet hors connexion, comme dans NVDA.
+	public func sendKey(_ key: WindowsKey, pressed: Bool) {
+		transport.send(OutgoingMessage.key(key, pressed: pressed))
+	}
+
 	public func stop() {
 		transport.stop()
 		speech.cancel()

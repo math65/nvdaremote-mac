@@ -122,8 +122,13 @@ public enum OutgoingMessage {
 		encode(["type": "set_braille_info", "name": name, "numCells": numCells])
 	}
 
+	/// Une touche enfoncée ou relâchée. Le PC recalcule lui-même le code de balayage.
+	public static func key(_ key: WindowsKey, pressed: Bool) -> Data {
+		encode(["type": "key", "vk_code": key.vk, "extended": key.extended, "pressed": pressed])
+	}
+
 	static func encode(_ object: [String: Any]) -> Data {
-		// Les dictionnaires ci-dessus ne contiennent que des chaînes et des entiers :
+		// Les dictionnaires ci-dessus ne contiennent que des chaînes, des entiers et des booléens :
 		// la sérialisation ne peut pas échouer.
 		var data = try! JSONSerialization.data(withJSONObject: object, options: [.sortedKeys])
 		data.append(0x0A)
