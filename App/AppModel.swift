@@ -79,6 +79,20 @@ final class AppModel {
 		didSet { defaults.set(playsAppSounds, forKey: Keys.playsAppSounds) }
 	}
 
+	/// Use the Mac's braille display for NVDA while controlling the PC.
+	var showsBraille: Bool {
+		didSet {
+			defaults.set(showsBraille, forKey: Keys.showsBraille)
+			if !showsBraille {
+				brailleDisplay?.release()
+			}
+			updateDeclaredBrailleCells()
+		}
+	}
+
+	/// The braille display found on the Mac, shown for information in Settings.
+	private(set) var brailleDisplayName: String?
+
 	var nvdaKey: NVDAKeyChoice {
 		didSet {
 			capture.translator.nvdaKey = nvdaKey
@@ -133,6 +147,9 @@ final class AppModel {
 	@ObservationIgnored private let trustStore = TrustStore()
 	@ObservationIgnored private let capture = KeyboardCapture()
 	@ObservationIgnored private var session: LeaderSession?
+	@ObservationIgnored private var brailleDisplay: HIDBrailleDisplay?
+	/// NVDA's last braille line, shown again when the display is taken.
+	@ObservationIgnored private var brailleCells: [Int] = []
 	@ObservationIgnored private var observers: [NSObjectProtocol] = []
 
 	enum Keys {
@@ -146,6 +163,7 @@ final class AppModel {
 		static let recents = "recentConnections"
 		static let showsInDock = "showsInDock"
 		static let showsInMenuBar = "showsInMenuBar"
+		static let showsBraille = "showsBraille"
 	}
 
 	init() {
@@ -164,6 +182,7 @@ final class AppModel {
 		playsAppSounds = defaults.bool(forKey: Keys.playsAppSounds)
 		showsInDock = defaults.bool(forKey: Keys.showsInDock)
 		showsInMenuBar = defaults.bool(forKey: Keys.showsInMenuBar)
+		showsBraille = defaults.bool(forKey: Keys.showsBraille)
 		nvdaKey = defaults.string(forKey: Keys.nvdaKey).flatMap(NVDAKeyChoice.init(rawValue:)) ?? .capsLock
 		pcLayout = defaults.string(forKey: Keys.pcLayout).flatMap(PCLayout.init(rawValue:)) ?? .french
 		var shortcuts = Dictionary(uniqueKeysWithValues: GlobalCommand.allCases.map { ($0, $0.defaultShortcut) })
@@ -181,6 +200,7 @@ final class AppModel {
 		capture.shortcuts = shortcuts
 		capture.onCommand = { [weak self] command in self?.perform(command) }
 		capture.onKey = { [weak self] key, pressed in self?.session?.sendKey(key, pressed: pressed) }
+		findBrailleDisplay()
 
 		// After a crash while controlling the PC, Caps Lock would still be remapped.
 		try? CapsLockRemap.remove()
@@ -256,6 +276,7 @@ final class AppModel {
 
 	func disconnect() {
 		switchToMac(announcing: false)
+		clearBraille()
 		session?.stop()
 		session = nil
 		isMuted = false
@@ -292,6 +313,8 @@ final class AppModel {
 			sounds: sounds,
 		)
 		session.playsRemoteSounds = playsRemoteSounds
+		findBrailleDisplay()
+		session.brailleCellCount = declaredBrailleCells
 		session.onEvent = { [weak self] event in self?.handle(event, info: info) }
 		self.session = session
 		isMuted = false
@@ -331,6 +354,9 @@ final class AppModel {
 				: String(localized: "Connection lost: \(reason)."))
 		case let .message(text):
 			announce(text)
+		case let .braille(cells):
+			brailleCells = cells
+			brailleDisplay?.show(cells)
 		case let .clipboardReceived(text):
 			NSPasteboard.general.clearContents()
 			NSPasteboard.general.setString(text, forType: .string)
@@ -349,6 +375,7 @@ final class AppModel {
 
 	private func endSession() {
 		switchToMac(announcing: false)
+		clearBraille()
 		session = nil
 		isMuted = false
 		phase = .idle
@@ -447,6 +474,9 @@ final class AppModel {
 		capture.setRemote(true)
 		isControllingPC = true
 		isMuted = false
+		if showsBraille {
+			takeBrailleDisplay()
+		}
 		if playsAppSounds {
 			tones.beep(hz: 880, milliseconds: 60, left: 50, right: 50)
 		}
@@ -457,6 +487,7 @@ final class AppModel {
 		guard isControllingPC else { return }
 		capture.setRemote(false)
 		isControllingPC = false
+		brailleDisplay?.release()
 		do {
 			try CapsLockRemap.remove()
 		} catch {
@@ -477,8 +508,47 @@ final class AppModel {
 
 	private func shutdown() {
 		switchToMac(announcing: false)
+		brailleDisplay?.release()
 		capture.stop()
 		session?.stop()
+	}
+
+	// MARK: - Braille
+
+	/// Looks for a HID braille display; its width is what the PC is told.
+	func findBrailleDisplay() {
+		guard brailleDisplay?.isAcquired != true else { return }
+		let display = HIDBrailleDisplay.connected()
+		display?.onGesture = { [weak self] gesture in self?.session?.sendBraille(gesture) }
+		brailleDisplay = display
+		brailleDisplayName = display?.name
+		updateDeclaredBrailleCells()
+	}
+
+	private var declaredBrailleCells: Int {
+		showsBraille ? brailleDisplay?.cellCount ?? 0 : 0
+	}
+
+	private func updateDeclaredBrailleCells() {
+		session?.brailleCellCount = declaredBrailleCells
+	}
+
+	/// Takes the display from VoiceOver for the time of PC control. VoiceOver keeps
+	/// running and gets it back when control returns to the Mac, or if the app quits.
+	private func takeBrailleDisplay() {
+		findBrailleDisplay()
+		guard let brailleDisplay else { return }
+		do {
+			try brailleDisplay.acquire()
+			brailleDisplay.show(brailleCells)
+		} catch {
+			announce(error.localizedDescription)
+		}
+	}
+
+	private func clearBraille() {
+		brailleCells = []
+		brailleDisplay?.show([])
 	}
 
 	// MARK: - Announcements and sounds

@@ -45,6 +45,8 @@ public enum IncomingMessage: Equatable, Sendable {
 	case tone(hz: Double, milliseconds: Int, left: Int, right: Int)
 	case wave(fileName: String)
 	case clipboardText(String)
+	/// One line of braille cells, bits = dots 1 to 8.
+	case display(cells: [Int])
 	case motd(String)
 	case versionMismatch
 	case error(String)
@@ -86,6 +88,9 @@ public enum IncomingMessage: Equatable, Sendable {
 				left: int("left", default: 50),
 				right: int("right", default: 50),
 			)
+		case "display":
+			let cells = (dict["cells"] as? [Any] ?? []).compactMap { ($0 as? NSNumber)?.intValue }
+			return .display(cells: cells)
 		case "wave":
 			return .wave(fileName: dict["fileName"] as? String ?? "")
 		case "set_clipboard_text":
@@ -121,6 +126,12 @@ public enum OutgoingMessage {
 	}
 
 	/// With `numCells` set to 0, the PC never sends braille cells.
+	public static func brailleInput(_ gesture: BrailleGesture) -> Data {
+		var fields = gesture.fields
+		fields["type"] = "braille_input"
+		return encode(fields)
+	}
+
 	public static func brailleInfo(name: String = "noBraille", numCells: Int = 0) -> Data {
 		encode(["type": "set_braille_info", "name": name, "numCells": numCells])
 	}
@@ -135,7 +146,7 @@ public enum OutgoingMessage {
 	}
 
 	static func encode(_ object: [String: Any]) -> Data {
-		// The dictionaries above only contain strings, integers and booleans:
+		// The dictionaries above only contain strings, integers, booleans and arrays of them:
 		// serialization cannot fail.
 		var data = try! JSONSerialization.data(withJSONObject: object, options: [.sortedKeys])
 		data.append(0x0A)

@@ -371,6 +371,16 @@
         }
       }
     },
+    "The braille display is held by another program and cannot be used for the PC.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La plage braille est tenue par un autre programme et ne peut pas servir au PC."
+          }
+        }
+      }
+    },
     "The port is not valid.": {
       "localizations": {
         "fr": {

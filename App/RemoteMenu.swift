@@ -39,6 +39,7 @@ struct RemoteMenu: View {
 			.disabled(!model.isComputerConnected)
 		Toggle("Mute the PC", isOn: $model.isMuted)
 			.disabled(!model.isActive)
+
 		if isMenuBarExtra {
 			Divider()
 			Button("Show Connection Window", action: showConnectionWindow)

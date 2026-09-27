@@ -9,6 +9,7 @@ struct SettingsView: View {
 			SpeechSettings().tabItem { Label("Speech", systemImage: "waveform") }
 			KeyboardSettings().tabItem { Label("Keyboard", systemImage: "keyboard") }
 			SoundSettings().tabItem { Label("Sounds", systemImage: "speaker.wave.2") }
+			BrailleSettings().tabItem { Label("Braille", systemImage: "hand.point.up.braille") }
 		}
 		.frame(width: 480)
 		.fixedSize(horizontal: false, vertical: true)
@@ -127,6 +128,25 @@ private struct SoundSettings: View {
 			Toggle("Play app sounds", isOn: $model.playsAppSounds)
 				.accessibilityHint(Text("Connection, clipboard, and switching between Mac and PC."))
 			Text("Connection, clipboard, and switching between Mac and PC.")
+				.font(.callout)
+				.foregroundStyle(.secondary)
+		}
+		.formStyle(.grouped)
+	}
+}
+
+private struct BrailleSettings: View {
+	@Environment(AppModel.self) private var model
+
+	var body: some View {
+		@Bindable var model = model
+		Form {
+			Toggle("Use the braille display for NVDA", isOn: $model.showsBraille)
+				.accessibilityHint(Text("While you control the PC, NVDA drives your braille display: its line, routing keys, braille keyboard and panning keys. VoiceOver keeps running and gets the display back when you return to the Mac."))
+			// Not a LabeledContent: inside a Form it exposes a frozen value to VoiceOver.
+			Text("Braille display: \(model.brailleDisplayName ?? String(localized: "none found"))")
+			Button("Look Again", action: model.findBrailleDisplay)
+			Text("Works with HID braille displays, over USB or Bluetooth, such as the Brailliant BI X series. Displays that VoiceOver drives with a brand driver cannot be taken.")
 				.font(.callout)
 				.foregroundStyle(.secondary)
 		}

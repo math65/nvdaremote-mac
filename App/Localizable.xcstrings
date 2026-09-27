@@ -41,6 +41,26 @@
         }
       }
     },
+    "Braille": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Braille"
+          }
+        }
+      }
+    },
+    "Braille display: %@": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Plage braille : %@"
+          }
+        }
+      }
+    },
     "Browse mode, focus mode, errors and other NVDA sounds.": {
       "localizations": {
         "fr": {
@@ -311,6 +331,16 @@
         }
       }
     },
+    "Look Again": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chercher à nouveau"
+          }
+        }
+      }
+    },
     "Mute the PC": {
       "localizations": {
         "fr": {
@@ -347,6 +377,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Aucun PC connecté."
+          }
+        }
+      }
+    },
+    "none found": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "aucune trouvée"
           }
         }
       }
@@ -751,6 +791,16 @@
         }
       }
     },
+    "Use the braille display for NVDA": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Utiliser la plage braille pour NVDA"
+          }
+        }
+      }
+    },
     "While controlling the PC, Caps Lock becomes the NVDA key and no longer locks capitals on the Mac.": {
       "localizations": {
         "fr": {
@@ -761,12 +811,32 @@
         }
       }
     },
+    "While you control the PC, NVDA drives your braille display: its line, routing keys, braille keyboard and panning keys. VoiceOver keeps running and gets the display back when you return to the Mac.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pendant le contrôle du PC, NVDA pilote votre plage braille : sa ligne, les touches de routage, le clavier braille et les touches de défilement. VoiceOver continue de tourner et reprend la plage quand vous revenez au Mac."
+          }
+        }
+      }
+    },
     "Works from any app. Press to record a new shortcut.": {
       "localizations": {
         "fr": {
           "stringUnit": {
             "state": "translated",
             "value": "Fonctionne depuis n'importe quelle application. Activez pour enregistrer un nouveau raccourci."
+          }
+        }
+      }
+    },
+    "Works with HID braille displays, over USB or Bluetooth, such as the Brailliant BI X series. Displays that VoiceOver drives with a brand driver cannot be taken.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fonctionne avec les plages braille HID, en USB ou en Bluetooth, comme la série Brailliant BI X. Les plages que VoiceOver pilote avec un pilote de marque ne peuvent pas être prises."
           }
         }
       }

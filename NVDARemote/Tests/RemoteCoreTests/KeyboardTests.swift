@@ -219,3 +219,79 @@ import Testing
 		#expect(CapsLockRemap.hasMappings(some))
 	}
 }
+
+@Suite struct BrailleTests {
+	@Test func typedCellsFollowNVDABindings() {
+		#expect(BrailleGesture.typed(dots: 0) == .space)
+		#expect(BrailleGesture.typed(dots: 0x40) == .eraseLastCell)
+		#expect(BrailleGesture.typed(dots: 0x80) == .enter)
+		#expect(BrailleGesture.typed(dots: 0xC0) == .translate)
+		#expect(BrailleGesture.typed(dots: 0x13) == .dots(0x13))
+	}
+
+	@Test func displayMessage() throws {
+		#expect(try IncomingMessage.parse(Data(#"{"type":"display","cells":[19,0,255]}"#.utf8))
+			== .display(cells: [19, 0, 255]))
+	}
+
+	/// The PC rebuilds a BrailleInputGesture from these fields and runs `scriptPath`.
+	@Test func brailleInputMessages() throws {
+		func decode(_ gesture: BrailleGesture) throws -> [String: Any] {
+			try #require(JSONSerialization.jsonObject(with: OutgoingMessage.brailleInput(gesture)) as? [String: Any])
+		}
+		func script(_ fields: [String: Any]) -> [String]? { fields["scriptPath"] as? [String] }
+
+		let routing = try decode(.routing(cell: 12))
+		#expect(routing["type"] as? String == "braille_input")
+		#expect(script(routing) == ["globalCommands", "GlobalCommands", "braille_routeTo"])
+		#expect(routing["cellIndexes"] as? [Int] == [12])
+		#expect(routing["routingIndex"] as? Int == 12)
+		#expect(routing["source"] as? String == "mac")
+
+		let dots = try decode(.dots(0x13))
+		#expect(script(dots) == ["globalCommands", "GlobalCommands", "braille_dots"])
+		#expect(dots["dots"] as? Int == 0x13)
+		#expect(dots["space"] as? Bool == false)
+
+		#expect(try decode(.space)["space"] as? Bool == true)
+		#expect(script(try decode(.scrollForward)) == ["globalCommands", "GlobalCommands", "braille_scrollForward"])
+	}
+
+	typealias Usage = HIDBrailleKeys.Usage
+
+	/// The bindings of NVDA's hidBrailleStandard driver.
+	@Test func displayKeysFollowNVDABindings() {
+		func gesture(_ keys: Set<UInt32>, routers: [Int] = []) -> BrailleGesture? {
+			HIDBrailleKeys.gesture(keys: keys, routerCells: routers)
+		}
+		#expect(gesture([], routers: [12]) == .routing(cell: 12))
+		#expect(gesture([Usage.panLeft]) == .scrollBack)
+		#expect(gesture([Usage.rockerDown]) == .scrollForward)
+		#expect(gesture([Usage.dpadLeft]) == .command("kb:leftArrow"))
+		#expect(gesture([Usage.joystickCenter]) == .command("kb:enter"))
+		// Dots 1, 2 and 5 typed alone: an "h".
+		#expect(gesture([Usage.dot1, Usage.dot1 + 1, Usage.dot1 + 4]) == .dots(0x13))
+		#expect(gesture([Usage.dot1 + 6]) == .eraseLastCell)
+		#expect(gesture([Usage.space]) == .space)
+		#expect(gesture([Usage.leftSpace]) == .space)
+		// Space with dots 1: up arrow. Space with dots 1, 3, 4, 5: NVDA menu.
+		#expect(gesture([Usage.space, Usage.dot1]) == .command("kb:upArrow"))
+		#expect(gesture([Usage.space, Usage.dot1, Usage.dot1 + 2, Usage.dot1 + 3, Usage.dot1 + 4]) == .command("showGui"))
+		#expect(gesture([Usage.space, Usage.dot1 + 3, Usage.dot1 + 5]) == .command("kb:tab"))
+		// Unbound chords do nothing.
+		#expect(gesture([Usage.space, Usage.dot1 + 1]) == nil)
+		#expect(gesture([Usage.panLeft, Usage.panRight]) == nil)
+		#expect(gesture([Usage.dot1], routers: [3]) == nil)
+	}
+
+	@Test func commandGestureNamesTheScript() throws {
+		let fields = try #require(JSONSerialization.jsonObject(with: OutgoingMessage.brailleInput(.command("kb:alt+tab"))) as? [String: Any])
+		#expect(fields["scriptPath"] as? [String] == ["globalCommands", "GlobalCommands", "kb:alt+tab"])
+		#expect(fields["id"] as? String == "kb:alt+tab")
+	}
+
+	@Test func brailleInfoMessage() throws {
+		let object = try #require(JSONSerialization.jsonObject(with: OutgoingMessage.brailleInfo(name: "voiceOver", numCells: 40)) as? [String: AnyHashable])
+		#expect(object == ["type": "set_braille_info", "name": "voiceOver", "numCells": 40])
+	}
+}

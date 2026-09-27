@@ -16,6 +16,8 @@ public final class LeaderSession {
 		case message(String)
 		/// The PC pushed its clipboard.
 		case clipboardReceived(String)
+		/// A new line of braille cells from the PC.
+		case braille(cells: [Int])
 		/// The session stopped on its own and will not resume.
 		case ended(reason: String)
 		case untrustedCertificate(fingerprint: String)
@@ -42,6 +44,16 @@ public final class LeaderSession {
 
 	/// Sounds from the PC (browse mode, error, etc.) can be muted separately.
 	public var playsRemoteSounds = true
+
+	/// Width of the braille line the Mac shows, declared to the PC. 0 means no braille:
+	/// the PC then never sends cells. Changing it tells the PC right away.
+	public var brailleCellCount = 0 {
+		didSet {
+			if brailleCellCount != oldValue, !followers.isEmpty {
+				sendBrailleInfo()
+			}
+		}
+	}
 
 	public init(
 		info: ConnectionInfo,
@@ -73,6 +85,17 @@ public final class LeaderSession {
 	}
 
 	/// Sends text to the PC's clipboard.
+	/// Sends a gesture from the Mac's braille display to NVDA.
+	public func sendBraille(_ gesture: BrailleGesture) {
+		transport.send(OutgoingMessage.brailleInput(gesture))
+	}
+
+	private func sendBrailleInfo() {
+		transport.send(brailleCellCount > 0
+			? OutgoingMessage.brailleInfo(name: "voiceOver", numCells: brailleCellCount)
+			: OutgoingMessage.brailleInfo())
+	}
+
 	public func pushClipboard(_ text: String) {
 		transport.send(OutgoingMessage.clipboardText(text))
 	}
@@ -122,13 +145,13 @@ public final class LeaderSession {
 		case let .channelJoined(clients):
 			followers = Set(clients.filter(\.isFollower).map(\.id))
 			if !followers.isEmpty {
-				transport.send(OutgoingMessage.brailleInfo())
+				sendBrailleInfo()
 			}
 			onEvent?(.joined(followers: followers.count))
 		case let .clientJoined(client) where client.isFollower:
 			followers.insert(client.id)
 			// The PC adjusts its braille on every arrival: repeat that we have none.
-			transport.send(OutgoingMessage.brailleInfo())
+			sendBrailleInfo()
 			onEvent?(.followerJoined)
 		case let .clientLeft(client) where client.isFollower:
 			if followers.remove(client.id) != nil {
@@ -146,6 +169,9 @@ public final class LeaderSession {
 		case let .wave(fileName):
 			guard !isMuted, playsRemoteSounds else { return }
 			sounds.playRemote(fileName: fileName)
+		case let .display(cells):
+			guard brailleCellCount > 0 else { return }
+			onEvent?(.braille(cells: cells))
 		case let .clipboardText(text):
 			onEvent?(.clipboardReceived(text))
 		case .clientJoined, .clientLeft, .motd, .ping, .other:

@@ -149,6 +149,8 @@ session.onEvent = { event in
 		print("Server message: \(text)")
 	case .clipboardReceived:
 		print("The PC sent its clipboard (ignored by this tool).")
+	case .braille:
+		break
 	case let .ended(reason):
 		fail("Stopped: \(reason).")
 	case let .untrustedCertificate(fingerprint):

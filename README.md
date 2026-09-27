@@ -30,7 +30,13 @@ any other system language falls back to English.
 - **Menu bar and Dock**: the app lives in the menu bar, the Dock, or both. Closing
   the Connection window (Command-W) tucks the app away in the menu bar.
 
-Not yet available: braille, and pitch/rate/volume commands embedded in NVDA's speech.
+- **Braille**: while you control the PC, NVDA drives your braille display directly:
+  its exact cells, routing keys, panning keys and braille keyboard, with the bindings
+  of NVDA's HID braille driver. VoiceOver keeps running and gets the display back when
+  you return to the Mac. Works with HID braille displays over USB or Bluetooth (such
+  as the Brailliant BI X series). See [docs/braille-research.md](docs/braille-research.md).
+
+Not yet available: pitch/rate/volume commands embedded in NVDA's speech.
 
 ## Requirements
 
@@ -127,6 +133,7 @@ git clone --depth 1 --filter=blob:none https://github.com/nvaccess/nvda.git nvda
 | [docs/feasibility-study.md](docs/feasibility-study.md) | The protocol in detail, feature-by-feature feasibility, design decisions |
 | [docs/speech-measurements.md](docs/speech-measurements.md) | `AVSpeechSynthesizer` measurements: latency, rate, interruption |
 | [docs/keyboard-measurements.md](docs/keyboard-measurements.md) | `CGEventTap` measurements: tap level, Caps Lock, fn, layouts |
+| [docs/braille-research.md](docs/braille-research.md) | How to show NVDA's cells on a VoiceOver braille display, and what reaches the app |
 
 ## License
 
