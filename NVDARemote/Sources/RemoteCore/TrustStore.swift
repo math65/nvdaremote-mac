@@ -22,6 +22,13 @@ public struct TrustStore: Sendable {
 
 	public func trust(_ fingerprint: String, for address: String) throws {
 		var entries = load()
+		// An unreadable file is kept aside rather than overwritten, so earlier
+		// fingerprints are not silently lost.
+		if entries.isEmpty, FileManager.default.fileExists(atPath: fileURL.path) {
+			let backup = fileURL.appendingPathExtension("unreadable")
+			try? FileManager.default.removeItem(at: backup)
+			try? FileManager.default.moveItem(at: fileURL, to: backup)
+		}
 		entries[address] = normalizeFingerprint(fingerprint)
 		try FileManager.default.createDirectory(
 			at: fileURL.deletingLastPathComponent(),

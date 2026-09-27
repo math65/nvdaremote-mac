@@ -56,7 +56,8 @@ public enum IncomingMessage: Equatable, Sendable {
 
 	/// Decodes a received line. Fails only if it is not a JSON object with a `type`.
 	public static func parse(_ line: Data) throws(MessageError) -> IncomingMessage {
-		guard let object = try? JSONSerialization.jsonObject(with: line),
+		guard let object = (try? JSONSerialization.jsonObject(with: line))
+			?? (try? JSONSerialization.jsonObject(with: replacingLoneSurrogates(in: line))),
 			let dict = object as? [String: Any],
 			let type = dict["type"] as? String
 		else { throw .malformed }
@@ -109,6 +110,17 @@ public enum IncomingMessage: Equatable, Sendable {
 			return .other(type: type)
 		}
 	}
+}
+
+/// Python's json writes a lone UTF-16 surrogate from Windows text as `\\ud800`, which
+/// Foundation rejects, and the whole message would be lost for one bad character.
+/// Such escapes are replaced by U+FFFD; valid surrogate pairs are kept.
+func replacingLoneSurrogates(in line: Data) -> Data {
+	let text = String(decoding: line, as: UTF8.self)
+	let pattern = #"\\u[dD][89abAB][0-9a-fA-F]{2}(?!\\u[dD][c-fC-F][0-9a-fA-F]{2})|(?<!\\u[dD][89abAB][0-9a-fA-F]{2})\\u[dD][c-fC-F][0-9a-fA-F]{2}"#
+	guard let regex = try? NSRegularExpression(pattern: pattern) else { return line }
+	let range = NSRange(text.startIndex..., in: text)
+	return Data(regex.stringByReplacingMatches(in: text, range: range, withTemplate: #"\\ufffd"#).utf8)
 }
 
 public enum MessageError: Error {

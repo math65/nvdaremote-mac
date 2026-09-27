@@ -51,6 +51,16 @@
         }
       }
     },
+    "Braille display disconnected.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Plage braille déconnectée."
+          }
+        }
+      }
+    },
     "Braille display: %@": {
       "localizations": {
         "fr": {
@@ -86,7 +96,7 @@
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Verrouillage majuscules n'a pas pu être rétablie : %@ Un redémarrage du Mac la rétablira."
+            "value": "Verrouillage majuscules n'a pas pu être rétabli : %@ Un redémarrage du Mac le rétablira."
           }
         }
       }
@@ -147,6 +157,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Se connecter"
+          }
+        }
+      }
+    },
+    "Connect to %@ on %@?": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se connecter à %1$@ sur %2$@ ?"
           }
         }
       }
@@ -367,6 +387,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Nouveau raccourci : %@."
+          }
+        }
+      }
+    },
+    "No braille display found.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aucune plage braille trouvée."
           }
         }
       }
@@ -661,6 +691,16 @@
         }
       }
     },
+    "The current connection will be closed.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La connexion en cours sera fermée."
+          }
+        }
+      }
+    },
     "The keyboard cannot be captured: grant the permissions in Settings first.": {
       "localizations": {
         "fr": {
@@ -701,12 +741,12 @@
         }
       }
     },
-    "The shortcut must include Control, Option or Command. Try again, or press Escape to cancel.": {
+    "The shortcut must include Control or Option. Try again, or press Escape to cancel.": {
       "localizations": {
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Le raccourci doit comporter Contrôle, Option ou Commande. Recommencez, ou appuyez sur Échap pour annuler."
+            "value": "Le raccourci doit comporter Contrôle ou Option. Recommencez, ou appuyez sur Échap pour annuler."
           }
         }
       }
@@ -767,6 +807,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Tapez le nouveau raccourci, ou Échap pour annuler."
+          }
+        }
+      }
+    },
+    "Unable to connect: %@. Retrying in 5 seconds.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impossible de se connecter : %@. Nouvel essai dans 5 secondes."
           }
         }
       }

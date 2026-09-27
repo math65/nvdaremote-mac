@@ -95,7 +95,10 @@ public struct KeyTranslator: Sendable {
 	/// - Parameter characters: what the key produces with the Mac's active layout;
 	///   `nil` for a key that produces no character.
 	/// - Returns: the key to send, or `nil` if it has no equivalent on the PC.
-	public func translate(keyCode: UInt16, characters: Characters?) -> WindowsKey? {
+	/// - Parameter shift: whether Shift is held. On AZERTY the top row types digits with
+	///   Shift and punctuation without, so the key sent depends on it: "!" without Shift
+	///   is the PC's "!" key, "8" with Shift is the PC's 8 key.
+	public func translate(keyCode: UInt16, characters: Characters?, shift: Bool = false) -> WindowsKey? {
 		if let special = specialKey(keyCode) {
 			return special
 		}
@@ -110,20 +113,26 @@ public struct KeyTranslator: Sendable {
 			{
 				return WindowsKey(0x41 + Int(letter.value - 0x61))
 			}
-			// On AZERTY, the top row only produces digits with Shift.
-			for candidate in [characters.plain, characters.shifted] {
-				if candidate.count == 1, let digit = candidate.first?.wholeNumberValue, candidate.first!.isASCII {
-					return WindowsKey(0x30 + digit)
-				}
+			if shift, let digit = Self.digit(characters.shifted) {
+				return WindowsKey(0x30 + digit)
 			}
 			if let entry = punctuation.first(where: { $0.plain == characters.plain }) {
 				return WindowsKey(entry.vk)
+			}
+			// On AZERTY, the top row only produces digits with Shift.
+			if let digit = Self.digit(characters.plain) ?? Self.digit(characters.shifted) {
+				return WindowsKey(0x30 + digit)
 			}
 		}
 		if let entry = punctuation.first(where: { $0.position == keyCode }) {
 			return WindowsKey(entry.vk)
 		}
 		return nil
+	}
+
+	private static func digit(_ text: String) -> Int? {
+		guard text.count == 1, let character = text.first, character.isASCII else { return nil }
+		return character.wholeNumberValue
 	}
 
 	/// Layout-independent keys: navigation, function keys, modifiers, numeric keypad.
@@ -201,14 +210,14 @@ public struct KeyTranslator: Sendable {
 	}
 
 	private static let frenchPunctuation = [
-		PunctuationKey(vk: 0xDE, plain: "²", position: 50),
+		PunctuationKey(vk: 0xDE, plain: "²", position: 10),
 		PunctuationKey(vk: 0xDB, plain: ")", position: 27),
 		PunctuationKey(vk: 0xBB, plain: "=", position: 24),
 		PunctuationKey(vk: 0xDD, plain: "^", position: 33),
 		PunctuationKey(vk: 0xBA, plain: "$", position: 30),
 		PunctuationKey(vk: 0xC0, plain: "ù", position: 39),
 		PunctuationKey(vk: 0xDC, plain: "*", position: 42),
-		PunctuationKey(vk: 0xE2, plain: "<", position: 10),
+		PunctuationKey(vk: 0xE2, plain: "<", position: 50),
 		PunctuationKey(vk: 0xBC, plain: ",", position: 46),
 		PunctuationKey(vk: 0xBE, plain: ";", position: 43),
 		PunctuationKey(vk: 0xBF, plain: ":", position: 47),
@@ -230,6 +239,8 @@ public struct KeyTranslator: Sendable {
 		PunctuationKey(vk: 0xBC, plain: ",", position: 43),
 		PunctuationKey(vk: 0xBE, plain: ".", position: 47),
 		PunctuationKey(vk: 0xBF, plain: "/", position: 44),
-		PunctuationKey(vk: 0xE2, plain: "<", position: 10),
+		// The extra key of 102-key keyboards types a backslash in the US layout; on Apple
+		// ISO keyboards the key at its place is code 10, left of 1.
+		PunctuationKey(vk: 0xE2, plain: "\\", position: 10),
 	]
 }

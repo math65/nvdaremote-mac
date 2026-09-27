@@ -33,6 +33,8 @@ public final class LeaderSession {
 	private let tones: TonePlayer
 	private let sounds: SoundPlayer
 	private var followers: Set<Int> = []
+	/// Messages of the day already shown: as in NVDA, each is shown once, not on every reconnect.
+	private var shownMessagesOfTheDay: Set<String> = []
 
 	/// Muted: speech, beeps and sounds from the PC are ignored, like NVDA's
 	/// "mute remote" option when working locally.
@@ -103,6 +105,7 @@ public final class LeaderSession {
 	public func stop() {
 		transport.stop()
 		speech.cancel()
+		tones.stop()
 		followers.removeAll()
 	}
 
@@ -159,7 +162,9 @@ public final class LeaderSession {
 				onEvent?(.followerLeft)
 			}
 		case let .motd(text) where !text.isEmpty:
-			onEvent?(.message(text))
+			if shownMessagesOfTheDay.insert(text).inserted {
+				onEvent?(.message(text))
+			}
 		case .versionMismatch:
 			end(localized("the server does not support protocol version \(currentProtocolVersion)"))
 		case let .error(message):

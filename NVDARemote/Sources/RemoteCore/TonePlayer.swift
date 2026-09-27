@@ -20,8 +20,13 @@ public final class TonePlayer {
 		engine.connect(player, to: engine.mainMixerNode, format: format)
 	}
 
+	/// Longest beep played. NVDA's own beeps last well under a second; anyone who knows
+	/// the channel key can send a `tone`, so the length must be bounded.
+	static let maximumMilliseconds = 5_000
+
 	public func beep(hz: Double, milliseconds: Int, left: Int, right: Int) {
-		guard hz > 0, milliseconds > 0,
+		let milliseconds = min(milliseconds, Self.maximumMilliseconds)
+		guard hz > 0, hz < Self.sampleRate / 2, milliseconds > 0,
 			let buffer = makeBuffer(hz: hz, milliseconds: milliseconds, left: left, right: right)
 		else { return }
 		do {

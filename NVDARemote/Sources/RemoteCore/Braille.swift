@@ -14,8 +14,11 @@ public enum BrailleGesture: Equatable, Sendable {
 	case enter
 	case eraseLastCell
 	case translate
-	/// Any other NVDA global command, or a key emulation such as `kb:upArrow`.
-	case command(String)
+	/// Several router keys pressed together: NVDA selects from the first to the last cell.
+	case selectRange(cells: [Int])
+	/// Any other NVDA global command, or a key emulation such as `kb:upArrow`, with the
+	/// display's gesture name (such as `space+dot1`), shown by NVDA's input help.
+	case command(String, id: String)
 
 	/// Maps a typed cell the way NVDA's braille keyboard bindings do:
 	/// dot 7 alone erases, dot 8 alone presses Enter, dots 7 and 8 translate.
@@ -38,7 +41,8 @@ public enum BrailleGesture: Equatable, Sendable {
 		case .enter: "braille_enter"
 		case .eraseLastCell: "braille_eraseLastCell"
 		case .translate: "braille_translate"
-		case let .command(name): name
+		case .selectRange: "braille_selectRange"
+		case let .command(name, _): name
 		}
 	}
 
@@ -80,8 +84,12 @@ public enum BrailleGesture: Equatable, Sendable {
 			fields["id"] = "dot7+dot8"
 			fields["dots"] = 0xC0
 			fields["space"] = false
-		case let .command(name):
-			fields["id"] = name
+		case let .selectRange(cells):
+			// NVDA only sends routingIndex for single-cell presses.
+			fields["id"] = "routerSet1_multiRouterKey"
+			fields["cellIndexes"] = cells
+		case let .command(_, id):
+			fields["id"] = id
 		}
 		return fields
 	}
@@ -132,34 +140,50 @@ public enum HIDBrailleKeys {
 		0b0011_1111: "sayAll",
 	]
 
-	static let singleKeys: [UInt32: BrailleGesture] = [
-		Usage.panLeft: .scrollBack,
-		Usage.rockerUp: .scrollBack,
-		Usage.panRight: .scrollForward,
-		Usage.rockerDown: .scrollForward,
-		Usage.joystickUp: .command("kb:upArrow"),
-		Usage.dpadUp: .command("kb:upArrow"),
-		Usage.joystickDown: .command("kb:downArrow"),
-		Usage.dpadDown: .command("kb:downArrow"),
-		Usage.joystickLeft: .command("kb:leftArrow"),
-		Usage.dpadLeft: .command("kb:leftArrow"),
-		Usage.joystickRight: .command("kb:rightArrow"),
-		Usage.dpadRight: .command("kb:rightArrow"),
-		Usage.joystickCenter: .command("kb:enter"),
-		Usage.dpadCenter: .command("kb:enter"),
+	/// Other keys, by NVDA script, as in NVDA's `hidBrailleStandard` gesture map.
+	static let singleKeys: [UInt32: String] = [
+		Usage.panLeft: "braille_scrollBack",
+		Usage.rockerUp: "braille_scrollBack",
+		Usage.panRight: "braille_scrollForward",
+		Usage.rockerDown: "braille_scrollForward",
+		Usage.joystickUp: "kb:upArrow",
+		Usage.dpadUp: "kb:upArrow",
+		Usage.joystickDown: "kb:downArrow",
+		Usage.dpadDown: "kb:downArrow",
+		Usage.joystickLeft: "kb:leftArrow",
+		Usage.dpadLeft: "kb:leftArrow",
+		Usage.joystickRight: "kb:rightArrow",
+		Usage.dpadRight: "kb:rightArrow",
+		Usage.joystickCenter: "kb:enter",
+		Usage.dpadCenter: "kb:enter",
 	]
 
-	/// The gesture for a chord: every key pressed before all of them were released.
+	/// NVDA's name for a key of the braille page, as its driver derives it from the usage.
+	static let keyNames: [UInt32: String] = [
+		Usage.space: "space", Usage.leftSpace: "leftSpace", Usage.rightSpace: "rightSpace",
+		Usage.joystickCenter: "joystickCenter", Usage.joystickUp: "joystickUp", Usage.joystickDown: "joystickDown",
+		Usage.joystickLeft: "joystickLeft", Usage.joystickRight: "joystickRight",
+		Usage.dpadCenter: "dpadCenter", Usage.dpadUp: "dpadUp", Usage.dpadDown: "dpadDown",
+		Usage.dpadLeft: "dpadLeft", Usage.dpadRight: "dpadRight",
+		Usage.panLeft: "panLeft", Usage.panRight: "panRight", Usage.rockerUp: "rockerUp", Usage.rockerDown: "rockerDown",
+	]
+
+	static func gestureName(_ keys: Set<UInt32>) -> String {
+		keys.sorted().map { usage in
+			(Usage.dot1...Usage.dot8).contains(usage) ? "dot\(usage - Usage.dot1 + 1)" : keyNames[usage] ?? "brailleUsage\(usage)"
+		}.joined(separator: "+")
+	}
+
+	/// The gesture for a chord: the keys held when the first of them was released.
 	/// - Parameters:
 	///   - keys: braille-page usages other than router keys.
-	///   - routerCells: cells whose router key was pressed.
+	///   - routerCells: cells whose router key was held.
 	/// - Returns: `nil` when NVDA has no binding for the chord.
 	public static func gesture(keys: Set<UInt32>, routerCells: [Int]) -> BrailleGesture? {
 		if !routerCells.isEmpty {
 			guard keys.isEmpty else { return nil }
-			return routerCells.count == 1
-				? .routing(cell: routerCells[0])
-				: nil
+			let cells = routerCells.sorted()
+			return cells.count == 1 ? .routing(cell: cells[0]) : .selectRange(cells: cells)
 		}
 		let dots = keys.reduce(0) { result, usage in
 			(Usage.dot1...Usage.dot8).contains(usage) ? result | 1 << Int(usage - Usage.dot1) : result
@@ -169,11 +193,12 @@ public enum HIDBrailleKeys {
 		let others = keys.subtracting(spaces).filter { !(Usage.dot1...Usage.dot8).contains($0) }
 
 		if !others.isEmpty {
-			guard others.count == 1, dots == 0, !hasSpace else { return nil }
-			return singleKeys[others.first!]
+			guard others.count == 1, dots == 0, !hasSpace, let script = singleKeys[others.first!] else { return nil }
+			return .command(script, id: gestureName(keys))
 		}
 		if hasSpace {
-			return dots == 0 ? .space : spaceChords[dots].map(BrailleGesture.command)
+			if dots == 0 { return .space }
+			return spaceChords[dots].map { .command($0, id: gestureName(keys)) }
 		}
 		return dots == 0 ? nil : .typed(dots: dots)
 	}

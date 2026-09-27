@@ -6,7 +6,7 @@
 	<array>
 		<dict>
 			<key>CFBundleURLName</key>
-			<string>NVDA Remote link</string>
+			<string>com.math65.nvdaremote</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>nvdaremote</string>

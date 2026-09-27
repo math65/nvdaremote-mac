@@ -16,6 +16,12 @@ import Testing
 		#expect(info.host == "192.168.1.20")
 	}
 
+	/// NVDA writes spaces in links as "+" (Python's urlencode).
+	@Test func decodesPlusAsSpaceInLinks() throws {
+		#expect(try ConnectionInfo(url: "nvdaremote://h/?key=my+key&mode=master").key == "my key")
+		#expect(try ConnectionInfo(url: "nvdaremote://h/?key=a%2Bb&mode=master").key == "a+b")
+	}
+
 	@Test func stripsIPv6Brackets() throws {
 		let info = try ConnectionInfo(url: "nvdaremote://[::1]:6837/?key=k&mode=master")
 		#expect(info.host == "::1")
@@ -59,6 +65,15 @@ import Testing
 		#expect(lines.map { String(decoding: $0, as: UTF8.self) } == ["{\"type\":\"cancel\"}", "{\"type\":\"ping\"}"])
 		let rest = framer.append(Data("pe\":\"x\"}\n".utf8))
 		#expect(rest.map { String(decoding: $0, as: UTF8.self) } == ["{\"type\":\"x\"}"])
+	}
+
+	@Test func longLineInManyChunks() {
+		var framer = LineFramer()
+		let chunk = Data(repeating: 0x61, count: 1000)
+		for _ in 0..<50 { #expect(framer.append(chunk).isEmpty) }
+		let lines = framer.append(Data("\n".utf8))
+		#expect(lines.count == 1)
+		#expect(lines.first?.count == 50_000)
 	}
 
 	@Test func resetDropsPartialLine() {
@@ -109,6 +124,15 @@ import Testing
 		#expect(try parse(#"{"type":"key","vk_code":65}"#) == .other(type: "key"))
 	}
 
+	/// Python's json writes a lone surrogate as an escape Foundation rejects: only that
+	/// character is lost, not the whole message.
+	@Test func survivesLoneSurrogates() throws {
+		#expect(try parse(#"{"type":"speak","priority":0,"sequence":["a\ud800b"]}"#)
+			== .speak(sequence: [.text("a\u{FFFD}b")], priority: .normal))
+		#expect(try parse(#"{"type":"speak","priority":0,"sequence":["\ud83d\ude00"]}"#)
+			== .speak(sequence: [.text("😀")], priority: .normal))
+	}
+
 	@Test func rejectsNonMessages() {
 		#expect(throws: MessageError.self) { try parse("pas du json") }
 		#expect(throws: MessageError.self) { try parse(#"{"sans":"type"}"#) }
@@ -144,13 +168,13 @@ import Testing
 		])
 	}
 
-	@Test func attachesPauseToPreviousSegment() {
+	@Test func attachesPausesToSegments() {
 		let segments = SpeechSegment.segments(from: [
-			.pause(milliseconds: 100), .text("un"), .pause(milliseconds: 250), .text("deux"),
+			.pause(milliseconds: 100), .text("un"), .pause(milliseconds: 250), .text("deux"), .pause(milliseconds: 999_999),
 		])
 		#expect(segments == [
-			SpeechSegment(text: "un", pauseAfterMilliseconds: 250),
-			SpeechSegment(text: "deux"),
+			SpeechSegment(text: "un", pauseBeforeMilliseconds: 100, pauseAfterMilliseconds: 250),
+			SpeechSegment(text: "deux", pauseAfterMilliseconds: SpeechSegment.maximumPauseMilliseconds),
 		])
 	}
 

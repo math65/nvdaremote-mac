@@ -61,7 +61,11 @@ public struct ConnectionInfo: Equatable, Sendable {
 	/// Parses an `nvdaremote://host:port/?key=…&mode=master` link,
 	/// as produced by "Copy link" on the controlled PC.
 	public init(url string: String) throws(ConnectionInfoError) {
-		guard let components = URLComponents(string: string.trimmingCharacters(in: .whitespacesAndNewlines)),
+		// NVDA builds links with Python's urlencode, which writes spaces as "+", and reads
+		// them back with parse_qs. URLComponents leaves "+" alone, so decode it first.
+		let link = string.trimmingCharacters(in: .whitespacesAndNewlines)
+			.replacingOccurrences(of: "+", with: "%20")
+		guard let components = URLComponents(string: link),
 			components.scheme?.lowercased() == "nvdaremote"
 		else { throw .notARemoteLink }
 

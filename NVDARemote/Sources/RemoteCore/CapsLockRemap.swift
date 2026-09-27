@@ -25,19 +25,28 @@ public enum CapsLockRemap {
 		guard !hasMappings(try run(["property", "--get", "UserKeyMapping"])) else {
 			throw CapsLockRemapError.existingMappings
 		}
-		UserDefaults.standard.set(true, forKey: appliedKey)
 		let remap: [String: Int64] = [
 			"HIDKeyboardModifierMappingSrc": capsLockUsage,
 			"HIDKeyboardModifierMappingDst": f18Usage,
 		]
 		try setMapping([remap])
+		// Only once it worked: a stale flag would make the next attempt skip the remap.
+		UserDefaults.standard.set(true, forKey: appliedKey)
 	}
 
 	/// Removes the remapping. Does nothing if the app did not apply it.
+	/// Only clears mappings when ours is still there: after a crash and a restart, the
+	/// flag may remain while the user has set other mappings, which must survive.
 	public static func remove() throws {
 		guard isApplied else { return }
-		try setMapping([])
+		if isOurMapping(try run(["property", "--get", "UserKeyMapping"])) {
+			try setMapping([])
+		}
 		UserDefaults.standard.removeObject(forKey: appliedKey)
+	}
+
+	static func isOurMapping(_ output: String) -> Bool {
+		output.contains(String(capsLockUsage)) && output.contains(String(f18Usage))
 	}
 
 	/// Parses the output of `hidutil property --get UserKeyMapping`. Depending on the version and history,

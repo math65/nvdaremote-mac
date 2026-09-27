@@ -58,6 +58,10 @@ public final class SpeechOutput {
 		if synthesizer.isSpeaking || synthesizer.isPaused {
 			synthesizer.stopSpeaking(at: .immediate)
 		}
+		// NVDA's cancel also ends a pause: speech that follows must be heard.
+		if synthesizer.isPaused {
+			synthesizer.continueSpeaking()
+		}
 	}
 
 	public func setPaused(_ paused: Bool) {
@@ -72,6 +76,7 @@ public final class SpeechOutput {
 		let utterance = AVSpeechUtterance(string: segment.text)
 		utterance.rate = rate
 		utterance.voice = segment.language.map(voice(for:)) ?? defaultVoice
+		utterance.preUtteranceDelay = TimeInterval(segment.pauseBeforeMilliseconds) / 1000
 		utterance.postUtteranceDelay = TimeInterval(segment.pauseAfterMilliseconds) / 1000
 		return utterance
 	}

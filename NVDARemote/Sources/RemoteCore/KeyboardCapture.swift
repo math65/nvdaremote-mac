@@ -18,8 +18,10 @@ public struct KeyShortcut: Codable, Equatable, Sendable {
 		self.shift = shift
 	}
 
-	/// A shortcut must include Control, Option or Command; otherwise it would interfere with typing.
-	public var isUsable: Bool { control || option || command }
+	/// A shortcut must include Control or Option; otherwise it would interfere with typing.
+	/// Command-only shortcuts are refused: they would take Command-C, Command-Q and the
+	/// like away from every app, since the capture swallows the shortcut everywhere.
+	public var isUsable: Bool { control || option }
 
 	public func matches(keyCode: UInt16, flags: CGEventFlags) -> Bool {
 		keyCode == self.keyCode
@@ -124,6 +126,11 @@ public final class KeyboardCapture {
 	private var runLoopSource: CFRunLoopSource?
 	/// Keys sent to the PC as pressed, in the order they were pressed.
 	private var sentDown: [WindowsKey] = []
+	/// The PC key sent for each Mac key held down, so its release always sends the same
+	/// key even if Shift, the layout or a setting changed meanwhile.
+	private var heldKeys: [UInt16: WindowsKey] = [:]
+	/// Whether fn is held, when it is the NVDA key (see `effectiveKeyCode`).
+	private var isFunctionHeld = false
 	/// Global shortcut keys whose key-down was swallowed: their key-up must be swallowed too.
 	private var swallowedKeyUps: Set<UInt16> = []
 
@@ -187,6 +194,8 @@ public final class KeyboardCapture {
 		if remote {
 			layout.reload()
 			sentDown.removeAll()
+			heldKeys.removeAll()
+			isFunctionHeld = false
 		} else {
 			releaseAll()
 		}
@@ -203,6 +212,7 @@ public final class KeyboardCapture {
 			onKey?(key, false)
 		}
 		sentDown.removeAll()
+		heldKeys.removeAll()
 	}
 
 	// MARK: - Events
@@ -239,19 +249,29 @@ public final class KeyboardCapture {
 			}
 			return false
 		case .keyDown:
+			let shortcutFlags = shortcutFlags(event.flags)
 			if areShortcutsEnabled,
 				let command = GlobalCommand.allCases.first(where: {
-					shortcuts[$0]?.matches(keyCode: keyCode, flags: event.flags) == true
+					shortcuts[$0]?.matches(keyCode: keyCode, flags: shortcutFlags) == true
 				})
 			{
 				swallowedKeyUps.insert(keyCode)
 				if !event.isRepeat {
+					// The shortcut's modifiers already went to the PC: a neutral key first, as
+					// NVDA does, so releasing them alone does nothing (Windows alone opens Start).
+					if isRemote, !sentDown.isEmpty {
+						onKey?(.none, true)
+						onKey?(.none, false)
+					}
 					onCommand?(command)
 				}
 				return true
 			}
 			guard isRemote else { return false }
-			press(keyCode)
+			if !press(keyCode, flags: event.flags) {
+				// No PC equivalent: its release must not reach the Mac alone either.
+				swallowedKeyUps.insert(keyCode)
+			}
 			return true
 		case .keyUp:
 			if swallowedKeyUps.remove(keyCode) != nil {
@@ -265,8 +285,11 @@ public final class KeyboardCapture {
 				return true
 			}
 			guard let pressed = Self.isModifierPressed(keyCode, flags: event.flags) else { return true }
+			if keyCode == MacKeyCode.function {
+				isFunctionHeld = pressed
+			}
 			if pressed {
-				press(keyCode)
+				press(keyCode, flags: event.flags)
 				return true
 			}
 			return release(keyCode)
@@ -275,22 +298,53 @@ public final class KeyboardCapture {
 		}
 	}
 
-	private func press(_ keyCode: UInt16) {
-		guard let key = translator.translate(keyCode: keyCode, characters: layout.characters(for: keyCode)) else { return }
+	/// Sends a key press. A held key repeats its key-down, as on Windows.
+	/// - Returns: `false` when the key has no PC equivalent.
+	@discardableResult
+	private func press(_ keyCode: UInt16, flags: CGEventFlags) -> Bool {
+		if let held = heldKeys[keyCode] {
+			onKey?(held, true)
+			return true
+		}
+		let effective = effectiveKeyCode(keyCode)
+		guard let key = translator.translate(
+			keyCode: effective,
+			characters: layout.characters(for: effective),
+			shift: flags.contains(.maskShift),
+		) else { return false }
+		heldKeys[keyCode] = key
 		if !sentDown.contains(key) {
 			sentDown.append(key)
 		}
-		// A held key repeats its key-down, as on Windows.
 		onKey?(key, true)
+		return true
 	}
 
 	private func release(_ keyCode: UInt16) -> Bool {
-		guard let key = translator.translate(keyCode: keyCode, characters: layout.characters(for: keyCode)),
-			let index = sentDown.firstIndex(of: key)
-		else { return false }
-		sentDown.remove(at: index)
-		onKey?(key, false)
+		guard let key = heldKeys.removeValue(forKey: keyCode) else { return false }
+		// Another Mac key may still hold the same PC key: release it with the last one.
+		if !heldKeys.values.contains(key) {
+			sentDown.removeAll { $0 == key }
+			onKey?(key, false)
+		}
 		return true
+	}
+
+	/// With fn as the NVDA key, macOS turns fn+arrows into Home, End, Page Up and Page Down,
+	/// and fn+Delete into Forward Delete, before the tap sees them: turn them back, so
+	/// NVDA+arrow reaches the PC as NVDA+arrow.
+	private func effectiveKeyCode(_ keyCode: UInt16) -> UInt16 {
+		guard translator.nvdaKey == .fn, isFunctionHeld else { return keyCode }
+		let arrows: [UInt16: UInt16] = [116: 126, 121: 125, 115: 123, 119: 124, 117: MacKeyCode.delete]
+		return arrows[keyCode] ?? keyCode
+	}
+
+	/// With Right Option as the NVDA key, its Option flag must not count for shortcuts,
+	/// or NVDA+key combinations could fire an Option shortcut instead of reaching NVDA.
+	private func shortcutFlags(_ flags: CGEventFlags) -> CGEventFlags {
+		let leftOptionMask: UInt64 = 0x0020
+		guard translator.nvdaKey == .rightOption, flags.rawValue & leftOptionMask == 0 else { return flags }
+		return flags.subtracting(.maskAlternate)
 	}
 
 	/// State of a modifier after a `flagsChanged`, using the masks that distinguish left

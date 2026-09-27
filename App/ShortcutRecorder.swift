@@ -58,7 +58,7 @@ struct ShortcutRecorder: View {
 			return
 		}
 		guard shortcut.isUsable else {
-			model.announce(String(localized: "The shortcut must include Control, Option or Command. Try again, or press Escape to cancel."))
+			model.announce(String(localized: "The shortcut must include Control or Option. Try again, or press Escape to cancel."))
 			return
 		}
 		if let other = model.shortcuts.first(where: { $0.key != command && $0.value == shortcut })?.key {

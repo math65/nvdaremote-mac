@@ -108,7 +108,8 @@ shows NVDA's cells as Unicode braille through BrlAPI, the same idea as here.
   display keys to custom commands such as "Run Shortcut…", which could open an
   `nvdaremote://` link; not yet confirmed.
 - VoiceOver **Activities** can switch braille settings automatically for one app.
-- The app cannot learn the display width from VoiceOver: it must be set by the user.
+- The app cannot learn the display width from VoiceOver. The direct driver reads it
+  from the display itself (the report count of its cell output).
 - AppleVis reports occasional braille refresh problems in some contexts; latency was
   not measured anywhere.
 
@@ -123,4 +124,5 @@ shows NVDA's cells as Unicode braille through BrlAPI, the same idea as here.
 5. Whether an Activity can switch tables for the app automatically.
 6. Whether a display key can run a Shortcut through a custom command.
 7. Whether `AXBrailleTranslator` returns tables inside a signed app.
-8. Whether VoiceOver's generic HID driver lets another client open the device.
+8. ~~Whether VoiceOver's generic HID driver lets another client open the device.~~
+   Answered: it opens displays in shared mode, and a seize sets it aside (see Verdict).

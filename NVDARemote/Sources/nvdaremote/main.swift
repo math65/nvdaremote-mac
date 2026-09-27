@@ -102,7 +102,12 @@ do {
 	if let link = options.link {
 		info = try ConnectionInfo(url: link)
 	} else if let host = options.host, let key = options.key {
-		info = ConnectionInfo(host: host, port: options.port, key: key)
+		// Same parsing as the app: host, host:port, [IPv6]:port; --port applies when none is given.
+		var parsed = try ConnectionInfo(server: host, key: key)
+		if !host.contains("]:"), host.filter({ $0 == ":" }).count != 1 {
+			parsed.port = options.port
+		}
+		info = parsed
 	} else {
 		fail(usage)
 	}
@@ -112,6 +117,9 @@ do {
 
 let trustStore = TrustStore()
 if let trust = options.trust {
+	guard normalizeFingerprint(trust).count == 64 else {
+		fail("A fingerprint is 64 hexadecimal digits, as printed when the certificate is not recognized.")
+	}
 	do {
 		try trustStore.trust(trust, for: info.address)
 	} catch {

@@ -59,12 +59,18 @@ public struct SpeechSegment: Equatable, Sendable {
 	public var text: String
 	/// Language in BCP 47 format (`fr-FR`), `nil` for the default voice.
 	public var language: String?
+	/// Silence to leave before this chunk (only for a pause at the start of a sequence).
+	public var pauseBeforeMilliseconds: Int
 	/// Silence to leave after this chunk.
 	public var pauseAfterMilliseconds: Int
 
-	public init(text: String, language: String? = nil, pauseAfterMilliseconds: Int = 0) {
+	/// Longest pause honored: a larger `BreakCommand` would stall the speech queue.
+	public static let maximumPauseMilliseconds = 10_000
+
+	public init(text: String, language: String? = nil, pauseBeforeMilliseconds: Int = 0, pauseAfterMilliseconds: Int = 0) {
 		self.text = text
 		self.language = language
+		self.pauseBeforeMilliseconds = pauseBeforeMilliseconds
 		self.pauseAfterMilliseconds = pauseAfterMilliseconds
 	}
 }
@@ -74,17 +80,19 @@ extension SpeechSegment {
 	///
 	/// A language change or the end of an utterance closes the current chunk.
 	/// Consecutive strings are joined with a space, as in NVDA.
-	/// A pause is attached to the chunk that precedes it.
+	/// A pause is attached to the chunk that precedes it, or before the first chunk.
 	public static func segments(from items: [SpeechItem]) -> [SpeechSegment] {
 		var segments: [SpeechSegment] = []
 		var language: String?
 		var pieces: [String] = []
+		var leadingPause = 0
 
 		func flush() {
 			let text = pieces.joined(separator: " ").trimmingCharacters(in: .whitespacesAndNewlines)
 			pieces.removeAll()
 			guard !text.isEmpty else { return }
-			segments.append(SpeechSegment(text: text, language: language))
+			// A pause before any text is kept as silence before the first chunk.
+			segments.append(SpeechSegment(text: text, language: language, pauseBeforeMilliseconds: segments.isEmpty ? leadingPause : 0))
 		}
 
 		for item in items {
@@ -99,8 +107,13 @@ extension SpeechSegment {
 				}
 			case let .pause(milliseconds):
 				flush()
-				if !segments.isEmpty {
-					segments[segments.count - 1].pauseAfterMilliseconds += milliseconds
+				let pause = min(max(milliseconds, 0), SpeechSegment.maximumPauseMilliseconds)
+				if segments.isEmpty {
+					leadingPause = min(leadingPause + pause, SpeechSegment.maximumPauseMilliseconds)
+				} else {
+					let last = segments.count - 1
+					segments[last].pauseAfterMilliseconds = min(
+						segments[last].pauseAfterMilliseconds + pause, SpeechSegment.maximumPauseMilliseconds)
 				}
 			case .endUtterance:
 				flush()

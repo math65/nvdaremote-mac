@@ -32,6 +32,8 @@ private struct GeneralSettings: View {
 			Text("One of the two always stays visible. With the menu bar icon, the Dock icon only shows while the Connection window is open.")
 				.font(.callout)
 				.foregroundStyle(.secondary)
+				// Already the control's hint: VoiceOver would read it twice.
+				.accessibilityHidden(true)
 		}
 		.formStyle(.grouped)
 	}
@@ -101,6 +103,8 @@ private struct KeyboardSettings: View {
 					Text("While controlling the PC, Caps Lock becomes the NVDA key and no longer locks capitals on the Mac.")
 						.font(.callout)
 						.foregroundStyle(.secondary)
+						// Already the control's hint: VoiceOver would read it twice.
+						.accessibilityHidden(true)
 				}
 				Picker("PC keyboard layout", selection: $model.pcLayout) {
 					ForEach(PCLayout.allCases, id: \.self) { layout in
@@ -125,11 +129,15 @@ private struct SoundSettings: View {
 			Text("Browse mode, focus mode, errors and other NVDA sounds.")
 				.font(.callout)
 				.foregroundStyle(.secondary)
+				// Already the control's hint: VoiceOver would read it twice.
+				.accessibilityHidden(true)
 			Toggle("Play app sounds", isOn: $model.playsAppSounds)
 				.accessibilityHint(Text("Connection, clipboard, and switching between Mac and PC."))
 			Text("Connection, clipboard, and switching between Mac and PC.")
 				.font(.callout)
 				.foregroundStyle(.secondary)
+				// Already the control's hint: VoiceOver would read it twice.
+				.accessibilityHidden(true)
 		}
 		.formStyle(.grouped)
 	}
@@ -145,7 +153,7 @@ private struct BrailleSettings: View {
 				.accessibilityHint(Text("While you control the PC, NVDA drives your braille display: its line, routing keys, braille keyboard and panning keys. VoiceOver keeps running and gets the display back when you return to the Mac."))
 			// Not a LabeledContent: inside a Form it exposes a frozen value to VoiceOver.
 			Text("Braille display: \(model.brailleDisplayName ?? String(localized: "none found"))")
-			Button("Look Again", action: model.findBrailleDisplay)
+			Button("Look Again", action: model.lookForBrailleDisplay)
 			Text("Works with HID braille displays, over USB or Bluetooth, such as the Brailliant BI X series. Displays that VoiceOver drives with a brand driver cannot be taken.")
 				.font(.callout)
 				.foregroundStyle(.secondary)

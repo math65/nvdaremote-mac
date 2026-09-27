@@ -29,14 +29,20 @@ any other system language falls back to English.
   sends the Mac clipboard to the PC.
 - **Menu bar and Dock**: the app lives in the menu bar, the Dock, or both. Closing
   the Connection window (Command-W) tucks the app away in the menu bar.
-
 - **Braille**: while you control the PC, NVDA drives your braille display directly:
   its exact cells, routing keys, panning keys and braille keyboard, with the bindings
   of NVDA's HID braille driver. VoiceOver keeps running and gets the display back when
   you return to the Mac. Works with HID braille displays over USB or Bluetooth (such
   as the Brailliant BI X series). See [docs/braille-research.md](docs/braille-research.md).
 
-Not yet available: pitch/rate/volume commands embedded in NVDA's speech.
+Not yet available, or simplified compared with NVDA:
+
+- Pitch, rate and volume commands embedded in NVDA's speech are ignored, and so are
+  character mode (spelling) and IPA pronunciations, which fall back to their text.
+- Speech with the "now" priority cuts the current speech without resuming it
+  afterwards, and "next" is queued like normal speech.
+- Braille works with HID braille displays only; displays that VoiceOver drives with a
+  brand driver or over a Bluetooth serial link cannot be taken yet.
 
 ## Requirements
 

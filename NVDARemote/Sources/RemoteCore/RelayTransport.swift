@@ -172,7 +172,11 @@ public final class RelayTransport {
 		let tcp = NWProtocolTCP.Options()
 		tcp.noDelay = true
 		tcp.enableKeepalive = true
+		// NVDA uses keepalive with a 60-second idle time and a 2-second interval, so a dead
+		// connection is noticed in about a minute and a half rather than ten minutes.
 		tcp.keepaliveIdle = 60
+		tcp.keepaliveInterval = 2
+		tcp.keepaliveCount = 10
 		return NWParameters(tls: tls, tcp: tcp)
 	}
 

@@ -23,6 +23,16 @@ import Testing
 		#expect(french.translate(keyCode: 22, characters: Chars(plain: "§", shifted: "6")) == WindowsKey(0x36))
 	}
 
+	/// The "!" key of an AZERTY Mac types "!" without Shift and "8" with Shift, on the PC too.
+	@Test func shiftDecidesBetweenPunctuationAndDigit() {
+		let bang = Chars(plain: "!", shifted: "8")
+		#expect(french.translate(keyCode: 28, characters: bang) == WindowsKey(0xDF))
+		#expect(french.translate(keyCode: 28, characters: bang, shift: true) == WindowsKey(0x38))
+		let ampersand = Chars(plain: "&", shifted: "1")
+		#expect(french.translate(keyCode: 18, characters: ampersand) == WindowsKey(0x31))
+		#expect(french.translate(keyCode: 18, characters: ampersand, shift: true) == WindowsKey(0x31))
+	}
+
 	@Test func frenchPunctuationByCharacter() {
 		#expect(french.translate(keyCode: 46, characters: Chars(plain: ",", shifted: "?")) == WindowsKey(0xBC))
 		#expect(french.translate(keyCode: 43, characters: Chars(plain: ";", shifted: ".")) == WindowsKey(0xBE))
@@ -34,7 +44,7 @@ import Testing
 
 	@Test func unknownCharacterFallsBackToPosition() {
 		// "@" has no unmodified key on an AZERTY PC: use the key at the same position.
-		#expect(french.translate(keyCode: 50, characters: Chars(plain: "@", shifted: "#")) == WindowsKey(0xDE))
+		#expect(french.translate(keyCode: 10, characters: Chars(plain: "@", shifted: "#")) == WindowsKey(0xDE))
 		#expect(french.translate(keyCode: 200, characters: Chars(plain: "@", shifted: "#")) == nil)
 	}
 
@@ -200,6 +210,8 @@ import Testing
 			"""
 		#expect(!CapsLockRemap.hasMappings(none))
 		#expect(!CapsLockRemap.hasMappings("(null)\n"))
+		#expect(CapsLockRemap.isOurMapping("HIDKeyboardModifierMappingDst = 30064771181;\nHIDKeyboardModifierMappingSrc = 30064771129;"))
+		#expect(!CapsLockRemap.isOurMapping("HIDKeyboardModifierMappingDst = 30064771300;\nHIDKeyboardModifierMappingSrc = 30064771129;"))
 		// After removal, each device keeps an empty list.
 		#expect(!CapsLockRemap.hasMappings("""
 			RegistryID  Key                   Value
@@ -265,19 +277,22 @@ import Testing
 			HIDBrailleKeys.gesture(keys: keys, routerCells: routers)
 		}
 		#expect(gesture([], routers: [12]) == .routing(cell: 12))
-		#expect(gesture([Usage.panLeft]) == .scrollBack)
-		#expect(gesture([Usage.rockerDown]) == .scrollForward)
-		#expect(gesture([Usage.dpadLeft]) == .command("kb:leftArrow"))
-		#expect(gesture([Usage.joystickCenter]) == .command("kb:enter"))
+		// Several router keys: NVDA selects from the first to the last cell.
+		#expect(gesture([], routers: [20, 4]) == .selectRange(cells: [4, 20]))
+		#expect(gesture([Usage.panLeft]) == .command("braille_scrollBack", id: "panLeft"))
+		#expect(gesture([Usage.rockerDown]) == .command("braille_scrollForward", id: "rockerDown"))
+		#expect(gesture([Usage.dpadLeft]) == .command("kb:leftArrow", id: "dpadLeft"))
+		#expect(gesture([Usage.joystickCenter]) == .command("kb:enter", id: "joystickCenter"))
 		// Dots 1, 2 and 5 typed alone: an "h".
 		#expect(gesture([Usage.dot1, Usage.dot1 + 1, Usage.dot1 + 4]) == .dots(0x13))
 		#expect(gesture([Usage.dot1 + 6]) == .eraseLastCell)
 		#expect(gesture([Usage.space]) == .space)
 		#expect(gesture([Usage.leftSpace]) == .space)
 		// Space with dots 1: up arrow. Space with dots 1, 3, 4, 5: NVDA menu.
-		#expect(gesture([Usage.space, Usage.dot1]) == .command("kb:upArrow"))
-		#expect(gesture([Usage.space, Usage.dot1, Usage.dot1 + 2, Usage.dot1 + 3, Usage.dot1 + 4]) == .command("showGui"))
-		#expect(gesture([Usage.space, Usage.dot1 + 3, Usage.dot1 + 5]) == .command("kb:tab"))
+		#expect(gesture([Usage.space, Usage.dot1]) == .command("kb:upArrow", id: "dot1+space"))
+		#expect(gesture([Usage.space, Usage.dot1, Usage.dot1 + 2, Usage.dot1 + 3, Usage.dot1 + 4])
+			== .command("showGui", id: "dot1+dot3+dot4+dot5+space"))
+		#expect(gesture([Usage.space, Usage.dot1 + 3, Usage.dot1 + 5]) == .command("kb:tab", id: "dot4+dot6+space"))
 		// Unbound chords do nothing.
 		#expect(gesture([Usage.space, Usage.dot1 + 1]) == nil)
 		#expect(gesture([Usage.panLeft, Usage.panRight]) == nil)
@@ -285,9 +300,16 @@ import Testing
 	}
 
 	@Test func commandGestureNamesTheScript() throws {
-		let fields = try #require(JSONSerialization.jsonObject(with: OutgoingMessage.brailleInput(.command("kb:alt+tab"))) as? [String: Any])
+		let fields = try #require(JSONSerialization.jsonObject(
+			with: OutgoingMessage.brailleInput(.command("kb:alt+tab", id: "dot2+dot3+dot4+dot5+space"))) as? [String: Any])
 		#expect(fields["scriptPath"] as? [String] == ["globalCommands", "GlobalCommands", "kb:alt+tab"])
-		#expect(fields["id"] as? String == "kb:alt+tab")
+		#expect(fields["id"] as? String == "dot2+dot3+dot4+dot5+space")
+
+		let range = try #require(JSONSerialization.jsonObject(
+			with: OutgoingMessage.brailleInput(.selectRange(cells: [4, 20]))) as? [String: Any])
+		#expect(range["scriptPath"] as? [String] == ["globalCommands", "GlobalCommands", "braille_selectRange"])
+		#expect(range["cellIndexes"] as? [Int] == [4, 20])
+		#expect(range["routingIndex"] == nil)
 	}
 
 	@Test func brailleInfoMessage() throws {

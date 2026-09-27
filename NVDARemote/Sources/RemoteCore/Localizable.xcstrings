@@ -1,6 +1,16 @@
 {
   "sourceLanguage": "en",
   "strings": {
+    "Braille display": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Plage braille"
+          }
+        }
+      }
+    },
     "Caps Lock": {
       "localizations": {
         "fr": {

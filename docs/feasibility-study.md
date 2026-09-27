@@ -167,7 +167,8 @@ A client must tolerate unknown classes (by ignoring them), just as NVDA does.
 **Decided and measured on September 10, 2026; see [speech-measurements.md](speech-measurements.md).**
 `AVSpeechSynthesizer` by default: up to 643 words per minute, effective
 interruption in 40 milliseconds, seamless chaining between utterances. Embedding
-eSpeak NG is not necessary. VoiceOver announcements are kept as an option.
+eSpeak NG is not necessary. The app speaks NVDA's speech with its own synthesizer;
+VoiceOver only announces the app's own status messages.
 
 ### 4.2 Keyboard capture: global or foreground window only
 

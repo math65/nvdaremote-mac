@@ -8,7 +8,9 @@ taken from the NVDA project (© NV Access Limited and contributors), itself lice
 under the GPL version 2 or later. The rest of the code was written from scratch for
 this project.
 
-The license text follows, as reproduced in NVDA's `copying.txt`.
+The license text follows, as reproduced in NVDA's `copying.txt`: the terms and
+conditions, sections 0 to 12. The complete text, with its appendix on how to apply
+it, is at <https://www.gnu.org/licenses/old-licenses/gpl-2.0.html>.
 
 ## GNU GENERAL PUBLIC LICENSE v2
 
