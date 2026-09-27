@@ -2,21 +2,23 @@ import AppKit
 import RemoteCore
 import SwiftUI
 
-/// Bouton qui affiche le raccourci de bascule et en enregistre un nouveau :
-/// on l'active, puis on tape la combinaison voulue, ou Échap pour annuler.
+/// A button that shows a global shortcut and records a new one: press it, then type
+/// the combination, or Escape to cancel.
 struct ShortcutRecorder: View {
+	let command: GlobalCommand
+
 	@Environment(AppModel.self) private var model
 	@State private var monitor: Any?
 
 	var body: some View {
 		Button(action: toggleRecording) {
 			if monitor == nil {
-				Text("Raccourci de bascule : \(model.toggleShortcutName)")
+				Text("\(command.label): \(model.shortcutName(for: command))")
 			} else {
-				Text("Tapez le nouveau raccourci, ou Échap pour annuler")
+				Text("Type the new shortcut, or Escape to cancel")
 			}
 		}
-		.accessibilityHint("Active l'enregistrement d'un nouveau raccourci pour passer du Mac au PC.")
+		.accessibilityHint(Text("Records a new shortcut."))
 		.onDisappear(perform: stopRecording)
 	}
 
@@ -25,13 +27,13 @@ struct ShortcutRecorder: View {
 			startRecording()
 		} else {
 			stopRecording()
-			model.announce("Enregistrement annulé.")
+			model.announce(String(localized: "Recording cancelled."))
 		}
 	}
 
 	private func startRecording() {
 		model.isRecordingShortcut = true
-		model.announce("Tapez le nouveau raccourci, ou Échap pour annuler.")
+		model.announce(String(localized: "Type the new shortcut, or Escape to cancel."))
 		monitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
 			MainActor.assumeIsolated { record(event) }
 			return nil
@@ -49,16 +51,20 @@ struct ShortcutRecorder: View {
 		)
 		if event.keyCode == MacKeyCode.escape, !shortcut.isUsable {
 			stopRecording()
-			model.announce("Enregistrement annulé.")
+			model.announce(String(localized: "Recording cancelled."))
 			return
 		}
 		guard shortcut.isUsable else {
-			model.announce("Le raccourci doit comporter Contrôle, Option ou Commande. Recommencez, ou Échap pour annuler.")
+			model.announce(String(localized: "The shortcut must include Control, Option or Command. Try again, or press Escape to cancel."))
 			return
 		}
-		model.toggleShortcut = shortcut
+		if let other = model.shortcuts.first(where: { $0.key != command && $0.value == shortcut })?.key {
+			model.announce(String(localized: "This shortcut is already used for \(other.label). Try another one."))
+			return
+		}
+		model.shortcuts[command] = shortcut
 		stopRecording()
-		model.announce("Nouveau raccourci de bascule : \(model.toggleShortcutName).")
+		model.announce(String(localized: "New shortcut: \(model.shortcutName(for: command))."))
 	}
 
 	private func stopRecording() {

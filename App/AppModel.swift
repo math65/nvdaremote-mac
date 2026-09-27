@@ -4,7 +4,16 @@ import Observation
 import RemoteCore
 import SwiftUI
 
-/// État de l'application et pilotage de la session avec le PC.
+/// A connection used before, offered again under Recent Connections.
+struct RecentConnection: Codable, Hashable, Identifiable {
+	var server: String
+	var key: String
+
+	var id: String { "\(server)\n\(key)" }
+	var label: String { String(localized: "\(key) on \(server)") }
+}
+
+/// App state, and the driver of the session with the PC.
 @MainActor
 @Observable
 final class AppModel {
@@ -15,7 +24,7 @@ final class AppModel {
 		case connected
 	}
 
-	/// Certificat auto-signé en attente d'une décision de l'utilisateur.
+	/// A self-signed certificate waiting for the user's decision.
 	struct PendingTrust: Identifiable {
 		let id = UUID()
 		let info: ConnectionInfo
@@ -23,90 +32,147 @@ final class AppModel {
 	}
 
 	static let publicServer = "nvdaremote.com"
+	static let maximumRecents = 5
 
 	private(set) var phase = Phase.idle
-	private(set) var status = "Non connecté."
+	private(set) var status = String(localized: "Not connected.")
 	var pendingTrust: PendingTrust?
+	private(set) var recents: [RecentConnection]
 
 	var isActive: Bool { phase != .idle }
+	var isComputerConnected: Bool { phase == .connected }
 
-	// MARK: Réglages
+	/// True while the Mac keyboard drives the PC.
+	private(set) var isControllingPC = false
+	private(set) var hasKeyboardPermissions = KeyboardCapture.hasPermissions
+
+	/// PC speech, beeps and sounds are silenced.
+	var isMuted = false {
+		didSet { session?.isMuted = isMuted }
+	}
+
+	// MARK: Settings
 
 	var wordsPerMinute: Int {
 		didSet {
 			speech.wordsPerMinute = wordsPerMinute
-			UserDefaults.standard.set(wordsPerMinute, forKey: Keys.wordsPerMinute)
+			defaults.set(wordsPerMinute, forKey: Keys.wordsPerMinute)
 		}
+	}
+
+	/// Same as NVDA's option: silence the PC when going back to work on the Mac.
+	var mutesOnLocalControl: Bool {
+		didSet { defaults.set(mutesOnLocalControl, forKey: Keys.mutesOnLocalControl) }
+	}
+
+	var playsRemoteSounds: Bool {
+		didSet {
+			session?.playsRemoteSounds = playsRemoteSounds
+			defaults.set(playsRemoteSounds, forKey: Keys.playsRemoteSounds)
+		}
+	}
+
+	/// The Mac's own sounds: connection, clipboard, switching.
+	var playsAppSounds: Bool {
+		didSet { defaults.set(playsAppSounds, forKey: Keys.playsAppSounds) }
 	}
 
 	var nvdaKey: NVDAKeyChoice {
 		didSet {
 			capture.translator.nvdaKey = nvdaKey
-			UserDefaults.standard.set(nvdaKey.rawValue, forKey: Keys.nvdaKey)
+			defaults.set(nvdaKey.rawValue, forKey: Keys.nvdaKey)
 		}
 	}
 
 	var pcLayout: PCLayout {
 		didSet {
 			capture.translator.pcLayout = pcLayout
-			UserDefaults.standard.set(pcLayout.rawValue, forKey: Keys.pcLayout)
+			defaults.set(pcLayout.rawValue, forKey: Keys.pcLayout)
 		}
 	}
 
-	var toggleShortcut: KeyShortcut {
+	var shortcuts: [GlobalCommand: KeyShortcut] {
 		didSet {
-			capture.toggleShortcut = toggleShortcut
-			UserDefaults.standard.set(try? JSONEncoder().encode(toggleShortcut), forKey: Keys.toggleShortcut)
+			capture.shortcuts = shortcuts
+			defaults.set(try? JSONEncoder().encode(shortcuts), forKey: Keys.shortcuts)
 		}
 	}
 
-	/// Pendant l'enregistrement d'un nouveau raccourci, l'ancien ne doit plus basculer.
+	/// While a new shortcut is being recorded, the current ones must not fire.
 	var isRecordingShortcut = false {
-		didSet { capture.isToggleEnabled = !isRecordingShortcut }
+		didSet { capture.areShortcutsEnabled = !isRecordingShortcut }
 	}
 
-	// MARK: Clavier
-
-	/// Vrai quand le clavier du Mac pilote le PC.
-	private(set) var isControllingPC = false
-	private(set) var hasKeyboardPermissions = KeyboardCapture.hasPermissions
-
-	var toggleShortcutName: String {
-		toggleShortcut.displayName(characters: capture.layout.characters(for: toggleShortcut.keyCode))
+	var showsInDock: Bool {
+		didSet {
+			defaults.set(showsInDock, forKey: Keys.showsInDock)
+			Self.applyDockVisibility(showsInDock)
+		}
 	}
 
+	var showsInMenuBar: Bool {
+		didSet { defaults.set(showsInMenuBar, forKey: Keys.showsInMenuBar) }
+	}
+
+	@ObservationIgnored private let defaults = UserDefaults.standard
 	@ObservationIgnored private let speech: SpeechOutput
 	@ObservationIgnored private let tones = TonePlayer()
+	@ObservationIgnored private let sounds = SoundPlayer()
 	@ObservationIgnored private let trustStore = TrustStore()
 	@ObservationIgnored private let capture = KeyboardCapture()
 	@ObservationIgnored private var session: LeaderSession?
 	@ObservationIgnored private var observers: [NSObjectProtocol] = []
 
-	private enum Keys {
+	enum Keys {
 		static let wordsPerMinute = "wordsPerMinute"
+		static let mutesOnLocalControl = "mutesOnLocalControl"
+		static let playsRemoteSounds = "playsRemoteSounds"
+		static let playsAppSounds = "playsAppSounds"
 		static let nvdaKey = "nvdaKey"
 		static let pcLayout = "pcLayout"
-		static let toggleShortcut = "toggleShortcut"
+		static let shortcuts = "shortcuts"
+		static let recents = "recentConnections"
+		static let showsInDock = "showsInDock"
+		static let showsInMenuBar = "showsInMenuBar"
 	}
 
 	init() {
 		let defaults = UserDefaults.standard
+		defaults.register(defaults: [
+			Keys.playsRemoteSounds: true,
+			Keys.playsAppSounds: true,
+			Keys.showsInDock: true,
+			Keys.showsInMenuBar: true,
+		])
 		let savedRate = defaults.integer(forKey: Keys.wordsPerMinute)
 		let rate = savedRate > 0 ? savedRate : 300
 		wordsPerMinute = rate
+		mutesOnLocalControl = defaults.bool(forKey: Keys.mutesOnLocalControl)
+		playsRemoteSounds = defaults.bool(forKey: Keys.playsRemoteSounds)
+		playsAppSounds = defaults.bool(forKey: Keys.playsAppSounds)
+		showsInDock = defaults.bool(forKey: Keys.showsInDock)
+		showsInMenuBar = defaults.bool(forKey: Keys.showsInMenuBar)
 		nvdaKey = defaults.string(forKey: Keys.nvdaKey).flatMap(NVDAKeyChoice.init(rawValue:)) ?? .capsLock
 		pcLayout = defaults.string(forKey: Keys.pcLayout).flatMap(PCLayout.init(rawValue:)) ?? .french
-		toggleShortcut = defaults.data(forKey: Keys.toggleShortcut)
-			.flatMap { try? JSONDecoder().decode(KeyShortcut.self, from: $0) } ?? .defaultToggle
+		var shortcuts = Dictionary(uniqueKeysWithValues: GlobalCommand.allCases.map { ($0, $0.defaultShortcut) })
+		if let data = defaults.data(forKey: Keys.shortcuts),
+			let saved = try? JSONDecoder().decode([GlobalCommand: KeyShortcut].self, from: data)
+		{
+			shortcuts.merge(saved) { _, saved in saved }
+		}
+		self.shortcuts = shortcuts
+		recents = defaults.data(forKey: Keys.recents)
+			.flatMap { try? JSONDecoder().decode([RecentConnection].self, from: $0) } ?? []
 		speech = SpeechOutput(wordsPerMinute: rate)
 
 		capture.translator = KeyTranslator(nvdaKey: nvdaKey, pcLayout: pcLayout)
-		capture.toggleShortcut = toggleShortcut
-		capture.onToggle = { [weak self] in self?.toggleComputerControl() }
+		capture.shortcuts = shortcuts
+		capture.onCommand = { [weak self] command in self?.perform(command) }
 		capture.onKey = { [weak self] key, pressed in self?.session?.sendKey(key, pressed: pressed) }
 
-		// Après un arrêt brutal pendant le contrôle du PC, Verr. maj. serait restée remappée.
+		// After a crash while controlling the PC, Caps Lock would still be remapped.
 		try? CapsLockRemap.remove()
+		startCapture()
 
 		let center = NotificationCenter.default
 		observers.append(center.addObserver(
@@ -114,7 +180,7 @@ final class AppModel {
 		) { [weak self] _ in
 			MainActor.assumeIsolated { self?.shutdown() }
 		})
-		// Les autorisations s'accordent dans Réglages Système : on revérifie au retour dans l'app.
+		// Permissions are granted in System Settings: check again when the app comes back.
 		observers.append(center.addObserver(
 			forName: NSApplication.didBecomeActiveNotification, object: nil, queue: .main,
 		) { [weak self] _ in
@@ -122,13 +188,20 @@ final class AppModel {
 		})
 	}
 
-	// MARK: - Connexion
+	static func applyDockVisibility(_ visible: Bool) {
+		NSApp?.setActivationPolicy(visible ? .regular : .accessory)
+		// Becoming an accessory app deactivates it: bring it back so the Settings
+		// window stays under the user's fingers.
+		NSApp?.activate()
+	}
 
-	/// Se connecte avec le serveur et la clé saisis. Un lien `nvdaremote://` collé
-	/// dans le champ de clé l'emporte sur le serveur saisi. Un serveur vide désigne
-	/// le relais public, que le champ affiche en indication.
-	/// - Returns: la connexion retenue, pour que la fenêtre puisse réafficher le lien éclaté
-	///   en serveur et clé ; `nil` si la saisie est invalide.
+	// MARK: - Connection
+
+	/// Connects with the typed server and key. An `nvdaremote://` link pasted in the
+	/// key field wins over the typed server. An empty server means the public relay,
+	/// which the field shows as its placeholder.
+	/// - Returns: the connection used, so the window can show a pasted link split into
+	///   server and key; `nil` when the input is invalid.
 	@discardableResult
 	func connect(server: String, keyOrLink: String) -> ConnectionInfo? {
 		let keyOrLink = keyOrLink.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -147,13 +220,18 @@ final class AppModel {
 		}
 	}
 
+	func connect(to recent: RecentConnection) {
+		connect(server: recent.server, keyOrLink: recent.key)
+	}
+
 	func disconnect() {
 		switchToMac(announcing: false)
-		capture.stop()
 		session?.stop()
 		session = nil
+		isMuted = false
 		phase = .idle
-		announce("Déconnecté.")
+		play(.disconnected)
+		announce(String(localized: "Disconnected."))
 	}
 
 	func trust(_ pending: PendingTrust) {
@@ -161,10 +239,15 @@ final class AppModel {
 		do {
 			try trustStore.trust(pending.fingerprint, for: pending.info.address)
 		} catch {
-			announce("Impossible d'enregistrer le certificat : \(error.localizedDescription)")
+			announce(String(localized: "Unable to save the certificate: \(error.localizedDescription)"))
 			return
 		}
 		start(pending.info)
+	}
+
+	func forgetRecents() {
+		recents = []
+		defaults.removeObject(forKey: Keys.recents)
 	}
 
 	private func start(_ info: ConnectionInfo) {
@@ -174,55 +257,108 @@ final class AppModel {
 			trustedFingerprint: trustStore.fingerprint(for: info.address),
 			speech: speech,
 			tones: tones,
+			sounds: sounds,
 		)
+		session.playsRemoteSounds = playsRemoteSounds
 		session.onEvent = { [weak self] event in self?.handle(event, info: info) }
 		self.session = session
+		isMuted = false
 		session.start()
-		startCapture()
 	}
 
 	private func handle(_ event: LeaderSession.Event, info: ConnectionInfo) {
 		switch event {
 		case .connecting:
 			phase = .connecting
-			announce("Connexion à \(info.serverDescription)…")
+			announce(String(localized: "Connecting to \(info.serverDescription)…"), important: false)
 		case .connected:
 			phase = .connecting
 		case let .joined(followers):
+			remember(info)
 			phase = followers == 0 ? .waitingForComputer : .connected
-			announce(followers == 0 ? "Connecté. En attente du PC." : "Connecté au PC.")
+			play(followers == 0 ? .connected : .controlling)
+			announce(followers == 0
+				? String(localized: "Connected. Waiting for the PC.")
+				: String(localized: "Connected to the PC."))
 		case .followerJoined:
 			phase = .connected
-			announce("PC connecté.")
+			play(.controlling)
+			announce(String(localized: "PC connected."))
 		case .followerLeft:
 			guard session?.followerCount ?? 0 == 0 else { return }
 			phase = .waitingForComputer
 			switchToMac(announcing: false)
-			announce("PC déconnecté. En attente de son retour.")
+			play(.disconnected)
+			announce(String(localized: "PC disconnected. Waiting for it to come back."))
 		case let .disconnected(reason, willRetry):
 			phase = willRetry ? .connecting : .idle
 			switchToMac(announcing: false)
-			announce("Connexion perdue : \(reason).\(willRetry ? " Nouvel essai dans 5 secondes." : "")")
+			play(.disconnected)
+			announce(willRetry
+				? String(localized: "Connection lost: \(reason). Retrying in 5 seconds.")
+				: String(localized: "Connection lost: \(reason)."))
 		case let .message(text):
 			announce(text)
+		case let .clipboardReceived(text):
+			NSPasteboard.general.clearContents()
+			NSPasteboard.general.setString(text, forType: .string)
+			play(.clipboardReceive)
+			announce(String(localized: "Clipboard received."))
 		case let .ended(reason):
 			endSession()
-			announce("Arrêt : \(reason).")
+			play(.error)
+			announce(String(localized: "Stopped: \(reason)."))
 		case let .untrustedCertificate(fingerprint):
 			endSession()
-			status = "Certificat à vérifier."
+			status = String(localized: "Certificate to verify.")
 			pendingTrust = PendingTrust(info: info, fingerprint: fingerprint)
 		}
 	}
 
 	private func endSession() {
 		switchToMac(announcing: false)
-		capture.stop()
 		session = nil
+		isMuted = false
 		phase = .idle
 	}
 
-	// MARK: - Clavier
+	private func remember(_ info: ConnectionInfo) {
+		let recent = RecentConnection(server: info.serverDescription, key: info.key)
+		recents.removeAll { $0 == recent }
+		recents.insert(recent, at: 0)
+		recents = Array(recents.prefix(Self.maximumRecents))
+		defaults.set(try? JSONEncoder().encode(recents), forKey: Keys.recents)
+	}
+
+	// MARK: - Commands
+
+	func perform(_ command: GlobalCommand) {
+		switch command {
+		case .toggleControl: toggleComputerControl()
+		case .pushClipboard: pushClipboard()
+		}
+	}
+
+	func shortcutName(for command: GlobalCommand) -> String {
+		guard let shortcut = shortcuts[command] else { return "" }
+		return shortcut.displayName(characters: capture.layout.characters(for: shortcut.keyCode))
+	}
+
+	func pushClipboard() {
+		guard let session, isComputerConnected else {
+			announce(String(localized: "No PC connected."))
+			return
+		}
+		guard let text = NSPasteboard.general.string(forType: .string), !text.isEmpty else {
+			announce(String(localized: "The clipboard contains no text."))
+			return
+		}
+		session.pushClipboard(text)
+		play(.clipboardPush)
+		announce(String(localized: "Clipboard sent."))
+	}
+
+	// MARK: - Keyboard
 
 	func requestKeyboardPermissions() {
 		KeyboardCapture.requestPermissions()
@@ -231,13 +367,11 @@ final class AppModel {
 
 	func refreshKeyboardPermissions() {
 		hasKeyboardPermissions = KeyboardCapture.hasPermissions
-		if hasKeyboardPermissions, session != nil {
-			startCapture()
-		}
+		startCapture()
 	}
 
-	/// La capture tourne pendant toute la session, pour que le raccourci de bascule
-	/// fonctionne quelle que soit l'application au premier plan.
+	/// Capture runs for the whole life of the app, so the global shortcuts work
+	/// whatever app is in front.
 	private func startCapture() {
 		guard !capture.isRunning, hasKeyboardPermissions else { return }
 		do {
@@ -256,12 +390,12 @@ final class AppModel {
 	}
 
 	private func switchToPC() {
-		guard let session, session.followerCount > 0 else {
-			announce("Aucun PC connecté.")
+		guard isComputerConnected else {
+			announce(String(localized: "No PC connected."))
 			return
 		}
 		guard capture.isRunning else {
-			announce("Le clavier ne peut pas être capturé : accordez d'abord les autorisations.")
+			announce(String(localized: "The keyboard cannot be captured: grant the permissions in Settings first."))
 			return
 		}
 		if nvdaKey == .capsLock {
@@ -274,8 +408,11 @@ final class AppModel {
 		}
 		capture.setRemote(true)
 		isControllingPC = true
-		tones.beep(hz: 880, milliseconds: 60, left: 50, right: 50)
-		announce("Contrôle du PC.")
+		isMuted = false
+		if playsAppSounds {
+			tones.beep(hz: 880, milliseconds: 60, left: 50, right: 50)
+		}
+		announce(String(localized: "Controlling the PC."))
 	}
 
 	private func switchToMac(announcing: Bool) {
@@ -285,13 +422,19 @@ final class AppModel {
 		do {
 			try CapsLockRemap.remove()
 		} catch {
-			announce("Verrouillage majuscules n'a pas pu être rétablie : \(error.localizedDescription) Un redémarrage la rétablira.")
+			announce(String(localized: "Caps Lock could not be restored: \(error.localizedDescription) Restarting the Mac will restore it."))
 			return
 		}
-		if announcing {
-			tones.beep(hz: 440, milliseconds: 60, left: 50, right: 50)
-			announce("Contrôle du Mac.")
+		guard announcing else { return }
+		if mutesOnLocalControl {
+			isMuted = true
 		}
+		if playsAppSounds {
+			tones.beep(hz: 440, milliseconds: 60, left: 50, right: 50)
+		}
+		announce(mutesOnLocalControl
+			? String(localized: "Controlling the Mac. PC muted.")
+			: String(localized: "Controlling the Mac."))
 	}
 
 	private func shutdown() {
@@ -300,13 +443,26 @@ final class AppModel {
 		session?.stop()
 	}
 
-	// MARK: - Annonces
+	// MARK: - Announcements and sounds
 
-	/// Met à jour l'état affiché et le fait annoncer par VoiceOver.
-	func announce(_ text: String) {
+	private func play(_ cue: SoundPlayer.Cue) {
+		if playsAppSounds {
+			sounds.play(cue)
+		}
+	}
+
+	/// Updates the displayed status and makes it heard.
+	///
+	/// VoiceOver only announces what the frontmost app says. When the user works in
+	/// another app, or drives the PC, the app's own voice speaks important messages.
+	func announce(_ text: String, important: Bool = true) {
 		status = text
-		var announcement = AttributedString(text)
-		announcement.accessibilitySpeechAnnouncementPriority = .high
-		AccessibilityNotification.Announcement(announcement).post()
+		if NSApp?.isActive == true {
+			var announcement = AttributedString(text)
+			announcement.accessibilitySpeechAnnouncementPriority = .high
+			AccessibilityNotification.Announcement(announcement).post()
+		} else if important {
+			speech.speak([.text(text)], priority: .now)
+		}
 	}
 }

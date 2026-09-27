@@ -1,159 +1,136 @@
-# NVDA Remote pour macOS
+# NVDA Remote for macOS
 
-Client natif macOS pour la fonction **Remote Access** de NVDA : piloter un PC Windows
-sous NVDA depuis un Mac, avec la parole, les sons et (à terme) le braille.
+A native macOS client for NVDA's **Remote Access** feature: control a Windows PC
+running the NVDA screen reader from your Mac, and hear NVDA's speech and sounds on
+the Mac.
 
-Le Mac joue le rôle de **contrôleur** (« leader », `master` dans le protocole).
-Le mode inverse, un PC qui piloterait le Mac, est hors périmètre : aucune API publique
-ne permet de capter la parole de VoiceOver.
+The Mac is always the **controlling** computer ("leader", `master` in the protocol).
+The reverse, a PC controlling the Mac, is out of scope: no public API gives access to
+VoiceOver's speech.
 
-## Où on en est
+The app is built for VoiceOver users first. It is available in English and French;
+any other system language falls back to English.
 
-L'application **NVDA Remote** pilote le PC depuis le Mac : elle prononce la parole
-de NVDA avec ses bips, et envoie le clavier au PC. Validé le 27 septembre 2026 avec
-un vrai PC sous NVDA. Pas encore de braille, ni de sons, ni de presse-papiers.
+## Features
 
-Les deux risques structurants du projet sont levés :
+- **Connection** through the public relay `nvdaremote.com`, another relay, or a PC
+  that hosts the connection itself ("Host locally" in NVDA). Paste the link from
+  NVDA's "Copy link", or type a server and a key. Recent connections are remembered.
+- **Speech**: NVDA's speech is spoken on the Mac with the system voices, with
+  immediate interruption, language switching, and an adjustable rate in words per
+  minute.
+- **Beeps and sounds**: NVDA's beeps (progress bars, etc.) and sounds (browse mode,
+  focus mode, errors…) play on the Mac.
+- **Keyboard**: a global shortcut switches the Mac keyboard between the Mac and the
+  PC. While controlling the PC, every key goes to the PC, VoiceOver commands
+  included. Caps Lock, Right Option or fn can act as the NVDA key.
+- **Clipboard**: text the PC sends arrives in the Mac clipboard; a global shortcut
+  sends the Mac clipboard to the PC.
+- **Menu bar and Dock**: the app lives in the menu bar, the Dock, or both.
 
-| Risque | État | Détail |
-|---|---|---|
-| La parole système tient-elle le rythme de NVDA ? | **Levé** | [docs/mesures-parole.md](docs/mesures-parole.md) |
-| Peut-on capturer tout le clavier, VoiceOver compris ? | **Levé** | [docs/mesures-clavier.md](docs/mesures-clavier.md) |
-| Le braille est-il faisable ? | Ouvert | Dernier point dur, voir l'étude |
+Not yet available: braille, and pitch/rate/volume commands embedded in NVDA's speech.
 
-En trois lignes : `AVSpeechSynthesizer` monte à 643 mots par minute et coupe la
-parole en 40 millisecondes ; un `CGEventTap` posé au niveau HID capture tout, y
-compris les commandes VoiceOver ; et Verrouillage majuscules devient utilisable
-en la remappant vers F18 avec `hidutil`.
+## Requirements
 
-## L'application
+- macOS 14 Sonoma or later.
+- On the PC: NVDA 2025.1 or later, with Remote Access enabled.
+- To control the PC, the app must be allowed in System Settings, Privacy &
+  Security, under both **Accessibility** and **Input Monitoring**. The app asks for
+  them from its Keyboard settings.
 
-Ouvrir `NVDARemote.xcodeproj` dans Xcode, schéma **NVDA Remote**, ou compiler en
-ligne de commande :
+## Using the app
+
+1. On the PC, in NVDA's Remote Access menu, choose to allow this computer to be
+   controlled, and note the key (or use "Copy link").
+2. On the Mac, open the Connection window, type the key (leave the server empty for
+   `nvdaremote.com`) or paste the link, and press Return.
+3. Press **Control-Command-R** to control the PC. Press it again to come back to the
+   Mac. A high beep means the PC has the keyboard, a low beep means the Mac has it.
+4. Press **Control-Command-C** to send the Mac clipboard to the PC.
+
+Both shortcuts work from any app and can be changed in Settings.
+
+### Keyboard mapping
+
+| Mac | PC |
+|---|---|
+| Control | Ctrl |
+| Option | Alt |
+| Command | Windows key |
+| Caps Lock (default), Right Option or fn | NVDA key (Insert) |
+| Keypad | Numeric keypad, for NVDA's desktop layout |
+
+Letters are mapped by the character they produce, so an AZERTY Mac drives an AZERTY
+or QWERTY PC correctly. Digits work on the AZERTY top row with Shift. Punctuation
+follows the PC keyboard layout chosen in Settings (French or US). Known limitation on
+an AZERTY Mac: without Shift, the `!` key types `_` on the PC and the `§` key types
+`-`, in exchange for reliable digits.
+
+When Caps Lock is the NVDA key, it is remapped to F18 with `hidutil` only while the
+PC is controlled, and restored when coming back to the Mac, when quitting, and at the
+next launch after a crash. If other key remappings already exist, the app refuses to
+overwrite them and asks for another NVDA key.
+
+Coming back to the Mac releases every key still held on the PC. It also happens
+automatically when the PC leaves or the connection drops. If the app ever froze,
+macOS disables its keyboard tap and gives the keyboard back to the Mac.
+
+## Building
+
+Open `NVDARemote.xcodeproj` in Xcode 26 or later and run the **NVDA Remote** scheme,
+or build from the command line:
 
 ```bash
 xcodebuild -project NVDARemote.xcodeproj -scheme "NVDA Remote" -derivedDataPath build/DerivedData build
 ```
 
-Signature : `com.math65.nvdaremote`, équipe `633EG76YX5`, runtime renforcé, sans bac
-à sable, qui interdirait la capture du clavier. L'identité de signature est stable,
-donc les autorisations clavier survivent aux recompilations.
+The app is not sandboxed: the App Sandbox forbids the keyboard tap. Set your own
+development team in the project to sign it. With a stable signing identity, the
+keyboard permissions survive rebuilds.
 
-Sur le PC, dans NVDA, Remote Access, choisir « Permettre à cette machine d'être
-contrôlée ». Sur le Mac, saisir le serveur (vide pour `nvdaremote.com`) et la clé, ou
-coller dans le champ Clé le lien obtenu par « Copier le lien ».
+Tests of the protocol, keyboard mapping and sounds:
 
-### Clavier
+```bash
+cd NVDARemote && swift test
+```
 
-Il faut autoriser l'application dans Réglages Système, Confidentialité et sécurité,
-à la fois en Accessibilité et en Surveillance de l'entrée.
-
-| Réglage | Par défaut | Remarques |
-|---|---|---|
-| Raccourci de bascule Mac / PC | Ctrl+Cmd+R | Réglable, actif depuis n'importe quelle application |
-| Touche NVDA | Verr. maj. | Ou Option droite, ou fn. Verr. maj. est remappée en F18 seulement pendant le contrôle du PC |
-| Disposition du clavier du PC | Français | Ou américain |
-
-Correspondance des modificateurs : Contrôle reste Contrôle, Option devient Alt,
-Commande devient la touche Windows. Les lettres suivent le caractère produit, les
-chiffres fonctionnent aussi sur la rangée du haut en azerty, et le pavé numérique
-suit la disposition « ordinateur de bureau » de NVDA.
-
-Limite connue sur Mac azerty : sans Majuscule, la touche `!` donne `_` sur le PC et
-la touche `§` donne `-`, en échange de chiffres fiables avec Majuscule.
-
-Au retour sur le Mac, toutes les touches encore enfoncées côté PC y sont relâchées,
-précédées de la touche neutre de NVDA. Le retour est automatique si le PC part ou si
-la connexion tombe. Si l'application se figeait, macOS désactive seul le tap et rend
-le clavier au Mac. Un remappage de Verr. maj. resté en place après un plantage est
-retiré au lancement suivant ; si un autre remappage existe déjà, l'application refuse
-de l'écraser.
-
-### Parole
-
-| Message du PC | Traitement |
-|---|---|
-| `speak` | Parole système, changements de langue, pauses, priorité immédiate |
-| `cancel` | Coupure immédiate |
-| `pause_speech` | Pause et reprise |
-| `tone` | Bips, avec la balance gauche droite |
-
-Pas encore traités : les sons de NVDA (`wave`), le presse-papiers, et les commandes
-de débit, de hauteur et de volume incluses dans la parole. Une parole interrompue
-par une priorité immédiate n'est pas reprise ensuite, contrairement à NVDA.
-
-### Outil en ligne de commande
-
-Le paquet [NVDARemote/](NVDARemote) contient la bibliothèque `RemoteCore`, partagée
-avec l'application, et un outil `nvdaremote` qui écoute le PC sans clavier :
+The package also contains `nvdaremote`, a command-line tool that connects and speaks
+NVDA's output without the keyboard, handy to debug the protocol:
 
 ```bash
 cd NVDARemote && swift run -c release nvdaremote --verbose 'nvdaremote://nvdaremote.com:6837/?key=…&mode=master'
 ```
 
-Tests : `cd NVDARemote && swift test`, 34 tests.
+## Project layout
 
-## Prochaine étape proposée
-
-Au choix : les sons de NVDA et le presse-papiers, qui complètent l'usage quotidien ;
-ou le braille, dernier point dur de l'étude.
-
-## Documentation
-
-| Fichier | Contenu |
+| Path | Contents |
 |---|---|
-| [docs/etude-nvda-remote-macos.md](docs/etude-nvda-remote-macos.md) | Étude de faisabilité : protocole détaillé, faisabilité fonction par fonction, points de conception, plan |
-| [docs/mesures-parole.md](docs/mesures-parole.md) | Mesures `AVSpeechSynthesizer` et consignes d'implémentation |
-| [docs/mesures-clavier.md](docs/mesures-clavier.md) | Mesures `CGEventTap`, niveau d'interception, pièges, table clavier |
+| `NVDARemote.xcodeproj`, `App/` | The macOS app (SwiftUI) |
+| `NVDARemote/` | Swift package: the `RemoteCore` library (protocol, speech, sounds, keyboard) and the `nvdaremote` tool |
+| `docs/` | Feasibility study and measurements |
+| `spikes/` | Standalone benchmarks that validated speech and keyboard capture |
+| `nvda/` | Reference clone of NVDA, not versioned |
 
-Les deux documents de mesures corrigent chacun un point de l'étude initiale :
-la correspondance des touches se fait par caractère produit et non par position,
-et le prototype Python prévu a été abandonné au profit de bancs directement en Swift.
-
-## Bancs d'essai
-
-Chacun est un paquet Swift autonome, sans dépendance externe.
-
-| Commande | Ce qu'elle mesure |
-|---|---|
-| `cd spikes/speech-bench && swift run -c release SpeechBench` | Latences, débit, enchaînement, synthèse hors lecture |
-| `cd spikes/speech-bench && swift run -c release StopDiag` | Comportement fin de l'interruption de parole |
-| `cd spikes/keyboard-tap && swift run -c release KeyboardTap --check` | Permissions seules, sans rien capturer |
-| `cd spikes/keyboard-tap && swift run -c release KeyboardTap` | Test guidé complet, niveau session |
-| `cd spikes/keyboard-tap && swift run -c release KeyboardTap --hid --voiceover` | Commandes VoiceOver, niveau HID |
-| `cd spikes/keyboard-tap && swift run -c release KeyboardTap --hid --capslock` | Verrouillage majuscules |
-
-Les bancs clavier capturent le clavier pendant leur exécution : VoiceOver ne répond
-plus, les consignes sont donc données à la voix. Trois sorties de secours existent,
-toutes validées : Échap passe toujours et termine le test, un chien de garde relâche
-le clavier au bout de 90 secondes, et tuer le processus détruit le tap.
-
-Le banc `--capslock` suppose un remappage `hidutil` actif, à appliquer avant et à
-retirer après. La procédure figure dans [docs/mesures-clavier.md](docs/mesures-clavier.md).
-
-## Organisation
-
-| Chemin | Contenu |
-|---|---|
-| `NVDARemote.xcodeproj`, `App/` | Application macOS |
-| `NVDARemote/` | Paquet Swift : bibliothèque `RemoteCore` et outil `nvdaremote` |
-| `docs/` | Étude de faisabilité et mesures |
-| `spikes/` | Bancs d'essai Swift |
-| `nvda/` | Clone de référence de NVDA, non versionné |
-
-Le module qui nous intéresse est `nvda/source/_remoteClient/`.
-Pour recréer le clone de référence :
+To recreate the NVDA reference clone (the module of interest is
+`nvda/source/_remoteClient/`):
 
 ```bash
 git clone --depth 1 --filter=blob:none https://github.com/nvaccess/nvda.git nvda
 ```
 
-## Prérequis de test
+## Documentation
 
-Un PC sous Windows avec NVDA 2025.1 ou plus récent, Remote Access activé dans les
-paramètres, joignable via le relais public `nvdaremote.com:6837` ou en mode
-« Héberger localement ».
+| File | Contents |
+|---|---|
+| [docs/feasibility-study.md](docs/feasibility-study.md) | The protocol in detail, feature-by-feature feasibility, design decisions |
+| [docs/speech-measurements.md](docs/speech-measurements.md) | `AVSpeechSynthesizer` measurements: latency, rate, interruption |
+| [docs/keyboard-measurements.md](docs/keyboard-measurements.md) | `CGEventTap` measurements: tap level, Caps Lock, fn, layouts |
 
-Côté Mac, les bancs clavier exigent que l'application qui les lance, donc le
-terminal, soit autorisée dans Réglages Système, Confidentialité et sécurité, à la
-fois en Accessibilité et en Surveillance de l'entrée.
+## License
+
+GNU General Public License, version 2 or (at your option) any later version. The
+project bundles NVDA's sounds, which are under the same license. See
+[LICENSE.md](LICENSE.md).
+
+NVDA is developed by [NV Access](https://www.nvaccess.org). This project is an
+independent client and is not affiliated with NV Access.

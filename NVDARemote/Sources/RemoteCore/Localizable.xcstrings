@@ -1,0 +1,456 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "Caps Lock": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Verrouillage majuscules"
+          }
+        }
+      }
+    },
+    "connection refused": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "connexion refusée"
+          }
+        }
+      }
+    },
+    "connection reset by the server": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "connexion interrompue par le serveur"
+          }
+        }
+      }
+    },
+    "Delete": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Effacement"
+          }
+        }
+      }
+    },
+    "Down Arrow": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Flèche bas"
+          }
+        }
+      }
+    },
+    "End": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fin"
+          }
+        }
+      }
+    },
+    "Escape": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Échap"
+          }
+        }
+      }
+    },
+    "fn (Globe)": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "fn (Globe)"
+          }
+        }
+      }
+    },
+    "Forward Delete": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Suppression"
+          }
+        }
+      }
+    },
+    "French (AZERTY)": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Français (AZERTY)"
+          }
+        }
+      }
+    },
+    "hidutil failed: %@": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "hidutil a échoué : %@"
+          }
+        }
+      }
+    },
+    "Home": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Début"
+          }
+        }
+      }
+    },
+    "incorrect key": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "clé incorrecte"
+          }
+        }
+      }
+    },
+    "key %lld": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "touche %lld"
+          }
+        }
+      }
+    },
+    "Key remappings already exist on this Mac. To avoid overwriting them, Caps Lock cannot be used as the NVDA key: choose another one.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Des remappages de touches existent déjà sur ce Mac. Pour ne pas les écraser, Verrouillage majuscules ne peut pas servir de touche NVDA : choisissez-en une autre."
+          }
+        }
+      }
+    },
+    "Left Arrow": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Flèche gauche"
+          }
+        }
+      }
+    },
+    "network unreachable": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "réseau injoignable"
+          }
+        }
+      }
+    },
+    "No key was given.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aucune clé n'a été indiquée."
+          }
+        }
+      }
+    },
+    "No server address was given.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aucune adresse de serveur n'a été indiquée."
+          }
+        }
+      }
+    },
+    "NVDA is not connected on the PC": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "NVDA n'est pas connecté sur le PC"
+          }
+        }
+      }
+    },
+    "Page Down": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Page suivante"
+          }
+        }
+      }
+    },
+    "Page Up": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Page précédente"
+          }
+        }
+      }
+    },
+    "Return": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Retour"
+          }
+        }
+      }
+    },
+    "Right Arrow": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Flèche droite"
+          }
+        }
+      }
+    },
+    "Right Option": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Option droite"
+          }
+        }
+      }
+    },
+    "Send clipboard to PC": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Envoyer le presse-papiers au PC"
+          }
+        }
+      }
+    },
+    "server error: %@": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "erreur du serveur : %@"
+          }
+        }
+      }
+    },
+    "server not found": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "serveur introuvable"
+          }
+        }
+      }
+    },
+    "Shift": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Maj"
+          }
+        }
+      }
+    },
+    "Space": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Espace"
+          }
+        }
+      }
+    },
+    "Switch between Mac and PC": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Basculer entre le Mac et le PC"
+          }
+        }
+      }
+    },
+    "system voice": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "voix système"
+          }
+        }
+      }
+    },
+    "Tab": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tab"
+          }
+        }
+      }
+    },
+    "The app does not have the Accessibility and Input Monitoring permissions yet.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "L'application n'a pas encore les autorisations Accessibilité et Surveillance de l'entrée."
+          }
+        }
+      }
+    },
+    "The port is not valid.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Le port n'est pas valide."
+          }
+        }
+      }
+    },
+    "the server closed the connection": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "le serveur a fermé la connexion"
+          }
+        }
+      }
+    },
+    "the server does not support protocol version %lld": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "le serveur ne prend pas en charge la version %lld du protocole"
+          }
+        }
+      }
+    },
+    "This is not an nvdaremote:// link.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ce n'est pas un lien nvdaremote://."
+          }
+        }
+      }
+    },
+    "This link is for being controlled, not for controlling. Copy the link from the computer to control.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ce lien sert à être contrôlé, pas à contrôler. Copiez le lien depuis le PC à contrôler."
+          }
+        }
+      }
+    },
+    "timed out": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "délai dépassé"
+          }
+        }
+      }
+    },
+    "TLS negotiation failed": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "échec de la négociation TLS"
+          }
+        }
+      }
+    },
+    "Unable to capture the keyboard.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impossible d'intercepter le clavier."
+          }
+        }
+      }
+    },
+    "Unknown mode in link: %@.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mode inconnu dans le lien : %@."
+          }
+        }
+      }
+    },
+    "Up Arrow": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Flèche haut"
+          }
+        }
+      }
+    },
+    "US (QWERTY)": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Américain (QWERTY)"
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}

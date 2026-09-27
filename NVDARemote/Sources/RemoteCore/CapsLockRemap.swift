@@ -1,15 +1,15 @@
 import Foundation
 
-/// Remappe Verrouillage majuscules vers F18 avec `hidutil`, pour en faire une touche ordinaire.
+/// Remaps Caps Lock to F18 with `hidutil`, turning it into an ordinary key.
 ///
-/// Sans cela, avaler la touche dans le tap n'empêche pas le verrouillage de basculer
-/// (docs/mesures-clavier.md). Le remappage retire Verr. maj. à tout le Mac : il n'est
-/// donc appliqué que pendant le contrôle du PC.
+/// Without this, swallowing the key in the event tap does not stop Caps Lock from toggling
+/// (docs/keyboard-measurements.md). The remapping takes Caps Lock away from the whole Mac,
+/// so it is only applied while controlling the PC.
 ///
-/// `hidutil --set` remplace tous les remappages de l'utilisateur, et sous macOS 27
-/// `--get` les affiche périphérique par périphérique. Plutôt que de risquer une fusion
-/// approximative, on refuse d'agir si un remappage existe déjà. Un indicateur dans les
-/// préférences permet de nettoyer au lancement suivant après un arrêt brutal.
+/// `hidutil --set` replaces all of the user's remappings, and on macOS 27 `--get` lists
+/// them device by device. Rather than risk an approximate merge, we refuse to act if a
+/// remapping already exists. A flag in user defaults allows cleaning up on the next
+/// launch after a crash.
 public enum CapsLockRemap {
 	static let capsLockUsage: Int64 = 0x7_0000_0039
 	static let f18Usage: Int64 = 0x7_0000_006D
@@ -33,16 +33,16 @@ public enum CapsLockRemap {
 		try setMapping([remap])
 	}
 
-	/// Retire le remappage. Sans effet si l'application ne l'a pas posé.
+	/// Removes the remapping. Does nothing if the app did not apply it.
 	public static func remove() throws {
 		guard isApplied else { return }
 		try setMapping([])
 		UserDefaults.standard.removeObject(forKey: appliedKey)
 	}
 
-	/// Lit la sortie de `hidutil property --get UserKeyMapping`. Selon la version et l'historique,
-	/// une absence de remappage s'affiche `(null)` ou en liste vide `( )`, sur une ou plusieurs
-	/// lignes par périphérique : seule la présence d'une vraie règle compte.
+	/// Parses the output of `hidutil property --get UserKeyMapping`. Depending on the version and history,
+	/// no remapping shows up as `(null)` or as an empty list `( )`, on one or more lines
+	/// per device: only the presence of an actual rule matters.
 	static func hasMappings(_ output: String) -> Bool {
 		output.contains("HIDKeyboardModifierMappingSrc")
 	}
@@ -76,10 +76,11 @@ public enum CapsLockRemapError: Error, LocalizedError {
 	public var errorDescription: String? {
 		switch self {
 		case .existingMappings:
-			"Des remappages de touches existent déjà sur ce Mac. Pour ne pas les écraser, "
-				+ "Verrouillage majuscules ne peut pas servir de touche NVDA : choisissez-en une autre."
+			localized(
+				"Key remappings already exist on this Mac. To avoid overwriting them, Caps Lock cannot be used as the NVDA key: choose another one.",
+			)
 		case let .hidutilFailed(output):
-			"hidutil a échoué : \(output)"
+			localized("hidutil failed: \(output)")
 		}
 	}
 }

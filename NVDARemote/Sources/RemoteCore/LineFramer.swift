@@ -1,16 +1,16 @@
 import Foundation
 
-/// Découpe le flux TCP en messages : un objet JSON par ligne, terminé par `\n`.
+/// Splits the TCP stream into messages: one JSON object per line, terminated by `\n`.
 public struct LineFramer: Sendable {
-	/// Au-delà, le pair ne respecte pas le protocole : on jette plutôt que de grossir sans fin.
+	/// Beyond this, the peer is not following the protocol: discard rather than grow without bound.
 	public static let maximumLineLength = 16 * 1024 * 1024
 
 	private var buffer = Data()
 
 	public init() {}
 
-	/// Ajoute des octets reçus et renvoie les lignes complètes, sans le `\n`.
-	/// Les lignes vides sont ignorées.
+	/// Appends received bytes and returns the complete lines, without the `\n`.
+	/// Empty lines are skipped.
 	public mutating func append(_ data: Data) -> [Data] {
 		buffer.append(data)
 		var lines: [Data] = []

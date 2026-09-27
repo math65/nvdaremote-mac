@@ -3,18 +3,18 @@ import Foundation
 import RemoteCore
 
 let usage = """
-	Utilisation :
-	  nvdaremote <lien nvdaremote://…>
-	  nvdaremote --host <serveur> --key <clé> [--port <port>]
-	  nvdaremote --list-voices [langue]
+	Usage:
+	  nvdaremote <nvdaremote://… link>
+	  nvdaremote --host <server> --key <key> [--port <port>]
+	  nvdaremote --list-voices [language]
 
-	Options :
-	  --wpm <nombre>        débit de parole en mots par minute (300 par défaut)
-	  --voice <nom>         voix à utiliser, par nom ou identifiant
-	  --trust <empreinte>   accepter ce certificat pour ce serveur et s'en souvenir
-	  --verbose             afficher chaque message reçu du PC
+	Options:
+	  --wpm <number>        speech rate in words per minute (default: 300)
+	  --voice <name>        voice to use, by name or identifier
+	  --trust <fingerprint> accept this certificate for this server and remember it
+	  --verbose             print every message received from the PC
 
-	Contrôle+C pour quitter.
+	Press Control+C to quit.
 	"""
 
 struct Options {
@@ -38,7 +38,7 @@ func parseOptions(_ arguments: [String]) -> Options {
 	var options = Options()
 	var iterator = arguments.makeIterator()
 	func value(for flag: String) -> String {
-		guard let value = iterator.next() else { fail("Valeur manquante après \(flag).\n\n\(usage)") }
+		guard let value = iterator.next() else { fail("Missing value after \(flag).\n\n\(usage)") }
 		return value
 	}
 	while let argument = iterator.next() {
@@ -49,11 +49,11 @@ func parseOptions(_ arguments: [String]) -> Options {
 		case "--host": options.host = value(for: argument)
 		case "--key": options.key = value(for: argument)
 		case "--port":
-			guard let port = UInt16(value(for: argument)), port != 0 else { fail("Port invalide.") }
+			guard let port = UInt16(value(for: argument)), port != 0 else { fail("Invalid port.") }
 			options.port = port
 		case "--wpm":
 			guard let wpm = Int(value(for: argument)), (50...700).contains(wpm) else {
-				fail("Le débit doit être compris entre 50 et 700 mots par minute.")
+				fail("The rate must be between 50 and 700 words per minute.")
 			}
 			options.wordsPerMinute = wpm
 		case "--voice": options.voice = value(for: argument)
@@ -62,7 +62,7 @@ func parseOptions(_ arguments: [String]) -> Options {
 		case "--list-voices":
 			options.listVoices = .some(nil)
 		default:
-			if argument.hasPrefix("-") { fail("Option inconnue : \(argument)\n\n\(usage)") }
+			if argument.hasPrefix("-") { fail("Unknown option: \(argument)\n\n\(usage)") }
 			if case .some(nil) = options.listVoices {
 				options.listVoices = .some(argument)
 			} else {
@@ -80,14 +80,14 @@ func listVoices(language: String?) {
 	for voice in voices {
 		let quality = switch voice.quality {
 		case .premium: "premium"
-		case .enhanced: "améliorée"
+		case .enhanced: "enhanced"
 		default: "standard"
 		}
 		print("\(voice.language)  \(voice.name), \(quality)  [\(voice.identifier)]")
 	}
 }
 
-// Messages d'état ligne par ligne, même redirigés vers un fichier.
+// Line-buffered status messages, even when redirected to a file.
 setvbuf(stdout, nil, _IOLBF, 0)
 
 let options = parseOptions(Array(CommandLine.arguments.dropFirst()))
@@ -115,45 +115,48 @@ if let trust = options.trust {
 	do {
 		try trustStore.trust(trust, for: info.address)
 	} catch {
-		fail("Impossible d'enregistrer l'empreinte : \(error.localizedDescription)")
+		fail("Unable to save the fingerprint: \(error.localizedDescription)")
 	}
 }
 
 let speech = SpeechOutput(wordsPerMinute: options.wordsPerMinute, voice: options.voice)
 if let voice = options.voice, SpeechOutput.findVoice(named: voice) == nil {
-	print("Voix « \(voice) » introuvable, utilisation de \(speech.voiceDescription).")
+	print("Voice \"\(voice)\" not found, using \(speech.voiceDescription).")
 }
 let session = LeaderSession(
 	info: info,
 	trustedFingerprint: trustStore.fingerprint(for: info.address),
 	speech: speech,
 	tones: TonePlayer(),
+	sounds: SoundPlayer(),
 )
 
 session.onEvent = { event in
 	switch event {
 	case .connecting:
-		print("Connexion à \(info.address), voix \(speech.voiceDescription), \(options.wordsPerMinute) mots par minute.")
+		print("Connecting to \(info.address), voice \(speech.voiceDescription), \(options.wordsPerMinute) words per minute.")
 	case .connected:
-		print("Connecté au serveur.")
+		print("Connected to the server.")
 	case let .joined(followers):
-		print(followers == 0 ? "Canal rejoint. En attente du PC." : "Canal rejoint. PC connecté.")
+		print(followers == 0 ? "Joined the channel. Waiting for the PC." : "Joined the channel. PC connected.")
 	case .followerJoined:
-		print("PC connecté.")
+		print("PC connected.")
 	case .followerLeft:
-		print("PC déconnecté.")
+		print("PC disconnected.")
 	case let .disconnected(reason, willRetry):
-		print("Déconnecté : \(reason).\(willRetry ? " Nouvel essai dans 5 secondes." : "")")
+		print("Disconnected: \(reason).\(willRetry ? " Retrying in 5 seconds." : "")")
 	case let .message(text):
-		print("Message du serveur : \(text)")
+		print("Server message: \(text)")
+	case .clipboardReceived:
+		print("The PC sent its clipboard (ignored by this tool).")
 	case let .ended(reason):
-		fail("Arrêt : \(reason).")
+		fail("Stopped: \(reason).")
 	case let .untrustedCertificate(fingerprint):
 		fail("""
-			Le certificat de \(info.address) n'est pas reconnu.
-			C'est normal si le PC héberge lui-même la connexion. Son empreinte est :
+			The certificate of \(info.address) is not recognized.
+			This is expected if the PC hosts the connection itself. Its fingerprint is:
 			\(fingerprint)
-			Vérifiez-la sur le PC, puis relancez avec : --trust \(fingerprint)
+			Check it on the PC, then run again with: --trust \(fingerprint)
 			""", code: 2)
 	}
 }
@@ -166,7 +169,7 @@ let interrupt = DispatchSource.makeSignalSource(signal: SIGINT, queue: .main)
 interrupt.setEventHandler {
 	MainActor.assumeIsolated {
 		session.stop()
-		print("\nAu revoir.")
+		print("\nGoodbye.")
 		exit(0)
 	}
 }

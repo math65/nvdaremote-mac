@@ -1,14 +1,14 @@
 import AVFoundation
 
-/// Joue les bips de NVDA (`tone`) : barre de progression, bascule de mode, etc.
+/// Plays NVDA's beeps (`tone`): progress bars, mode switches, etc.
 ///
-/// Comme `tones.beep` dans NVDA, un nouveau bip coupe le précédent.
+/// As with `tones.beep` in NVDA, a new beep cuts off the previous one.
 @MainActor
 public final class TonePlayer {
 	private static let sampleRate = 44_100.0
-	/// Rampe d'entrée et de sortie, pour éviter les claquements.
+	/// Fade-in and fade-out ramp, to avoid clicks.
 	private static let fadeSeconds = 0.004
-	/// Amplitude pour un volume de 100 sur un canal.
+	/// Amplitude for a volume of 100 on one channel.
 	private static let fullScaleAmplitude: Float = 0.6
 
 	private let engine = AVAudioEngine()

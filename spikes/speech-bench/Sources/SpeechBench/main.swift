@@ -1,24 +1,29 @@
-// Banc d'essai AVSpeechSynthesizer pour le projet NVDA Remote macOS.
+// AVSpeechSynthesizer test bench for the NVDA Remote for macOS project.
 //
-// Objectif : savoir si AVSpeechSynthesizer peut tenir le rythme de NVDA.
-// Un utilisateur de NVDA lit vite et coupe la parole en permanence ; si le
-// démarrage ou l'interruption coûtent trop cher, il faudra un autre moteur.
+// Goal: find out whether AVSpeechSynthesizer can keep up with NVDA.
+// An NVDA user reads fast and interrupts speech constantly; if starting or
+// interrupting speech costs too much, another engine will be needed.
 //
-// Le banc parle à voix haute : c'est le seul moyen de mesurer le vrai chemin
-// audio. Le test de synthèse pure (T7) est le seul à rester silencieux.
+// The bench speaks aloud: it is the only way to measure the real audio path.
+// The pure synthesis test (T7) is the only silent one.
+//
+// The voice being measured is deliberately French (fr-FR, typically Audrey):
+// it is the voice the project's users actually listen to, so its latency and
+// speaking rate are what matter. The spoken sample texts are therefore kept in
+// French so that they match the measured voice. Only the report is in English.
 
 import AVFoundation
 import Foundation
 
-// MARK: - Utilitaires
+// MARK: - Utilities
 
-/// Horloge monotone, en secondes.
+/// Monotonic clock, in seconds.
 func now() -> Double {
 	Double(DispatchTime.now().uptimeNanoseconds) / 1_000_000_000
 }
 
-/// Fait tourner la boucle d'exécution jusqu'à ce que la condition soit vraie.
-/// Nécessaire car les rappels du délégué arrivent sur la boucle principale.
+/// Runs the run loop until the condition is true.
+/// Needed because delegate callbacks arrive on the main run loop.
 @discardableResult
 func pump(until predicate: () -> Bool, timeout: Double = 60) -> Bool {
 	let deadline = now() + timeout
@@ -51,14 +56,14 @@ func title(_ text: String) {
 	print(String(repeating: "-", count: text.count))
 }
 
-// MARK: - Délégué enregistreur
+// MARK: - Recording delegate
 
 final class Recorder: NSObject, AVSpeechSynthesizerDelegate {
 	var didStartAt: Double?
 	var didFinishAt: Double?
 	var didCancelAt: Double?
 	var firstRangeAt: Double?
-	/// Horodatages de fin puis de début, dans l'ordre, pour mesurer les blancs.
+	/// Finish then start timestamps, in order, to measure the gaps.
 	var timeline: [(event: String, time: Double)] = []
 
 	func reset() {
@@ -96,18 +101,19 @@ final class Recorder: NSObject, AVSpeechSynthesizerDelegate {
 	}
 }
 
-// MARK: - Préparation
+// MARK: - Setup
 
 let synth = AVSpeechSynthesizer()
 let recorder = Recorder()
 synth.delegate = recorder
 
-/// Texte de référence. Le nombre de mots est calculé, jamais codé en dur.
-let sampleFR = """
+/// Reference text, in French to match the measured voice. The word count is
+/// computed, never hard-coded.
+let frenchSample = """
 Le bureau contient une liste de trente éléments dont le premier est sélectionné \
 et le dernier reste masqué derrière la fenêtre principale du navigateur
 """
-let sampleWordCount = sampleFR.split(whereSeparator: { $0 == " " || $0 == "\n" }).count
+let sampleWordCount = frenchSample.split(whereSeparator: { $0 == " " || $0 == "\n" }).count
 
 func voice(forLanguage language: String, preferBest: Bool = true) -> AVSpeechSynthesisVoice? {
 	let candidates = AVSpeechSynthesisVoice.speechVoices().filter { $0.language == language }
@@ -123,25 +129,27 @@ func voice(forLanguage language: String, preferBest: Bool = true) -> AVSpeechSyn
 	return candidates.max(by: { rank($0) < rank($1) })
 }
 
-let frVoice = voice(forLanguage: "fr-FR")
-let enVoice = voice(forLanguage: "en-US")
+/// The measured voice: French on purpose, see the header comment.
+let frenchVoice = voice(forLanguage: "fr-FR")
+/// Only used by T6 to measure the cost of switching language.
+let englishVoice = voice(forLanguage: "en-US")
 
 func utterance(
 	_ text: String,
 	rate: Float = AVSpeechUtteranceDefaultSpeechRate,
-	voice: AVSpeechSynthesisVoice? = frVoice,
+	voice: AVSpeechSynthesisVoice? = frenchVoice,
 ) -> AVSpeechUtterance {
 	let u = AVSpeechUtterance(string: text)
 	u.rate = rate
 	u.voice = voice
-	// Pas de silence ajouté avant ou après : NVDA enchaîne des énoncés courts.
+	// No silence added before or after: NVDA chains short utterances.
 	u.preUtteranceDelay = 0
 	u.postUtteranceDelay = 0
 	return u
 }
 
-/// Parle et attend la fin. Renvoie (latence jusqu'à didStart, latence jusqu'au
-/// premier intervalle parlé, durée totale mesurée de didStart à didFinish).
+/// Speaks and waits for the end. Returns (latency until didStart, latency until
+/// the first spoken range, total duration measured from didStart to didFinish).
 func speakAndWait(_ u: AVSpeechUtterance) -> (start: Double, firstRange: Double?, duration: Double)? {
 	recorder.reset()
 	let t0 = now()
@@ -154,44 +162,44 @@ func speakAndWait(_ u: AVSpeechUtterance) -> (start: Double, firstRange: Double?
 	return (start - t0, firstRange, finish - start)
 }
 
-// MARK: - En-tête
+// MARK: - Header
 
-print("Banc d'essai AVSpeechSynthesizer — projet NVDA Remote macOS")
-print("Le banc va parler à voix haute pendant environ une minute et demie.")
-print("Texte de référence : \(sampleWordCount) mots.")
+print("AVSpeechSynthesizer test bench — NVDA Remote for macOS project")
+print("The bench will speak aloud for about a minute and a half.")
+print("Reference text: \(sampleWordCount) words.")
 
-// MARK: - T1 : inventaire des voix
+// MARK: - T1: voice inventory
 
-title("T1. Voix disponibles")
+title("T1. Available voices")
 
 let allVoices = AVSpeechSynthesisVoice.speechVoices()
-print("Total sur cette machine : \(allVoices.count) voix.")
+print("Total on this machine: \(allVoices.count) voices.")
 
 for language in ["fr-FR", "en-US"] {
 	let voices = allVoices.filter { $0.language == language }
 	let premium = voices.filter { $0.quality == .premium }.count
 	let enhanced = voices.filter { $0.quality == .enhanced }.count
 	let standard = voices.count - premium - enhanced
-	print("\(language) : \(voices.count) voix (\(premium) premium, \(enhanced) améliorées, \(standard) standard)")
+	print("\(language): \(voices.count) voices (\(premium) premium, \(enhanced) enhanced, \(standard) standard)")
 }
 
-if let v = frVoice {
+if let v = frenchVoice {
 	let quality: String
 	switch v.quality {
 	case .premium: quality = "premium"
-	case .enhanced: quality = "améliorée"
+	case .enhanced: quality = "enhanced"
 	default: quality = "standard"
 	}
-	print("Voix française retenue pour les mesures : \(v.name), qualité \(quality).")
+	print("French voice selected for the measurements: \(v.name), \(quality) quality.")
 } else {
-	print("ATTENTION : aucune voix française trouvée, les mesures utiliseront la voix par défaut.")
+	print("WARNING: no French voice found, the measurements will use the default voice.")
 }
 
-print("Bornes de débit de l'API : min \(AVSpeechUtteranceMinimumSpeechRate), défaut \(AVSpeechUtteranceDefaultSpeechRate), max \(AVSpeechUtteranceMaximumSpeechRate).")
+print("API rate bounds: min \(AVSpeechUtteranceMinimumSpeechRate), default \(AVSpeechUtteranceDefaultSpeechRate), max \(AVSpeechUtteranceMaximumSpeechRate).")
 
-// MARK: - T2 : latence de démarrage
+// MARK: - T2: startup latency
 
-title("T2. Latence de démarrage (appel de speak jusqu'au premier son)")
+title("T2. Startup latency (speak call until first sound)")
 
 var coldStart: Double?
 var coldFirstRange: Double?
@@ -200,7 +208,7 @@ var warmFirstRanges: [Double] = []
 
 for i in 0..<8 {
 	guard let r = speakAndWait(utterance("Bonjour", rate: AVSpeechUtteranceDefaultSpeechRate)) else {
-		print("Mesure \(i) échouée.")
+		print("Measurement \(i) failed.")
 		continue
 	}
 	if i == 0 {
@@ -214,28 +222,28 @@ for i in 0..<8 {
 }
 
 if let c = coldStart {
-	print("À froid, premier énoncé de la session : didStart après \(ms(c))" +
-		(coldFirstRange.map { ", premier mot parlé après \(ms($0))" } ?? "") + ".")
+	print("Cold, first utterance of the session: didStart after \(ms(c))" +
+		(coldFirstRange.map { ", first word spoken after \(ms($0))" } ?? "") + ".")
 }
 if !warmStarts.isEmpty {
-	print("À chaud, sur \(warmStarts.count) mesures : didStart médian \(ms(median(warmStarts))), " +
+	print("Warm, over \(warmStarts.count) measurements: median didStart \(ms(median(warmStarts))), " +
 		"min \(ms(warmStarts.min()!)), max \(ms(warmStarts.max()!)).")
 }
 if !warmFirstRanges.isEmpty {
-	print("À chaud, premier mot parlé : médian \(ms(median(warmFirstRanges))), " +
+	print("Warm, first word spoken: median \(ms(median(warmFirstRanges))), " +
 		"min \(ms(warmFirstRanges.min()!)), max \(ms(warmFirstRanges.max()!)).")
 }
 
-// MARK: - T3 : latence d'interruption
+// MARK: - T3: interruption latency
 
-title("T3. Latence d'interruption (stopSpeaking immédiat jusqu'à didCancel)")
-print("C'est la mesure critique : NVDA envoie cancel à chaque frappe.")
+title("T3. Interruption latency (immediate stopSpeaking until didCancel)")
+print("This is the critical measurement: NVDA sends cancel on every keystroke.")
 
 var cancelLatencies: [Double] = []
 
 for _ in 0..<8 {
 	recorder.reset()
-	synth.speak(utterance(sampleFR, rate: AVSpeechUtteranceDefaultSpeechRate))
+	synth.speak(utterance(frenchSample, rate: AVSpeechUtteranceDefaultSpeechRate))
 	guard pump(until: { recorder.didStartAt != nil }, timeout: 10) else { continue }
 	sleepPumping(0.35)
 	let t0 = now()
@@ -248,58 +256,59 @@ for _ in 0..<8 {
 }
 
 if cancelLatencies.isEmpty {
-	print("Aucune mesure : stopSpeaking n'a pas déclenché didCancel.")
+	print("No measurement: stopSpeaking did not trigger didCancel.")
 } else {
-	print("Sur \(cancelLatencies.count) mesures : médiane \(ms(median(cancelLatencies))), " +
+	print("Over \(cancelLatencies.count) measurements: median \(ms(median(cancelLatencies))), " +
 		"min \(ms(cancelLatencies.min()!)), max \(ms(cancelLatencies.max()!)).")
-	print("Réserve : didCancel signale l'arrêt côté API. Le son déjà dans le tampon")
-	print("de sortie peut continuer quelques millisecondes de plus, non mesurable ici.")
+	print("Caveat: didCancel reports the stop on the API side. Audio already in the")
+	print("output buffer may keep playing a few more milliseconds, not measurable here.")
 }
 
-// MARK: - T4 : débit réel
+// MARK: - T4: actual speaking rate
 
-title("T4. Débit réel en mots par minute")
-print("NVDA avec eSpeak tourne couramment entre 300 et 450 mots par minute.")
+title("T4. Actual speaking rate in words per minute")
+print("NVDA with eSpeak commonly runs between 300 and 450 words per minute.")
 
 var wpmByRate: [(rate: Float, wpm: Double, duration: Double)] = []
 
 for rate in [Float(0.5), 0.6, 0.7, 0.85, 1.0] {
-	guard let r = speakAndWait(utterance(sampleFR, rate: rate)) else {
-		print("rate \(rate) : mesure échouée.")
+	guard let r = speakAndWait(utterance(frenchSample, rate: rate)) else {
+		print("rate \(rate): measurement failed.")
 		continue
 	}
 	let wpm = Double(sampleWordCount) / r.duration * 60
 	wpmByRate.append((rate, wpm, r.duration))
-	print(String(format: "rate %.2f : %.0f mots/minute (%.2f s pour %d mots)",
+	print(String(format: "rate %.2f: %.0f words/minute (%.2f s for %d words)",
 		rate, wpm, r.duration, sampleWordCount))
 	sleepPumping(0.1)
 }
 
-// Le débit est-il bien plafonné au-delà du maximum annoncé ?
-if let r = speakAndWait(utterance(sampleFR, rate: 2.0)) {
+// Is the rate really capped beyond the advertised maximum?
+if let r = speakAndWait(utterance(frenchSample, rate: 2.0)) {
 	let wpm = Double(sampleWordCount) / r.duration * 60
-	print(String(format: "rate 2.00 (au-delà du maximum) : %.0f mots/minute — %@",
+	print(String(format: "rate 2.00 (beyond the maximum): %.0f words/minute — %@",
 		wpm,
-		wpmByRate.last.map { abs($0.wpm - wpm) < 15 ? "plafonné comme prévu" : "NON plafonné" } ?? "sans référence"))
+		wpmByRate.last.map { abs($0.wpm - wpm) < 15 ? "capped as expected" : "NOT capped" } ?? "no reference"))
 }
 
 if let best = wpmByRate.max(by: { $0.wpm < $1.wpm }) {
-	print(String(format: "Débit maximum atteignable : %.0f mots/minute.", best.wpm))
+	print(String(format: "Maximum achievable rate: %.0f words/minute.", best.wpm))
 	if best.wpm < 300 {
-		print("VERDICT : en dessous des habitudes des utilisateurs NVDA. eSpeak-ng embarqué à prévoir.")
+		print("VERDICT: below what NVDA users are used to. An embedded eSpeak-ng will be needed.")
 	} else if best.wpm < 400 {
-		print("VERDICT : correct pour un usage courant, juste pour les lecteurs rapides.")
+		print("VERDICT: fine for everyday use, borderline for fast readers.")
 	} else {
-		print("VERDICT : suffisant, y compris pour les lecteurs rapides.")
+		print("VERDICT: sufficient, including for fast readers.")
 	}
 }
 
-// MARK: - T5 : enchaînement sans blanc
+// MARK: - T5: chaining without gaps
 
-title("T5. Blancs entre énoncés enchaînés")
-print("NVDA envoie une rafale de messages speak courts ; les blancs cumulés se voient.")
+title("T5. Gaps between chained utterances")
+print("NVDA sends a burst of short speak messages; cumulative gaps become noticeable.")
 
 recorder.reset()
+// Short French fragments, typical of what NVDA announces, spoken by the measured voice.
 let fragments = ["Documents", "dossier", "trois éléments", "liste", "Bureau"]
 for f in fragments {
 	synth.speak(utterance(f, rate: 0.6))
@@ -318,26 +327,26 @@ for entry in recorder.timeline {
 }
 
 if gaps.isEmpty {
-	print("Aucun blanc mesuré.")
+	print("No gap measured.")
 } else {
-	print("Sur \(gaps.count) transitions : médiane \(ms(median(gaps))), " +
+	print("Over \(gaps.count) transitions: median \(ms(median(gaps))), " +
 		"min \(ms(gaps.min()!)), max \(ms(gaps.max()!)).")
 	let total = gaps.reduce(0, +)
-	print("Cumul sur \(fragments.count) fragments : \(ms(total)).")
+	print("Total over \(fragments.count) fragments: \(ms(total)).")
 }
 
-// MARK: - T6 : changement de langue
+// MARK: - T6: language switch
 
-title("T6. Coût d'un changement de langue")
-print("Le message speak de NVDA porte des LangChangeCommand en cours de séquence.")
+title("T6. Cost of a language switch")
+print("NVDA's speak message carries LangChangeCommand items mid-sequence.")
 
-if enVoice == nil {
-	print("Pas de voix anglaise disponible, test ignoré.")
+if englishVoice == nil {
+	print("No English voice available, test skipped.")
 } else {
 	recorder.reset()
-	synth.speak(utterance("Bonjour", rate: 0.6, voice: frVoice))
-	synth.speak(utterance("Hello", rate: 0.6, voice: enVoice))
-	synth.speak(utterance("Bonjour", rate: 0.6, voice: frVoice))
+	synth.speak(utterance("Bonjour", rate: 0.6, voice: frenchVoice))
+	synth.speak(utterance("Hello", rate: 0.6, voice: englishVoice))
+	synth.speak(utterance("Bonjour", rate: 0.6, voice: frenchVoice))
 	pump(until: { recorder.timeline.filter { $0.event == "finish" }.count >= 3 }, timeout: 60)
 
 	var switchGaps: [Double] = []
@@ -351,18 +360,18 @@ if enVoice == nil {
 		}
 	}
 	if switchGaps.isEmpty {
-		print("Aucune transition mesurée.")
+		print("No transition measured.")
 	} else {
-		print("Blancs lors des changements de voix : " +
+		print("Gaps on voice switches: " +
 			switchGaps.map { ms($0) }.joined(separator: ", ") + ".")
 	}
 }
 
-// MARK: - T7 : synthèse pure, sans lecture
+// MARK: - T7: pure synthesis, no playback
 
-title("T7. Synthèse pure vers tampon, sans lecture audio")
-print("Si ce chemin est bien plus rapide, on peut gérer nous-mêmes la lecture")
-print("et reprendre la main sur la latence et le mélange avec les bips.")
+title("T7. Pure synthesis to buffer, no audio playback")
+print("If this path is much faster, we can handle playback ourselves and take")
+print("back control over latency and mixing with the beeps.")
 
 do {
 	var bufferCount = 0
@@ -372,7 +381,7 @@ do {
 	let t0 = now()
 
 	let writeSynth = AVSpeechSynthesizer()
-	writeSynth.write(utterance(sampleFR, rate: 1.0)) { buffer in
+	writeSynth.write(utterance(frenchSample, rate: 1.0)) { buffer in
 		guard let pcm = buffer as? AVAudioPCMBuffer else { return }
 		if pcm.frameLength == 0 {
 			finished = true
@@ -386,21 +395,21 @@ do {
 	if pump(until: { finished }, timeout: 30) {
 		let elapsed = now() - t0
 		let audioSeconds = sampleRate > 0 ? Double(frameCount) / sampleRate : 0
-		print(String(format: "Synthèse de %.2f s d'audio en %.3f s de calcul (%d tampons, %.0f Hz).",
+		print(String(format: "Synthesized %.2f s of audio in %.3f s of compute (%d buffers, %.0f Hz).",
 			audioSeconds, elapsed, bufferCount, sampleRate))
 		if audioSeconds > 0 {
-			print(String(format: "Soit %.0f fois le temps réel.", audioSeconds / elapsed))
+			print(String(format: "That is %.0f times real time.", audioSeconds / elapsed))
 		}
 		if audioSeconds > 0 {
 			let wpm = Double(sampleWordCount) / audioSeconds * 60
-			print(String(format: "Débit du signal produit : %.0f mots/minute.", wpm))
+			print(String(format: "Rate of the produced signal: %.0f words/minute.", wpm))
 		}
 	} else {
-		print("La synthèse vers tampon n'a pas abouti dans le délai imparti.")
+		print("Synthesis to buffer did not complete within the time limit.")
 	}
 }
 
-// MARK: - Fin
+// MARK: - End
 
-title("Fin du banc")
-print("Rapport terminé.")
+title("End of bench")
+print("Report complete.")

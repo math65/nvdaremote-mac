@@ -1,9 +1,9 @@
 import Foundation
 
-/// Où se connecter et avec quelle clé.
+/// Where to connect and with which key.
 ///
-/// Le Mac est toujours contrôleur (`master` dans le protocole) : ce type ne porte
-/// donc pas de mode, il refuse seulement les liens prévus pour l'autre rôle.
+/// The Mac is always the controlling side (`master` in the protocol), so this type
+/// carries no mode; it only rejects links meant for the other role.
 public struct ConnectionInfo: Equatable, Sendable {
 	public static let defaultPort: UInt16 = 6837
 
@@ -17,12 +17,12 @@ public struct ConnectionInfo: Equatable, Sendable {
 		self.key = key
 	}
 
-	/// Adresse au format `hôte:port`, utilisée comme clé pour les empreintes de confiance.
+	/// Address in `host:port` form, used as the key for trusted fingerprints.
 	public var address: String {
 		host.contains(":") ? "[\(host)]:\(port)" : "\(host):\(port)"
 	}
 
-	/// Lit un serveur saisi à la main : `hôte`, `hôte:port`, `[ipv6]:port` ou une IPv6 seule.
+	/// Parses a manually entered server: `host`, `host:port`, `[ipv6]:port` or a bare IPv6 address.
 	public init(server: String, key: String) throws(ConnectionInfoError) {
 		let server = server.trimmingCharacters(in: .whitespacesAndNewlines)
 		let key = key.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -53,13 +53,13 @@ public struct ConnectionInfo: Equatable, Sendable {
 		self.init(host: host, port: port, key: key)
 	}
 
-	/// Le serveur tel qu'on l'afficherait dans un champ de saisie : le port n'apparaît que s'il n'est pas celui par défaut.
+	/// The server as it would appear in a text field: the port is shown only if it is not the default one.
 	public var serverDescription: String {
 		port == Self.defaultPort ? host : address
 	}
 
-	/// Lit un lien `nvdaremote://hôte:port/?key=…&mode=master`,
-	/// tel que le produit « Copier le lien » sur le PC contrôlé.
+	/// Parses an `nvdaremote://host:port/?key=…&mode=master` link,
+	/// as produced by "Copy link" on the controlled PC.
 	public init(url string: String) throws(ConnectionInfoError) {
 		guard let components = URLComponents(string: string.trimmingCharacters(in: .whitespacesAndNewlines)),
 			components.scheme?.lowercased() == "nvdaremote"
@@ -106,12 +106,12 @@ public enum ConnectionInfoError: Error, Equatable, LocalizedError {
 
 	public var errorDescription: String? {
 		switch self {
-		case .notARemoteLink: "Ce n'est pas un lien nvdaremote://."
-		case .missingHost: "Le lien ne contient pas d'adresse de serveur."
-		case .missingKey: "Le lien ne contient pas de clé."
-		case .invalidPort: "Le port du lien n'est pas valide."
-		case .followerLink: "Ce lien sert à être contrôlé, pas à contrôler. Copiez le lien depuis le PC à contrôler."
-		case let .unknownMode(mode): "Mode inconnu dans le lien : \(mode)."
+		case .notARemoteLink: localized("This is not an nvdaremote:// link.")
+		case .missingHost: localized("No server address was given.")
+		case .missingKey: localized("No key was given.")
+		case .invalidPort: localized("The port is not valid.")
+		case .followerLink: localized("This link is for being controlled, not for controlling. Copy the link from the computer to control.")
+		case let .unknownMode(mode): localized("Unknown mode in link: \(mode).")
 		}
 	}
 }

@@ -94,9 +94,10 @@
 				};
 			};
 			buildConfigurationList = 4E56520000000000000000C0 /* Build configuration list for PBXProject "NVDARemote" */;
-			developmentRegion = fr;
+			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
+				en,
 				fr,
 				Base,
 			);

@@ -1,6 +1,6 @@
 import Foundation
 
-/// Touche Windows telle que le protocole l'envoie : code virtuel et drapeau « étendue ».
+/// A Windows key as the protocol sends it: virtual-key code and "extended" flag.
 public struct WindowsKey: Hashable, Sendable {
 	public var vk: Int
 	public var extended: Bool
@@ -10,42 +10,42 @@ public struct WindowsKey: Hashable, Sendable {
 		self.extended = extended
 	}
 
-	/// Touche NVDA par défaut sur le PC : Insert, étendue.
+	/// Default NVDA key on the PC: Insert, extended.
 	public static let insert = WindowsKey(0x2D, extended: true)
-	/// Touche neutre que NVDA envoie pour casser une combinaison avant de relâcher les modificateurs.
+	/// Neutral key NVDA sends to break a combination before releasing the modifiers.
 	public static let none = WindowsKey(0xFF)
 }
 
-/// Touche du Mac qui joue le rôle de la touche NVDA.
+/// The Mac key that acts as the NVDA key.
 public enum NVDAKeyChoice: String, CaseIterable, Sendable {
-	/// Verrouillage majuscules, remappée en F18 par `hidutil` pendant le contrôle du PC.
+	/// Caps Lock, remapped to F18 by `hidutil` while controlling the PC.
 	case capsLock
 	case rightOption
 	case fn
 
 	public var label: String {
 		switch self {
-		case .capsLock: "Verrouillage majuscules"
-		case .rightOption: "Option droite"
-		case .fn: "fn (Globe)"
+		case .capsLock: localized("Caps Lock")
+		case .rightOption: localized("Right Option")
+		case .fn: localized("fn (Globe)")
 		}
 	}
 }
 
-/// Disposition du clavier configurée sur le PC. Elle décide quel code virtuel produit quel caractère.
+/// Keyboard layout configured on the PC. It determines which virtual-key code produces which character.
 public enum PCLayout: String, CaseIterable, Sendable {
 	case french
 	case us
 
 	public var label: String {
 		switch self {
-		case .french: "Français (AZERTY)"
-		case .us: "Américain (QWERTY)"
+		case .french: localized("French (AZERTY)")
+		case .us: localized("US (QWERTY)")
 		}
 	}
 }
 
-/// Codes de touches macOS utilisés ici (constantes `kVK_*` de Carbon).
+/// macOS key codes used here (Carbon `kVK_*` constants).
 public enum MacKeyCode {
 	public static let returnKey: UInt16 = 36
 	public static let tab: UInt16 = 48
@@ -63,17 +63,17 @@ public enum MacKeyCode {
 	public static let rightControl: UInt16 = 62
 	public static let function: UInt16 = 63
 	public static let f18: UInt16 = 79
-	/// Touche Globe des claviers récents, absente des constantes Carbon.
+	/// Globe key on recent keyboards, missing from the Carbon constants.
 	public static let globe: UInt16 = 179
 }
 
-/// Traduit une touche du Mac en touche Windows pour le PC distant.
+/// Translates a Mac key into a Windows key for the remote PC.
 ///
-/// Voir docs/mesures-clavier.md : les codes de touche macOS désignent une position
-/// physique, alors que les codes virtuels Windows désignent ce que la touche produit.
-/// La correspondance se fait donc d'abord par caractère produit, sans modificateurs.
+/// See docs/keyboard-measurements.md: macOS key codes identify a physical position,
+/// whereas Windows virtual-key codes identify what the key produces. Matching is
+/// therefore done first by the character produced, without modifiers.
 public struct KeyTranslator: Sendable {
-	/// Caractères produits par une touche du Mac, sans modificateur et avec Majuscule seule.
+	/// Characters produced by a Mac key, with no modifier and with Shift alone.
 	public struct Characters: Equatable, Sendable {
 		public var plain: String
 		public var shifted: String
@@ -92,14 +92,14 @@ public struct KeyTranslator: Sendable {
 		self.pcLayout = pcLayout
 	}
 
-	/// - Parameter characters: ce que produit la touche sur la disposition active du Mac ;
-	///   `nil` pour une touche muette.
-	/// - Returns: la touche à envoyer, ou `nil` si elle n'a pas d'équivalent sur le PC.
+	/// - Parameter characters: what the key produces with the Mac's active layout;
+	///   `nil` for a key that produces no character.
+	/// - Returns: the key to send, or `nil` if it has no equivalent on the PC.
 	public func translate(keyCode: UInt16, characters: Characters?) -> WindowsKey? {
 		if let special = specialKey(keyCode) {
 			return special
 		}
-		// Ces touches n'ont d'usage qu'en touche NVDA : sinon, rien à envoyer.
+		// These keys are only useful as the NVDA key: otherwise, there is nothing to send.
 		if [MacKeyCode.capsLock, MacKeyCode.function, MacKeyCode.globe].contains(keyCode) {
 			return nil
 		}
@@ -110,7 +110,7 @@ public struct KeyTranslator: Sendable {
 			{
 				return WindowsKey(0x41 + Int(letter.value - 0x61))
 			}
-			// Sur azerty, la rangée du haut ne donne ses chiffres qu'avec Majuscule.
+			// On AZERTY, the top row only produces digits with Shift.
 			for candidate in [characters.plain, characters.shifted] {
 				if candidate.count == 1, let digit = candidate.first?.wholeNumberValue, candidate.first!.isASCII {
 					return WindowsKey(0x30 + digit)
@@ -126,7 +126,7 @@ public struct KeyTranslator: Sendable {
 		return nil
 	}
 
-	/// Touches qui ne dépendent pas de la disposition : navigation, fonctions, modificateurs, pavé numérique.
+	/// Layout-independent keys: navigation, function keys, modifiers, numeric keypad.
 	private func specialKey(_ keyCode: UInt16) -> WindowsKey? {
 		switch (nvdaKey, keyCode) {
 		case (.capsLock, MacKeyCode.f18), (.rightOption, MacKeyCode.rightOption), (.fn, MacKeyCode.function):
@@ -142,18 +142,18 @@ public struct KeyTranslator: Sendable {
 		MacKeyCode.space: WindowsKey(0x20),
 		MacKeyCode.delete: WindowsKey(0x08),
 		MacKeyCode.escape: WindowsKey(0x1B),
-		117: WindowsKey(0x2E, extended: true), // Suppression avant
-		114: WindowsKey(0x2D, extended: true), // Aide, à la place d'Insert sur les claviers étendus
-		115: WindowsKey(0x24, extended: true), // Début
-		119: WindowsKey(0x23, extended: true), // Fin
-		116: WindowsKey(0x21, extended: true), // Page précédente
-		121: WindowsKey(0x22, extended: true), // Page suivante
-		123: WindowsKey(0x25, extended: true), // Gauche
-		124: WindowsKey(0x27, extended: true), // Droite
-		125: WindowsKey(0x28, extended: true), // Bas
-		126: WindowsKey(0x26, extended: true), // Haut
+		117: WindowsKey(0x2E, extended: true), // Forward Delete
+		114: WindowsKey(0x2D, extended: true), // Help, in place of Insert on extended keyboards
+		115: WindowsKey(0x24, extended: true), // Home
+		119: WindowsKey(0x23, extended: true), // End
+		116: WindowsKey(0x21, extended: true), // Page Up
+		121: WindowsKey(0x22, extended: true), // Page Down
+		123: WindowsKey(0x25, extended: true), // Left
+		124: WindowsKey(0x27, extended: true), // Right
+		125: WindowsKey(0x28, extended: true), // Down
+		126: WindowsKey(0x26, extended: true), // Up
 
-		// Modificateurs : Contrôle reste Contrôle, Option devient Alt, Commande devient Windows.
+		// Modifiers: Control stays Control, Option becomes Alt, Command becomes the Windows key.
 		MacKeyCode.shift: WindowsKey(0xA0),
 		MacKeyCode.rightShift: WindowsKey(0xA1),
 		MacKeyCode.control: WindowsKey(0xA2),
@@ -163,30 +163,30 @@ public struct KeyTranslator: Sendable {
 		MacKeyCode.command: WindowsKey(0x5B, extended: true),
 		MacKeyCode.rightCommand: WindowsKey(0x5C, extended: true),
 
-		// Touches de fonction F1 à F20.
+		// Function keys F1 to F20.
 		122: WindowsKey(0x70), 120: WindowsKey(0x71), 99: WindowsKey(0x72), 118: WindowsKey(0x73),
 		96: WindowsKey(0x74), 97: WindowsKey(0x75), 98: WindowsKey(0x76), 100: WindowsKey(0x77),
 		101: WindowsKey(0x78), 109: WindowsKey(0x79), 103: WindowsKey(0x7A), 111: WindowsKey(0x7B),
 		105: WindowsKey(0x7C), 107: WindowsKey(0x7D), 113: WindowsKey(0x7E), 106: WindowsKey(0x7F),
 		64: WindowsKey(0x80), MacKeyCode.f18: WindowsKey(0x81), 80: WindowsKey(0x82), 90: WindowsKey(0x83),
 
-		// Pavé numérique, Verr. num. désactivé : ce que la disposition « ordinateur de bureau »
-		// de NVDA attend (numpad8 = Haut non étendu, etc.).
+		// Numeric keypad with Num Lock off: what NVDA's "desktop" keyboard layout
+		// expects (numpad8 = non-extended Up, etc.).
 		82: WindowsKey(0x2D), 83: WindowsKey(0x23), 84: WindowsKey(0x28), 85: WindowsKey(0x22),
 		86: WindowsKey(0x25), 87: WindowsKey(0x0C), 88: WindowsKey(0x27), 89: WindowsKey(0x24),
 		91: WindowsKey(0x26), 92: WindowsKey(0x21),
-		65: WindowsKey(0x2E), // Point décimal = Suppr du pavé
+		65: WindowsKey(0x2E), // Decimal point = keypad Delete
 		67: WindowsKey(0x6A), // *
 		69: WindowsKey(0x6B), // +
 		78: WindowsKey(0x6D), // -
 		75: WindowsKey(0x6F, extended: true), // /
-		76: WindowsKey(0x0D, extended: true), // Entrée du pavé
+		76: WindowsKey(0x0D, extended: true), // Keypad Enter
 	]
 
-	// MARK: - Ponctuation, par disposition du PC
+	// MARK: - Punctuation, by PC layout
 
-	/// Touche de ponctuation du PC : code virtuel, caractère produit sans modificateur,
-	/// et code de la touche du Mac située au même endroit, pour le repli positionnel.
+	/// A PC punctuation key: virtual-key code, character produced without modifiers,
+	/// and the code of the Mac key at the same position, for the positional fallback.
 	private struct PunctuationKey {
 		var vk: Int
 		var plain: String
@@ -213,7 +213,7 @@ public struct KeyTranslator: Sendable {
 		PunctuationKey(vk: 0xBE, plain: ";", position: 43),
 		PunctuationKey(vk: 0xBF, plain: ":", position: 47),
 		PunctuationKey(vk: 0xDF, plain: "!", position: 44),
-		// Caractères de la rangée du haut sans chiffre associé au même endroit sur le Mac.
+		// Top-row characters with no digit at the same position on the Mac.
 		PunctuationKey(vk: 0x36, plain: "-", position: 22),
 		PunctuationKey(vk: 0x38, plain: "_", position: 28),
 	]

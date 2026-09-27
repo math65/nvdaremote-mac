@@ -1,11 +1,11 @@
 import AVFoundation
 
-/// Prononce la parole reçue du PC avec le synthétiseur système.
+/// Speaks the speech received from the PC with the system synthesizer.
 ///
-/// Suit les consignes de docs/mesures-parole.md : un seul synthétiseur pour la session,
-/// coupure en `.immediate`, moteur chauffé à la connexion, et aucune logique
-/// appuyée sur `didCancel`, jamais appelé sur macOS 26. La file interne
-/// d'`AVSpeechSynthesizer` enchaîne les énoncés sans blanc, on s'en sert telle quelle.
+/// Follows the guidelines in docs/speech-measurements.md: a single synthesizer per session,
+/// `.immediate` interruption, engine warmed up on connection, and no logic relying
+/// on `didCancel`, which is never called on macOS 26. `AVSpeechSynthesizer`'s internal
+/// queue chains utterances without gaps, so we use it as is.
 @MainActor
 public final class SpeechOutput {
 	private let synthesizer = AVSpeechSynthesizer()
@@ -13,14 +13,14 @@ public final class SpeechOutput {
 	private var voicesByLanguage: [String: AVSpeechSynthesisVoice?] = [:]
 	private var rate: Float
 
-	/// Débit visé, converti avec la courbe mesurée. S'applique aux énoncés suivants.
+	/// Target rate, converted with the measured curve. Applies to subsequent utterances.
 	public var wordsPerMinute: Int {
 		didSet { rate = Self.rate(forWordsPerMinute: wordsPerMinute) }
 	}
 
 	/// - Parameters:
-	///   - wordsPerMinute: débit visé, converti avec la courbe mesurée.
-	///   - voice: identifiant ou nom de voix ; `nil` choisit la meilleure voix de la langue du système.
+	///   - wordsPerMinute: target rate, converted with the measured curve.
+	///   - voice: voice identifier or name; `nil` picks the best voice for the system language.
 	public init(wordsPerMinute: Int = 300, voice: String? = nil) {
 		self.wordsPerMinute = wordsPerMinute
 		rate = Self.rate(forWordsPerMinute: wordsPerMinute)
@@ -29,11 +29,11 @@ public final class SpeechOutput {
 	}
 
 	public var voiceDescription: String {
-		guard let voice = defaultVoice else { return "voix système" }
+		guard let voice = defaultVoice else { return localized("system voice") }
 		return "\(voice.name) (\(voice.language))"
 	}
 
-	/// Prononce un énoncé muet pour que le premier retour du PC parte sans délai.
+	/// Speaks a silent utterance so the first speech from the PC starts without delay.
 	public func warmUp() {
 		let utterance = AVSpeechUtterance(string: "a")
 		utterance.volume = 0
@@ -44,8 +44,8 @@ public final class SpeechOutput {
 	public func speak(_ sequence: [SpeechItem], priority: SpeechPriority) {
 		let segments = SpeechSegment.segments(from: sequence)
 		guard !segments.isEmpty else { return }
-		// NVDA reprend ensuite la parole interrompue par une priorité immédiate.
-		// On ne le fait pas encore : ce qui était en cours est simplement abandonné.
+		// NVDA then resumes speech interrupted by an immediate priority.
+		// We do not do that yet: whatever was in progress is simply dropped.
 		if priority == .now {
 			cancel()
 		}
@@ -88,23 +88,23 @@ public final class SpeechOutput {
 		return found ?? defaultVoice
 	}
 
-	// MARK: - Choix des voix et du débit
+	// MARK: - Voice and rate selection
 
-	/// Débit `AVSpeechUtterance.rate` pour un nombre de mots par minute.
-	/// Au-dessus de 0,5, la mesure donne `mots ≈ 177 + (rate - 0,5) × 933`.
-	/// En dessous, on suppose une proportionnalité simple.
+	/// `AVSpeechUtterance.rate` value for a number of words per minute.
+	/// Above 0.5, measurements give `words ≈ 177 + (rate - 0.5) × 933`.
+	/// Below that, a simple proportional relation is assumed.
 	public nonisolated static func rate(forWordsPerMinute wpm: Int) -> Float {
 		let wpm = Float(max(wpm, 1))
 		let rate = wpm >= 177 ? 0.5 + (wpm - 177) / 933 : 0.5 * wpm / 177
 		return min(max(rate, AVSpeechUtteranceMinimumSpeechRate), AVSpeechUtteranceMaximumSpeechRate)
 	}
 
-	/// Voix de meilleure qualité pour une langue BCP 47. Accepte une langue seule (`fr`).
+	/// Highest-quality voice for a BCP 47 language. Accepts a bare language code (`fr`).
 	public static func bestVoice(for language: String) -> AVSpeechSynthesisVoice? {
 		let voices = AVSpeechSynthesisVoice.speechVoices()
 		let exact = voices.filter { $0.language.caseInsensitiveCompare(language) == .orderedSame }
 		let candidates = exact.isEmpty ? voices.filter { matches($0, language) } : exact
-		// À qualité égale, la voix par défaut du système pour cette langue passe devant.
+		// At equal quality, the system's default voice for this language comes first.
 		let systemDefault = AVSpeechSynthesisVoice(language: language)?.identifier
 		return candidates.max { a, b in
 			if a.quality != b.quality { return a.quality.rawValue < b.quality.rawValue }

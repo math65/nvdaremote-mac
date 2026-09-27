@@ -3,13 +3,13 @@ import Foundation
 import Network
 import os
 
-/// Connexion TLS au relais, découpée en lignes, avec reconnexion automatique.
+/// TLS connection to the relay, split into lines, with automatic reconnection.
 ///
-/// Le certificat est d'abord vérifié normalement, ce qui suffit pour `nvdaremote.com`.
-/// Un serveur NVDA « Héberger localement » présente un certificat auto-signé : il n'est
-/// accepté que si son empreinte SHA-256 est celle qu'on a déclarée de confiance, comme
-/// dans NVDA. Sinon la connexion s'arrête et l'empreinte est remontée pour que
-/// l'utilisateur décide.
+/// The certificate is first verified normally, which is enough for `nvdaremote.com`.
+/// An NVDA "Host locally" server presents a self-signed certificate: it is only
+/// accepted if its SHA-256 fingerprint matches one previously marked as trusted, as
+/// in NVDA. Otherwise the connection stops and the fingerprint is reported so the
+/// user can decide.
 @MainActor
 public final class RelayTransport {
 	public enum Event: Equatable, Sendable {
@@ -51,13 +51,13 @@ public final class RelayTransport {
 		}
 	}
 
-	/// Envoie une ligne déjà encodée. Comme dans NVDA, rien n'est mis en file hors connexion.
+	/// Sends an already encoded line. As in NVDA, nothing is queued while disconnected.
 	public func send(_ data: Data) {
 		guard ready, let connection else { return }
 		connection.send(content: data, completion: .contentProcessed { _ in })
 	}
 
-	// MARK: - Cycle de vie de la connexion
+	// MARK: - Connection lifecycle
 
 	private func connect() {
 		guard running, let port = NWEndpoint.Port(rawValue: info.port) else { return }
@@ -95,7 +95,7 @@ public final class RelayTransport {
 				guard let self, connection === self.connection else { return }
 				if let data, !data.isEmpty {
 					for line in self.framer.append(data) {
-						// Un message peut provoquer l'arrêt : on ne livre plus rien ensuite.
+						// A message may cause a stop: deliver nothing more after that.
 						guard connection === self.connection else { return }
 						self.onLine?(line)
 					}
@@ -103,7 +103,7 @@ public final class RelayTransport {
 				if let error {
 					self.fail(connection, reason: describe(error), rejected: nil)
 				} else if isComplete {
-					self.fail(connection, reason: "le serveur a fermé la connexion", rejected: nil)
+					self.fail(connection, reason: localized("the server closed the connection"), rejected: nil)
 				} else {
 					self.receive(on: connection)
 				}
@@ -142,7 +142,7 @@ public final class RelayTransport {
 		}
 	}
 
-	// MARK: - Paramètres TCP et TLS
+	// MARK: - TCP and TLS parameters
 
 	private nonisolated static func parameters(
 		trustedFingerprint: String?,
@@ -185,8 +185,8 @@ public final class RelayTransport {
 	}
 }
 
-/// Empreinte du certificat refusé, écrite par le bloc de vérification TLS
-/// sur une file d'arrière-plan et lue ensuite sur le fil principal.
+/// Fingerprint of the rejected certificate, written by the TLS verify block
+/// on a background queue and then read on the main thread.
 private final class RejectedFingerprint: Sendable {
 	private let storage = OSAllocatedUnfairLock<String?>(initialState: nil)
 
@@ -196,19 +196,19 @@ private final class RejectedFingerprint: Sendable {
 	}
 }
 
-/// Met une empreinte au format de NVDA : SHA-256 en hexadécimal minuscule, sans séparateur.
+/// Formats a fingerprint the way NVDA does: SHA-256 in lowercase hexadecimal, without separators.
 public func normalizeFingerprint(_ fingerprint: String) -> String {
 	fingerprint.lowercased().filter(\.isHexDigit)
 }
 
 private func describe(_ error: NWError) -> String {
 	switch error {
-	case .posix(.ECONNREFUSED): "connexion refusée"
-	case .posix(.ETIMEDOUT): "délai dépassé"
-	case .posix(.ENETUNREACH), .posix(.EHOSTUNREACH): "réseau injoignable"
-	case .posix(.ECONNRESET): "connexion interrompue par le serveur"
-	case .dns: "serveur introuvable"
-	case .tls: "échec de la négociation TLS"
+	case .posix(.ECONNREFUSED): localized("connection refused")
+	case .posix(.ETIMEDOUT): localized("timed out")
+	case .posix(.ENETUNREACH), .posix(.EHOSTUNREACH): localized("network unreachable")
+	case .posix(.ECONNRESET): localized("connection reset by the server")
+	case .dns: localized("server not found")
+	case .tls: localized("TLS negotiation failed")
 	default: error.localizedDescription
 	}
 }

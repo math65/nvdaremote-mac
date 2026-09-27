@@ -1,11 +1,11 @@
 import Carbon.HIToolbox
 import Foundation
 
-/// Caractères produits par chaque touche selon la disposition active du Mac.
+/// Characters produced by each key with the Mac's active keyboard layout.
 ///
-/// La table est lue une fois, puis réutilisée : le rappel du tap clavier doit rester rapide.
-/// Appeler `reload()` quand l'utilisateur a pu changer de disposition, par exemple à
-/// chaque passage en contrôle du PC.
+/// The table is read once, then reused: the keyboard tap callback must stay fast.
+/// Call `reload()` whenever the user may have changed layouts, for example each
+/// time control switches to the PC.
 @MainActor
 public final class MacKeyboardLayout {
 	private var cache: [UInt16: KeyTranslator.Characters?] = [:]
@@ -60,7 +60,7 @@ public final class MacKeyboardLayout {
 			)
 			guard status == noErr, length > 0 else { return nil }
 			let string = String(utf16CodeUnits: characters, count: length)
-			// Les touches muettes renvoient des caractères de contrôle : on les ignore.
+			// Keys that produce no character return control characters: ignore them.
 			return string.unicodeScalars.allSatisfy { $0.properties.generalCategory == .control } ? nil : string
 		}
 	}

@@ -1,38 +1,59 @@
 import Foundation
 
-/// Session côté contrôleur : rejoint le canal et restitue sur le Mac ce que le PC envoie.
+/// Controller-side session: joins the channel and renders on the Mac what the PC sends.
 ///
-/// Pendant de `LeaderSession` dans `_remoteClient/session.py`.
+/// Counterpart of `LeaderSession` in `_remoteClient/session.py`.
 @MainActor
 public final class LeaderSession {
 	public enum Event: Equatable, Sendable {
 		case connecting
 		case connected
-		/// Canal rejoint ; `followers` est le nombre de PC déjà présents.
+		/// Channel joined; `followers` is the number of PCs already present.
 		case joined(followers: Int)
 		case followerJoined
 		case followerLeft
 		case disconnected(reason: String, willRetry: Bool)
 		case message(String)
-		/// La session s'est arrêtée d'elle-même et ne reprendra pas.
+		/// The PC pushed its clipboard.
+		case clipboardReceived(String)
+		/// The session stopped on its own and will not resume.
 		case ended(reason: String)
 		case untrustedCertificate(fingerprint: String)
 	}
 
 	public var onEvent: ((Event) -> Void)?
-	/// Chaque ligne reçue, pour le débogage.
+	/// Every line received, for debugging.
 	public var onRawLine: ((String) -> Void)?
 
 	private let info: ConnectionInfo
 	private let transport: RelayTransport
 	private let speech: SpeechOutput
 	private let tones: TonePlayer
+	private let sounds: SoundPlayer
 	private var followers: Set<Int> = []
 
-	public init(info: ConnectionInfo, trustedFingerprint: String?, speech: SpeechOutput, tones: TonePlayer) {
+	/// Muted: speech, beeps and sounds from the PC are ignored, like NVDA's
+	/// "mute remote" option when working locally.
+	public var isMuted = false {
+		didSet {
+			if isMuted { speech.cancel() }
+		}
+	}
+
+	/// Sounds from the PC (browse mode, error, etc.) can be muted separately.
+	public var playsRemoteSounds = true
+
+	public init(
+		info: ConnectionInfo,
+		trustedFingerprint: String?,
+		speech: SpeechOutput,
+		tones: TonePlayer,
+		sounds: SoundPlayer,
+	) {
 		self.info = info
 		self.speech = speech
 		self.tones = tones
+		self.sounds = sounds
 		transport = RelayTransport(info: info, trustedFingerprint: trustedFingerprint)
 		transport.onEvent = { [weak self] event in self?.handle(event) }
 		transport.onLine = { [weak self] line in self?.handle(line) }
@@ -43,12 +64,17 @@ public final class LeaderSession {
 		transport.start()
 	}
 
-	/// Nombre de PC contrôlables présents sur le canal.
+	/// Number of controllable PCs present on the channel.
 	public var followerCount: Int { followers.count }
 
-	/// Envoie une touche au PC. Sans effet hors connexion, comme dans NVDA.
+	/// Sends a key to the PC. Does nothing when not connected, as in NVDA.
 	public func sendKey(_ key: WindowsKey, pressed: Bool) {
 		transport.send(OutgoingMessage.key(key, pressed: pressed))
+	}
+
+	/// Sends text to the PC's clipboard.
+	public func pushClipboard(_ text: String) {
+		transport.send(OutgoingMessage.clipboardText(text))
 	}
 
 	public func stop() {
@@ -84,12 +110,14 @@ public final class LeaderSession {
 		guard let message = try? IncomingMessage.parse(line) else { return }
 		switch message {
 		case let .speak(sequence, priority):
+			guard !isMuted else { return }
 			speech.speak(sequence, priority: priority)
 		case .cancel:
 			speech.cancel()
 		case let .pauseSpeech(paused):
 			speech.setPaused(paused)
 		case let .tone(hz, milliseconds, left, right):
+			guard !isMuted else { return }
 			tones.beep(hz: hz, milliseconds: milliseconds, left: left, right: right)
 		case let .channelJoined(clients):
 			followers = Set(clients.filter(\.isFollower).map(\.id))
@@ -99,7 +127,7 @@ public final class LeaderSession {
 			onEvent?(.joined(followers: followers.count))
 		case let .clientJoined(client) where client.isFollower:
 			followers.insert(client.id)
-			// Le PC ajuste son braille à chaque arrivée : on redit qu'on n'en a pas.
+			// The PC adjusts its braille on every arrival: repeat that we have none.
 			transport.send(OutgoingMessage.brailleInfo())
 			onEvent?(.followerJoined)
 		case let .clientLeft(client) where client.isFollower:
@@ -110,13 +138,17 @@ public final class LeaderSession {
 		case let .motd(text) where !text.isEmpty:
 			onEvent?(.message(text))
 		case .versionMismatch:
-			end("le serveur ne prend pas en charge la version \(currentProtocolVersion) du protocole")
+			end(localized("the server does not support protocol version \(currentProtocolVersion)"))
 		case let .error(message):
-			end(message == "incorrect_password" ? "clé incorrecte" : "erreur du serveur : \(message)")
+			end(message == "incorrect_password" ? localized("incorrect key") : localized("server error: \(message)"))
 		case .nvdaNotConnected:
-			onEvent?(.message("NVDA n'est pas connecté sur le PC"))
-		case .clientJoined, .clientLeft, .motd, .wave, .ping, .other:
-			// `wave` : les sons de NVDA viendront avec leurs fichiers, dans une étape suivante.
+			onEvent?(.message(localized("NVDA is not connected on the PC")))
+		case let .wave(fileName):
+			guard !isMuted, playsRemoteSounds else { return }
+			sounds.playRemote(fileName: fileName)
+		case let .clipboardText(text):
+			onEvent?(.clipboardReceived(text))
+		case .clientJoined, .clientLeft, .motd, .ping, .other:
 			break
 		}
 	}

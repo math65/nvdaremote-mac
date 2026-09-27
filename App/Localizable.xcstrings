@@ -1,0 +1,736 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "%@ on %@": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ sur %2$@"
+          }
+        }
+      }
+    },
+    "%@: %@": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ : %2$@"
+          }
+        }
+      }
+    },
+    "%lld words per minute": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld mots par minute"
+          }
+        }
+      }
+    },
+    "Browse mode, focus mode, errors and other NVDA sounds.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mode navigation, mode formulaire, erreurs et autres sons de NVDA."
+          }
+        }
+      }
+    },
+    "Cancel": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Annuler"
+          }
+        }
+      }
+    },
+    "Caps Lock could not be restored: %@ Restarting the Mac will restore it.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Verrouillage majuscules n'a pas pu être rétablie : %@ Un redémarrage du Mac la rétablira."
+          }
+        }
+      }
+    },
+    "Certificate to verify.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Certificat à vérifier."
+          }
+        }
+      }
+    },
+    "channel key, or nvdaremote:// link": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "clé du canal, ou lien nvdaremote://"
+          }
+        }
+      }
+    },
+    "Clear Menu": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Effacer le menu"
+          }
+        }
+      }
+    },
+    "Clipboard received.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Presse-papiers reçu."
+          }
+        }
+      }
+    },
+    "Clipboard sent.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Presse-papiers envoyé."
+          }
+        }
+      }
+    },
+    "Connect": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se connecter"
+          }
+        }
+      }
+    },
+    "Connected to the PC.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connecté au PC."
+          }
+        }
+      }
+    },
+    "Connected. Waiting for the PC.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connecté. En attente du PC."
+          }
+        }
+      }
+    },
+    "Connecting to %@…": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connexion à %@…"
+          }
+        }
+      }
+    },
+    "Connection": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connexion"
+          }
+        }
+      }
+    },
+    "Connection lost: %@.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connexion perdue : %@."
+          }
+        }
+      }
+    },
+    "Connection lost: %@. Retrying in 5 seconds.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connexion perdue : %@. Nouvel essai dans 5 secondes."
+          }
+        }
+      }
+    },
+    "Connection, clipboard, and switching between Mac and PC.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connexion, presse-papiers, et bascule entre le Mac et le PC."
+          }
+        }
+      }
+    },
+    "Connect…": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se connecter…"
+          }
+        }
+      }
+    },
+    "Control the Mac": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Contrôler le Mac"
+          }
+        }
+      }
+    },
+    "Control the PC": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Contrôler le PC"
+          }
+        }
+      }
+    },
+    "Controlling the Mac.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Contrôle du Mac."
+          }
+        }
+      }
+    },
+    "Controlling the Mac. PC muted.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Contrôle du Mac. PC muet."
+          }
+        }
+      }
+    },
+    "Controlling the PC.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Contrôle du PC."
+          }
+        }
+      }
+    },
+    "Disconnect": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se déconnecter"
+          }
+        }
+      }
+    },
+    "Disconnected.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Déconnecté."
+          }
+        }
+      }
+    },
+    "General": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Général"
+          }
+        }
+      }
+    },
+    "Key": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clé"
+          }
+        }
+      }
+    },
+    "Keyboard": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clavier"
+          }
+        }
+      }
+    },
+    "Mute the PC": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couper le son du PC"
+          }
+        }
+      }
+    },
+    "Mute the PC when controlling the Mac": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couper le son du PC quand je contrôle le Mac"
+          }
+        }
+      }
+    },
+    "New shortcut: %@.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nouveau raccourci : %@."
+          }
+        }
+      }
+    },
+    "No PC connected.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aucun PC connecté."
+          }
+        }
+      }
+    },
+    "Not connected.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non connecté."
+          }
+        }
+      }
+    },
+    "NVDA key": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Touche NVDA"
+          }
+        }
+      }
+    },
+    "NVDA Remote": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "NVDA Remote"
+          }
+        }
+      }
+    },
+    "One of the two always stays visible.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "L'une des deux reste toujours visible."
+          }
+        }
+      }
+    },
+    "PC": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "PC"
+          }
+        }
+      }
+    },
+    "PC connected.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "PC connecté."
+          }
+        }
+      }
+    },
+    "PC disconnected. Waiting for it to come back.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "PC déconnecté. En attente de son retour."
+          }
+        }
+      }
+    },
+    "PC keyboard layout": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Disposition du clavier du PC"
+          }
+        }
+      }
+    },
+    "Play app sounds": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Jouer les sons de l'application"
+          }
+        }
+      }
+    },
+    "Play PC sounds": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Jouer les sons du PC"
+          }
+        }
+      }
+    },
+    "Quit NVDA Remote": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quitter NVDA Remote"
+          }
+        }
+      }
+    },
+    "Rate": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Débit"
+          }
+        }
+      }
+    },
+    "Recent Connections": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connexions récentes"
+          }
+        }
+      }
+    },
+    "Recording cancelled.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enregistrement annulé."
+          }
+        }
+      }
+    },
+    "Records a new shortcut.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enregistre un nouveau raccourci."
+          }
+        }
+      }
+    },
+    "Request Permissions": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Demander les autorisations"
+          }
+        }
+      }
+    },
+    "Server": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Serveur"
+          }
+        }
+      }
+    },
+    "Settings…": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Réglages…"
+          }
+        }
+      }
+    },
+    "Shortcuts": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Raccourcis"
+          }
+        }
+      }
+    },
+    "Show Connection Window": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Afficher la fenêtre de connexion"
+          }
+        }
+      }
+    },
+    "Show in the Dock": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Afficher dans le Dock"
+          }
+        }
+      }
+    },
+    "Show in the menu bar": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Afficher dans la barre des menus"
+          }
+        }
+      }
+    },
+    "Sounds": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sons"
+          }
+        }
+      }
+    },
+    "Speech": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Parole"
+          }
+        }
+      }
+    },
+    "Status": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "État"
+          }
+        }
+      }
+    },
+    "Stopped: %@.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Arrêt : %@."
+          }
+        }
+      }
+    },
+    "The clipboard contains no text.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Le presse-papiers ne contient pas de texte."
+          }
+        }
+      }
+    },
+    "The keyboard cannot be captured: grant the permissions in Settings first.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Le clavier ne peut pas être capturé : accordez d'abord les autorisations dans les réglages."
+          }
+        }
+      }
+    },
+    "The PC hosts the connection itself and presents its own certificate. Only trust it if you are expecting this PC.\n\nFingerprint: %@": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Le PC héberge lui-même la connexion et présente son propre certificat. Ne lui faites confiance que si vous attendez bien ce PC.\n\nEmpreinte : %@"
+          }
+        }
+      }
+    },
+    "The shortcut must include Control, Option or Command. Try again, or press Escape to cancel.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Le raccourci doit comporter Contrôle, Option ou Commande. Recommencez, ou appuyez sur Échap pour annuler."
+          }
+        }
+      }
+    },
+    "These shortcuts work from any app.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ces raccourcis fonctionnent depuis n'importe quelle application."
+          }
+        }
+      }
+    },
+    "This shortcut is already used for %@. Try another one.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ce raccourci sert déjà pour « %@ ». Choisissez-en un autre."
+          }
+        }
+      }
+    },
+    "To control the PC, the app must be able to capture the keyboard. Allow it in System Settings, Privacy & Security, under both Accessibility and Input Monitoring.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pour piloter le PC, l'application doit pouvoir intercepter le clavier. Autorisez-la dans Réglages Système, Confidentialité et sécurité, à la fois dans Accessibilité et dans Surveillance de l'entrée."
+          }
+        }
+      }
+    },
+    "Trust and Connect": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Faire confiance et se connecter"
+          }
+        }
+      }
+    },
+    "Type the new shortcut, or Escape to cancel": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tapez le nouveau raccourci, ou Échap pour annuler"
+          }
+        }
+      }
+    },
+    "Type the new shortcut, or Escape to cancel.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tapez le nouveau raccourci, ou Échap pour annuler."
+          }
+        }
+      }
+    },
+    "Unable to save the certificate: %@": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impossible d'enregistrer le certificat : %@"
+          }
+        }
+      }
+    },
+    "Unknown Certificate": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Certificat inconnu"
+          }
+        }
+      }
+    },
+    "While controlling the PC, Caps Lock becomes the NVDA key and no longer locks capitals on the Mac.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pendant le contrôle du PC, Verrouillage majuscules devient la touche NVDA et ne verrouille plus les majuscules du Mac."
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}

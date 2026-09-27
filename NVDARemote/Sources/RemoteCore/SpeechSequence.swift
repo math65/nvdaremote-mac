@@ -1,13 +1,13 @@
 import Foundation
 
-/// Un élément d'une séquence `speak`, après décodage.
+/// An item of a `speak` sequence, after decoding.
 ///
-/// NVDA sérialise ses commandes en paires `[NomDeClasse, {attributs}]` au milieu des chaînes.
-/// On ne garde que ce qui compte pour la parole locale ; une classe inconnue est ignorée,
-/// comme le fait NVDA lui-même.
+/// NVDA serializes its commands as `[ClassName, {attributes}]` pairs among the strings.
+/// We keep only what matters for local speech; an unknown class is ignored,
+/// as NVDA itself does.
 public enum SpeechItem: Equatable, Sendable {
 	case text(String)
-	/// Langue au format NVDA (`fr_FR`), ou `nil` pour revenir à la langue par défaut.
+	/// Language in NVDA format (`fr_FR`), or `nil` to return to the default language.
 	case language(String?)
 	case pause(milliseconds: Int)
 	case characterMode(Bool)
@@ -44,22 +44,22 @@ public enum SpeechItem: Equatable, Sendable {
 		case "EndUtteranceCommand":
 			return .endUtterance
 		case "PhonemeCommand":
-			// Pas de prononciation IPA avec AVSpeechSynthesizer : on garde le texte de repli.
+			// No IPA pronunciation with AVSpeechSynthesizer: keep the fallback text.
 			guard let text = attributes["text"] as? String, !text.isEmpty else { return nil }
 			return .text(text)
 		default:
-			// PitchCommand, RateCommand, VolumeCommand : pas encore appliquées.
+			// PitchCommand, RateCommand, VolumeCommand: not applied yet.
 			return nil
 		}
 	}
 }
 
-/// Un morceau à confier tel quel au synthétiseur : un texte dans une seule langue.
+/// A chunk to hand to the synthesizer as is: text in a single language.
 public struct SpeechSegment: Equatable, Sendable {
 	public var text: String
-	/// Langue au format BCP 47 (`fr-FR`), `nil` pour la voix par défaut.
+	/// Language in BCP 47 format (`fr-FR`), `nil` for the default voice.
 	public var language: String?
-	/// Silence à marquer après ce morceau.
+	/// Silence to leave after this chunk.
 	public var pauseAfterMilliseconds: Int
 
 	public init(text: String, language: String? = nil, pauseAfterMilliseconds: Int = 0) {
@@ -70,11 +70,11 @@ public struct SpeechSegment: Equatable, Sendable {
 }
 
 extension SpeechSegment {
-	/// Découpe une séquence NVDA en morceaux homogènes.
+	/// Splits an NVDA sequence into homogeneous chunks.
 	///
-	/// Un changement de langue ou une fin d'énoncé ferme le morceau en cours.
-	/// Les chaînes consécutives sont jointes par une espace, comme dans NVDA.
-	/// Une pause s'ajoute au morceau qui la précède.
+	/// A language change or the end of an utterance closes the current chunk.
+	/// Consecutive strings are joined with a space, as in NVDA.
+	/// A pause is attached to the chunk that precedes it.
 	public static func segments(from items: [SpeechItem]) -> [SpeechSegment] {
 		var segments: [SpeechSegment] = []
 		var language: String?

@@ -1,8 +1,8 @@
 import Foundation
 
-/// Empreintes de certificats acceptées par l'utilisateur, par adresse `hôte:port`.
+/// Certificate fingerprints accepted by the user, keyed by `host:port` address.
 ///
-/// Équivalent de `trustedCertificates` dans la configuration de NVDA.
+/// Equivalent of `trustedCertificates` in NVDA's configuration.
 public struct TrustStore: Sendable {
 	public let fileURL: URL
 

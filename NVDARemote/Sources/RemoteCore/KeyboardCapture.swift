@@ -2,7 +2,7 @@ import ApplicationServices
 import CoreGraphics
 import Foundation
 
-/// Combinaison de touches du Mac, par exemple le raccourci de bascule entre Mac et PC.
+/// A Mac key combination, for example the shortcut that switches between Mac and PC.
 public struct KeyShortcut: Codable, Equatable, Sendable {
 	public var keyCode: UInt16
 	public var control = false
@@ -18,10 +18,7 @@ public struct KeyShortcut: Codable, Equatable, Sendable {
 		self.shift = shift
 	}
 
-	/// Contrôle+Commande+R (code 15, même position en azerty et en qwerty).
-	public static let defaultToggle = KeyShortcut(keyCode: 15, control: true, command: true)
-
-	/// Un raccourci doit comporter Contrôle, Option ou Commande, sinon il gênerait la frappe.
+	/// A shortcut must include Control, Option or Command; otherwise it would interfere with typing.
 	public var isUsable: Bool { control || option || command }
 
 	public func matches(keyCode: UInt16, flags: CGEventFlags) -> Bool {
@@ -32,12 +29,12 @@ public struct KeyShortcut: Codable, Equatable, Sendable {
 			&& flags.contains(.maskShift) == shift
 	}
 
-	/// Nom lisible, par exemple « Ctrl+Cmd+R ».
+	/// Human-readable name, for example "Ctrl+Cmd+R".
 	public func displayName(characters: KeyTranslator.Characters?) -> String {
 		var parts: [String] = []
 		if control { parts.append("Ctrl") }
 		if option { parts.append("Option") }
-		if shift { parts.append("Maj") }
+		if shift { parts.append(localized("Shift")) }
 		if command { parts.append("Cmd") }
 		parts.append(Self.keyName(keyCode, characters: characters))
 		return parts.joined(separator: "+")
@@ -45,10 +42,12 @@ public struct KeyShortcut: Codable, Equatable, Sendable {
 
 	private static func keyName(_ keyCode: UInt16, characters: KeyTranslator.Characters?) -> String {
 		let names: [UInt16: String] = [
-			MacKeyCode.returnKey: "Retour", MacKeyCode.tab: "Tab", MacKeyCode.space: "Espace",
-			MacKeyCode.delete: "Effacement", MacKeyCode.escape: "Échap", 117: "Suppression",
-			115: "Début", 119: "Fin", 116: "Page précédente", 121: "Page suivante",
-			123: "Flèche gauche", 124: "Flèche droite", 125: "Flèche bas", 126: "Flèche haut",
+			MacKeyCode.returnKey: localized("Return"), MacKeyCode.tab: localized("Tab"),
+			MacKeyCode.space: localized("Space"), MacKeyCode.delete: localized("Delete"),
+			MacKeyCode.escape: localized("Escape"), 117: localized("Forward Delete"),
+			115: localized("Home"), 119: localized("End"), 116: localized("Page Up"), 121: localized("Page Down"),
+			123: localized("Left Arrow"), 124: localized("Right Arrow"),
+			125: localized("Down Arrow"), 126: localized("Up Arrow"),
 			122: "F1", 120: "F2", 99: "F3", 118: "F4", 96: "F5", 97: "F6",
 			98: "F7", 100: "F8", 101: "F9", 109: "F10", 103: "F11", 111: "F12",
 		]
@@ -58,28 +57,51 @@ public struct KeyShortcut: Codable, Equatable, Sendable {
 		if let plain = characters?.plain, !plain.isEmpty {
 			return plain.uppercased()
 		}
-		return "touche \(keyCode)"
+		return localized("key \(Int(keyCode))")
 	}
 }
 
-/// Capture globale du clavier par `CGEventTap`, et envoi des touches au PC en mode distant.
+/// A command triggered by a global shortcut, recognized whichever app is in the foreground.
+public enum GlobalCommand: String, CaseIterable, Codable, Sendable {
+	case toggleControl
+	case pushClipboard
+
+	public var label: String {
+		switch self {
+		case .toggleControl: localized("Switch between Mac and PC")
+		case .pushClipboard: localized("Send clipboard to PC")
+		}
+	}
+
+	/// Key codes 15 (R) and 8 (C): same position on AZERTY and QWERTY.
+	public var defaultShortcut: KeyShortcut {
+		switch self {
+		case .toggleControl: KeyShortcut(keyCode: 15, control: true, command: true)
+		case .pushClipboard: KeyShortcut(keyCode: 8, control: true, command: true)
+		}
+	}
+}
+
+/// Global keyboard capture through a `CGEventTap`, and forwarding of keys to the PC in remote mode.
 ///
-/// Suit docs/mesures-clavier.md : tap au niveau HID, faute de quoi VoiceOver confisque
-/// ses propres commandes ; réactivation si le système désactive le tap ; touche fn
-/// reconnue par son code et jamais par son drapeau, que les flèches portent aussi.
+/// Follows docs/keyboard-measurements.md: the tap sits at the HID level, otherwise VoiceOver
+/// keeps its own commands; it is re-enabled if the system disables it; the fn key is
+/// recognized by its key code, never by its flag, which the arrow keys also carry.
 ///
-/// En mode local, seul le raccourci de bascule est intercepté. En mode distant, toutes
-/// les touches sont avalées et envoyées au PC, sauf les relâchements de touches qu'on
-/// n'a pas envoyées enfoncées : ceux-là reviennent au Mac, qui a vu l'appui.
+/// In local mode, only global shortcuts are intercepted. In remote mode, every key is
+/// swallowed and sent to the PC, except key-ups for keys whose key-down was not sent:
+/// those go back to the Mac, which saw the key-down.
 @MainActor
 public final class KeyboardCapture {
-	public var toggleShortcut = KeyShortcut.defaultToggle
-	/// À couper pendant qu'on enregistre un nouveau raccourci, pour qu'il arrive à la fenêtre.
-	public var isToggleEnabled = true
+	public var shortcuts: [GlobalCommand: KeyShortcut] = Dictionary(
+		uniqueKeysWithValues: GlobalCommand.allCases.map { ($0, $0.defaultShortcut) },
+	)
+	/// Turn off while recording a new shortcut, so that it reaches the window.
+	public var areShortcutsEnabled = true
 	public var translator = KeyTranslator()
-	/// Appelé quand l'utilisateur tape le raccourci de bascule.
-	public var onToggle: (() -> Void)?
-	/// Touche à envoyer au PC, enfoncée ou relâchée.
+	/// Called when the user types a global shortcut, in both local and remote mode.
+	public var onCommand: ((GlobalCommand) -> Void)?
+	/// Key to send to the PC, pressed or released.
 	public var onKey: ((WindowsKey, Bool) -> Void)?
 
 	public private(set) var isRemote = false
@@ -88,30 +110,30 @@ public final class KeyboardCapture {
 	public let layout = MacKeyboardLayout()
 	private var tap: CFMachPort?
 	private var runLoopSource: CFRunLoopSource?
-	/// Touches envoyées enfoncées au PC, dans l'ordre d'appui.
+	/// Keys sent to the PC as pressed, in the order they were pressed.
 	private var sentDown: [WindowsKey] = []
-	/// Touche du raccourci de bascule dont on a avalé l'appui : son relâchement doit l'être aussi.
+	/// Global shortcut keys whose key-down was swallowed: their key-up must be swallowed too.
 	private var swallowedKeyUps: Set<UInt16> = []
 
 	public init() {}
 
-	// MARK: - Autorisations
+	// MARK: - Permissions
 
-	/// Accessibilité pour avaler les événements, Surveillance de l'entrée pour les observer.
+	/// Accessibility to swallow events, Input Monitoring to observe them.
 	public static var hasPermissions: Bool {
 		AXIsProcessTrusted() && CGPreflightListenEventAccess()
 	}
 
-	/// Déclenche les demandes système. L'utilisateur doit ensuite cocher l'application
-	/// dans Réglages Système ; le résultat n'est pas immédiat.
+	/// Triggers the system prompts. The user must then enable the app in
+	/// System Settings; the result is not immediate.
 	public static func requestPermissions() {
-		// Valeur de `kAXTrustedCheckOptionPrompt`, qu'on ne peut pas lire sans avertissement en Swift 6.
+		// Value of `kAXTrustedCheckOptionPrompt`, which cannot be read without a warning in Swift 6.
 		let options = ["AXTrustedCheckOptionPrompt": true] as CFDictionary
 		_ = AXIsProcessTrustedWithOptions(options)
 		_ = CGRequestListenEventAccess()
 	}
 
-	// MARK: - Cycle de vie
+	// MARK: - Lifecycle
 
 	public func start() throws(KeyboardCaptureError) {
 		guard tap == nil else { return }
@@ -146,8 +168,8 @@ public final class KeyboardCapture {
 		runLoopSource = nil
 	}
 
-	/// Passe en contrôle du PC ou revient au Mac. Au retour, toutes les touches encore
-	/// enfoncées côté PC y sont relâchées.
+	/// Switches to controlling the PC or back to the Mac. When switching back, every key
+	/// still held down on the PC side is released there.
 	public func setRemote(_ remote: Bool) {
 		guard remote != isRemote else { return }
 		if remote {
@@ -161,8 +183,8 @@ public final class KeyboardCapture {
 
 	private func releaseAll() {
 		guard !sentDown.isEmpty else { return }
-		// Comme NVDA : une touche neutre d'abord, pour que relâcher un modificateur seul
-		// ne déclenche rien sur le PC (Alt qui ouvrirait un menu, par exemple).
+		// Like NVDA: a neutral key first, so that releasing a lone modifier does not
+		// trigger anything on the PC (Alt opening a menu, for example).
 		onKey?(.none, true)
 		onKey?(.none, false)
 		for key in sentDown.reversed() {
@@ -171,9 +193,9 @@ public final class KeyboardCapture {
 		sentDown.removeAll()
 	}
 
-	// MARK: - Événements
+	// MARK: - Events
 
-	/// Ce qu'on retient d'un événement clavier : des valeurs simples, lues sur place.
+	/// What we keep from a keyboard event: plain values, read on the spot.
 	struct KeyEvent: Sendable {
 		var type: CGEventType
 		var keyCode: UInt16
@@ -195,7 +217,7 @@ public final class KeyboardCapture {
 		}
 	}
 
-	/// - Returns: `true` pour avaler l'événement.
+	/// - Returns: `true` to swallow the event.
 	func handle(_ event: KeyEvent) -> Bool {
 		let keyCode = event.keyCode
 		switch event.type {
@@ -205,10 +227,14 @@ public final class KeyboardCapture {
 			}
 			return false
 		case .keyDown:
-			if isToggleEnabled, toggleShortcut.matches(keyCode: keyCode, flags: event.flags) {
+			if areShortcutsEnabled,
+				let command = GlobalCommand.allCases.first(where: {
+					shortcuts[$0]?.matches(keyCode: keyCode, flags: event.flags) == true
+				})
+			{
 				swallowedKeyUps.insert(keyCode)
 				if !event.isRepeat {
-					onToggle?()
+					onCommand?(command)
 				}
 				return true
 			}
@@ -242,7 +268,7 @@ public final class KeyboardCapture {
 		if !sentDown.contains(key) {
 			sentDown.append(key)
 		}
-		// Une touche maintenue répète son appui, comme sous Windows.
+		// A held key repeats its key-down, as on Windows.
 		onKey?(key, true)
 	}
 
@@ -255,8 +281,8 @@ public final class KeyboardCapture {
 		return true
 	}
 
-	/// État d'un modificateur après un `flagsChanged`, par les masques qui distinguent
-	/// gauche et droite (`NX_DEVICE*KEYMASK`). `nil` pour une touche qui n'en est pas un.
+	/// State of a modifier after a `flagsChanged`, using the masks that distinguish left
+	/// and right (`NX_DEVICE*KEYMASK`). `nil` for a key that is not a modifier.
 	nonisolated static func isModifierPressed(_ keyCode: UInt16, flags: CGEventFlags) -> Bool? {
 		let deviceMasks: [UInt16: UInt64] = [
 			MacKeyCode.control: 0x0001,
@@ -269,7 +295,7 @@ public final class KeyboardCapture {
 			MacKeyCode.rightControl: 0x2000,
 		]
 		if keyCode == MacKeyCode.function {
-			// Fiable ici, puisque c'est l'événement de fn lui-même.
+			// Reliable here, since this is fn's own event.
 			return flags.contains(.maskSecondaryFn)
 		}
 		guard let mask = deviceMasks[keyCode] else { return nil }
@@ -284,14 +310,14 @@ public enum KeyboardCaptureError: Error, LocalizedError {
 	public var errorDescription: String? {
 		switch self {
 		case .missingPermissions:
-			"L'application n'a pas encore les autorisations Accessibilité et Surveillance de l'entrée."
+			localized("The app does not have the Accessibility and Input Monitoring permissions yet.")
 		case .tapCreationFailed:
-			"Impossible d'intercepter le clavier."
+			localized("Unable to capture the keyboard.")
 		}
 	}
 }
 
-/// Le tap est posé sur la boucle principale : ce rappel s'exécute donc sur le fil principal.
+/// The tap is installed on the main run loop, so this callback runs on the main thread.
 private func keyboardTapCallback(
 	proxy: CGEventTapProxy,
 	type: CGEventType,

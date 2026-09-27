@@ -1,12 +1,12 @@
 import Foundation
 
-/// Version du protocole Remote Access annoncée à la connexion.
+/// Remote Access protocol version announced when connecting.
 public let currentProtocolVersion = 2
 
-/// Un client présent sur le canal, tel que le relais le décrit.
+/// A client present on the channel, as described by the relay.
 public struct RemoteClient: Equatable, Sendable {
 	public var id: Int
-	/// `slave` pour un PC contrôlé, `master` pour un contrôleur.
+	/// `slave` for a controlled PC, `master` for a controller.
 	public var connectionType: String
 
 	public var isFollower: Bool { connectionType == "slave" }
@@ -25,16 +25,16 @@ public struct RemoteClient: Equatable, Sendable {
 	}
 }
 
-/// Priorité d'un message `speak`, reprise de `speech.priorities.SpeechPriority` dans NVDA.
+/// Priority of a `speak` message, taken from `speech.priorities.SpeechPriority` in NVDA.
 public enum SpeechPriority: Int, Sendable {
 	case normal = 0
-	/// À dire après l'énoncé en cours.
+	/// Spoken after the current utterance.
 	case next = 1
-	/// À dire tout de suite, en coupant la parole en cours.
+	/// Spoken immediately, interrupting the current speech.
 	case now = 2
 }
 
-/// Messages que le contrôleur sait traiter. Tout le reste arrive en `.other`.
+/// Messages the controller knows how to handle. Everything else arrives as `.other`.
 public enum IncomingMessage: Equatable, Sendable {
 	case channelJoined(clients: [RemoteClient])
 	case clientJoined(RemoteClient)
@@ -44,6 +44,7 @@ public enum IncomingMessage: Equatable, Sendable {
 	case pauseSpeech(Bool)
 	case tone(hz: Double, milliseconds: Int, left: Int, right: Int)
 	case wave(fileName: String)
+	case clipboardText(String)
 	case motd(String)
 	case versionMismatch
 	case error(String)
@@ -51,7 +52,7 @@ public enum IncomingMessage: Equatable, Sendable {
 	case ping
 	case other(type: String)
 
-	/// Décode une ligne reçue. Échoue seulement si ce n'est pas un objet JSON avec un `type`.
+	/// Decodes a received line. Fails only if it is not a JSON object with a `type`.
 	public static func parse(_ line: Data) throws(MessageError) -> IncomingMessage {
 		guard let object = try? JSONSerialization.jsonObject(with: line),
 			let dict = object as? [String: Any],
@@ -87,6 +88,8 @@ public enum IncomingMessage: Equatable, Sendable {
 			)
 		case "wave":
 			return .wave(fileName: dict["fileName"] as? String ?? "")
+		case "set_clipboard_text":
+			return .clipboardText(dict["text"] as? String ?? "")
 		case "motd":
 			return .motd(dict["motd"] as? String ?? "")
 		case "version_mismatch":
@@ -107,7 +110,7 @@ public enum MessageError: Error {
 	case malformed
 }
 
-/// Messages envoyés par le contrôleur, déjà encodés et terminés par `\n`.
+/// Messages sent by the controller, already encoded and terminated by `\n`.
 public enum OutgoingMessage {
 	public static func protocolVersion(_ version: Int = currentProtocolVersion) -> Data {
 		encode(["type": "protocol_version", "version": version])
@@ -117,19 +120,23 @@ public enum OutgoingMessage {
 		encode(["type": "join", "channel": channel, "connection_type": "master"])
 	}
 
-	/// Avec `numCells` à 0, le PC n'envoie jamais de cellules braille.
+	/// With `numCells` set to 0, the PC never sends braille cells.
 	public static func brailleInfo(name: String = "noBraille", numCells: Int = 0) -> Data {
 		encode(["type": "set_braille_info", "name": name, "numCells": numCells])
 	}
 
-	/// Une touche enfoncée ou relâchée. Le PC recalcule lui-même le code de balayage.
+	public static func clipboardText(_ text: String) -> Data {
+		encode(["type": "set_clipboard_text", "text": text])
+	}
+
+	/// A key pressed or released. The PC computes the scan code itself.
 	public static func key(_ key: WindowsKey, pressed: Bool) -> Data {
 		encode(["type": "key", "vk_code": key.vk, "extended": key.extended, "pressed": pressed])
 	}
 
 	static func encode(_ object: [String: Any]) -> Data {
-		// Les dictionnaires ci-dessus ne contiennent que des chaînes, des entiers et des booléens :
-		// la sérialisation ne peut pas échouer.
+		// The dictionaries above only contain strings, integers and booleans:
+		// serialization cannot fail.
 		var data = try! JSONSerialization.data(withJSONObject: object, options: [.sortedKeys])
 		data.append(0x0A)
 		return data

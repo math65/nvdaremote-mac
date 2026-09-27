@@ -9,7 +9,7 @@ import Testing
 
 	let french = KeyTranslator(nvdaKey: .capsLock, pcLayout: .french)
 
-	/// Relevé de docs/mesures-clavier.md : la touche de code 12, « ANSI_Q », produit « a » en azerty.
+	/// Measured in docs/keyboard-measurements.md: key code 12, "ANSI_Q", produces "a" on AZERTY.
 	@Test func lettersFollowProducedCharacter() {
 		#expect(french.translate(keyCode: 12, characters: Chars(plain: "a", shifted: "A")) == WindowsKey(0x41))
 		#expect(french.translate(keyCode: 0, characters: Chars(plain: "q", shifted: "Q")) == WindowsKey(0x51))
@@ -33,7 +33,7 @@ import Testing
 	}
 
 	@Test func unknownCharacterFallsBackToPosition() {
-		// « @ » n'existe pas sans modificateur sur un PC azerty : on prend la touche au même endroit.
+		// "@" has no unmodified key on an AZERTY PC: use the key at the same position.
 		#expect(french.translate(keyCode: 50, characters: Chars(plain: "@", shifted: "#")) == WindowsKey(0xDE))
 		#expect(french.translate(keyCode: 200, characters: Chars(plain: "@", shifted: "#")) == nil)
 	}
@@ -52,7 +52,7 @@ import Testing
 		#expect(french.translate(keyCode: MacKeyCode.option, characters: nil) == WindowsKey(0xA4))
 		#expect(french.translate(keyCode: MacKeyCode.control, characters: nil) == WindowsKey(0xA2))
 		#expect(french.translate(keyCode: MacKeyCode.returnKey, characters: nil) == WindowsKey(0x0D))
-		// Le pavé numérique, Verr. num. désactivé : numpad8 = Haut non étendu.
+		// Numeric keypad with Num Lock off: numpad8 = non-extended Up.
 		#expect(french.translate(keyCode: 91, characters: Chars(plain: "8", shifted: "8")) == WindowsKey(0x26))
 	}
 
@@ -82,9 +82,9 @@ import Testing
 	}
 
 	@Test func toggleShortcutMatchesExactModifiers() {
-		let shortcut = KeyShortcut.defaultToggle
+		let shortcut = GlobalCommand.toggleControl.defaultShortcut
 		#expect(shortcut.matches(keyCode: 15, flags: [.maskControl, .maskCommand]))
-		// Les drapeaux sans rapport, comme fn ou pavé numérique, ne gênent pas.
+		// Unrelated flags, such as fn or numeric keypad, do not interfere.
 		#expect(shortcut.matches(keyCode: 15, flags: [.maskControl, .maskCommand, .maskSecondaryFn]))
 		#expect(!shortcut.matches(keyCode: 15, flags: [.maskControl, .maskCommand, .maskShift]))
 		#expect(!shortcut.matches(keyCode: 15, flags: [.maskControl]))
@@ -107,13 +107,13 @@ import Testing
 
 	final class Recorder {
 		var keys: [(WindowsKey, Bool)] = []
-		var toggles = 0
+		var commands: [GlobalCommand] = []
 	}
 
 	init() {
 		let recorder = recorder
 		capture.onKey = { recorder.keys.append(($0, $1)) }
-		capture.onToggle = { recorder.toggles += 1 }
+		capture.onCommand = { recorder.commands.append($0) }
 	}
 
 	var sent: [String] {
@@ -126,7 +126,8 @@ import Testing
 		#expect(capture.handle(Event(type: .keyDown, keyCode: 15, flags: [.maskControl, .maskCommand])))
 		#expect(capture.handle(Event(type: .keyDown, keyCode: 15, flags: [.maskControl, .maskCommand], isRepeat: true)))
 		#expect(capture.handle(Event(type: .keyUp, keyCode: 15)))
-		#expect(recorder.toggles == 1)
+		#expect(capture.handle(Event(type: .keyDown, keyCode: 8, flags: [.maskControl, .maskCommand])))
+		#expect(recorder.commands == [.toggleControl, .pushClipboard])
 		#expect(recorder.keys.isEmpty)
 	}
 
@@ -140,7 +141,7 @@ import Testing
 		#expect(sent == ["a2↓", "24↓", "24↑", "a2↑"])
 	}
 
-	/// Juste après la bascule, Ctrl et Cmd sont encore tenus : leur relâchement revient au Mac.
+	/// Right after switching, Control and Command are still held: their release goes back to the Mac.
 	@Test func releaseOfKeyNeverSentGoesBackToMac() {
 		capture.setRemote(true)
 		#expect(!capture.handle(Event(type: .flagsChanged, keyCode: MacKeyCode.command, flags: [])))
@@ -154,7 +155,7 @@ import Testing
 		_ = capture.handle(Event(type: .keyDown, keyCode: 126))
 		capture.setRemote(false)
 		#expect(sent == ["a4↓", "26↓", "ff↓", "ff↑", "26↑", "a4↑"])
-		// Plus rien n'est envoyé ensuite.
+		// Nothing more is sent afterwards.
 		#expect(!capture.handle(Event(type: .keyUp, keyCode: 126)))
 		#expect(recorder.keys.count == 6)
 	}
@@ -163,6 +164,29 @@ import Testing
 		capture.setRemote(true)
 		#expect(capture.handle(Event(type: .flagsChanged, keyCode: MacKeyCode.capsLock, flags: .maskAlphaShift)))
 		#expect(recorder.keys.isEmpty)
+	}
+}
+
+@Suite struct SoundPlayerTests {
+	@Test func remotePathKeepsOnlySafeBaseName() {
+		#expect(SoundPlayer.soundName(fromRemotePath: #"C:\Program Files\NVDA\waves\browseMode.wav"#) == "browseMode")
+		#expect(SoundPlayer.soundName(fromRemotePath: "focusMode.WAV") == "focusMode")
+		#expect(SoundPlayer.soundName(fromRemotePath: #"C:\x\..\"#) == nil)
+		#expect(SoundPlayer.soundName(fromRemotePath: "") == nil)
+	}
+
+	@Test func nvdaSoundsAreBundled() {
+		for name in ["browseMode", "focusMode", "error", "connected", "clipboardReceive"] {
+			#expect(Bundle.module.url(forResource: name, withExtension: "wav", subdirectory: "Sounds") != nil)
+		}
+	}
+
+	@Test func clipboardMessages() throws {
+		#expect(try IncomingMessage.parse(Data(#"{"type":"set_clipboard_text","text":"é\n2"}"#.utf8))
+			== .clipboardText("é\n2"))
+		let object = try #require(
+			JSONSerialization.jsonObject(with: OutgoingMessage.clipboardText("x")) as? [String: String])
+		#expect(object == ["type": "set_clipboard_text", "text": "x"])
 	}
 }
 
@@ -175,7 +199,7 @@ import Testing
 			"""
 		#expect(!CapsLockRemap.hasMappings(none))
 		#expect(!CapsLockRemap.hasMappings("(null)\n"))
-		// Après un retrait, chaque périphérique garde une liste vide.
+		// After removal, each device keeps an empty list.
 		#expect(!CapsLockRemap.hasMappings("""
 			RegistryID  Key                   Value
 			100000c66   UserKeyMapping   (

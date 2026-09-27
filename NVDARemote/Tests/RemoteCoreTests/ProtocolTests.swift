@@ -74,7 +74,7 @@ import Testing
 		try IncomingMessage.parse(Data(json.utf8))
 	}
 
-	/// Exemple réel reproduit dans docs/etude-nvda-remote-macos.md, section 2.6.
+	/// Real example reproduced in docs/feasibility-study.md, section 2.6.
 	@Test func decodesRealSpeakMessage() throws {
 		let message = try parse("""
 			{"type": "speak", "priority": 0, "origin": 3,
@@ -166,5 +166,16 @@ import Testing
 
 	@Test func normalizesFingerprints() {
 		#expect(normalizeFingerprint("AB:cd 12") == "abcd12")
+	}
+}
+
+@Suite struct LocalizationTests {
+	/// The code is in English; French comes from the package's string catalog.
+	@Test func frenchCatalogIsBundled() throws {
+		let path = try #require(Bundle.module.path(forResource: "fr", ofType: "lproj"))
+		let french = try #require(Bundle(path: path))
+		#expect(french.localizedString(forKey: "incorrect key", value: nil, table: nil) == "clé incorrecte")
+		#expect(french.localizedString(forKey: "key %lld", value: nil, table: nil) == "touche %lld")
+		#expect(Bundle.module.localizations.contains("fr"))
 	}
 }
