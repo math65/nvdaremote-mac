@@ -701,16 +701,6 @@
         }
       }
     },
-    "The keyboard cannot be captured: grant the permissions in Settings first.": {
-      "localizations": {
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Le clavier ne peut pas être capturé : accordez d'abord les autorisations dans les réglages."
-          }
-        }
-      }
-    },
     "The layout set in Windows on the PC, used to type punctuation correctly.": {
       "localizations": {
         "fr": {
@@ -767,6 +757,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Ce raccourci sert déjà pour « %@ ». Choisissez-en un autre."
+          }
+        }
+      }
+    },
+    "To control the PC, allow NVDA Remote in System Settings, under Accessibility and Input Monitoring.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pour contrôler le PC, autorisez NVDA Remote dans Réglages Système, sous Accessibilité et Surveillance de l'entrée."
           }
         }
       }

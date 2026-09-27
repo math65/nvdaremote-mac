@@ -3,51 +3,90 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 77;
+	objectVersion = 110;
 	objects = {
 
 /* Begin PBXBuildFile section */
-		4E5652000000000000000010 /* RemoteCore in Frameworks */ = {isa = PBXBuildFile; productRef = 4E5652000000000000000020 /* RemoteCore */; };
+		944BFDD63069D39100748C4F /* RemoteCore in Frameworks */ = {isa = PBXBuildFile; productRef = 944BFDD53069D39100748C4F /* RemoteCore */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		94C3AF753069D2CE001A6F08 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 94C3AF5F3069D2CD001A6F08 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 94C3AF663069D2CD001A6F08;
+			remoteInfo = NVDARemote;
+		};
+		94C3AF7F3069D2CE001A6F08 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 94C3AF5F3069D2CD001A6F08 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 94C3AF663069D2CD001A6F08;
+			remoteInfo = NVDARemote;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
-		4E5652000000000000000030 /* NVDA Remote.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "NVDA Remote.app"; sourceTree = BUILT_PRODUCTS_DIR; };
-		4E5652000000000000000035 /* NVDARemote */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = NVDARemote; sourceTree = "<group>"; };
+		94C3AF673069D2CD001A6F08 /* NVDA Remote.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "NVDA Remote.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		94C3AF743069D2CE001A6F08 /* NVDARemoteTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = NVDARemoteTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		94C3AF7E3069D2CE001A6F08 /* NVDARemoteUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = NVDARemoteUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		4E5652000000000000000040 /* App */ = {
+		94C3AF693069D2CD001A6F08 /* App */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = App;
+			sourceTree = "<group>";
+		};
+		94C3AF773069D2CE001A6F08 /* NVDARemoteTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = NVDARemoteTests;
+			sourceTree = "<group>";
+		};
+		94C3AF813069D2CE001A6F08 /* NVDARemoteUITests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = NVDARemoteUITests;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		4E5652000000000000000050 /* Frameworks */ = {
+		94C3AF643069D2CD001A6F08 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
 			files = (
-				4E5652000000000000000010 /* RemoteCore in Frameworks */,
+				944BFDD63069D39100748C4F /* RemoteCore in Frameworks */,
 			);
-			runOnlyForDeploymentPostprocessing = 0;
+		};
+		94C3AF713069D2CE001A6F08 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			files = (
+			);
+		};
+		94C3AF7B3069D2CE001A6F08 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			files = (
+			);
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		4E5652000000000000000060 = {
+		94C3AF5E3069D2CD001A6F08 = {
 			isa = PBXGroup;
 			children = (
-				4E5652000000000000000040 /* App */,
-				4E5652000000000000000035 /* NVDARemote */,
-				4E5652000000000000000070 /* Products */,
+				94C3AF693069D2CD001A6F08 /* App */,
+				94C3AF773069D2CE001A6F08 /* NVDARemoteTests */,
+				94C3AF813069D2CE001A6F08 /* NVDARemoteUITests */,
+				94C3AF683069D2CD001A6F08 /* Products */,
 			);
 			sourceTree = "<group>";
 		};
-		4E5652000000000000000070 /* Products */ = {
+		94C3AF683069D2CD001A6F08 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				4E5652000000000000000030 /* NVDA Remote.app */,
+				94C3AF673069D2CD001A6F08 /* NVDA Remote.app */,
+				94C3AF743069D2CE001A6F08 /* NVDARemoteTests.xctest */,
+				94C3AF7E3069D2CE001A6F08 /* NVDARemoteUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -55,45 +94,93 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		4E5652000000000000000080 /* NVDARemoteApp */ = {
+		94C3AF663069D2CD001A6F08 /* NVDARemote */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 4E56520000000000000000A0 /* Build configuration list for PBXNativeTarget "NVDARemoteApp" */;
+			buildConfigurationList = 94C3AF863069D2CE001A6F08 /* Build configuration list for PBXNativeTarget "NVDARemote" */;
 			buildPhases = (
-				4E5652000000000000000090 /* Sources */,
-				4E5652000000000000000050 /* Frameworks */,
-				4E5652000000000000000091 /* Resources */,
+				94C3AF633069D2CD001A6F08 /* Sources */,
+				94C3AF643069D2CD001A6F08 /* Frameworks */,
+				94C3AF653069D2CD001A6F08 /* Resources */,
+			);
+			buildRules = (
+			);
+			fileSystemSynchronizedGroups = (
+				94C3AF693069D2CD001A6F08 /* App */,
+			);
+			name = NVDARemote;
+			packageProductDependencies = (
+				944BFDD53069D39100748C4F /* RemoteCore */,
+			);
+			productName = NVDARemote;
+			productReference = 94C3AF673069D2CD001A6F08 /* NVDA Remote.app */;
+			productType = "com.apple.product-type.application";
+		};
+		94C3AF733069D2CE001A6F08 /* NVDARemoteTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 94C3AF893069D2CE001A6F08 /* Build configuration list for PBXNativeTarget "NVDARemoteTests" */;
+			buildPhases = (
+				94C3AF703069D2CE001A6F08 /* Sources */,
+				94C3AF713069D2CE001A6F08 /* Frameworks */,
+				94C3AF723069D2CE001A6F08 /* Resources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				94C3AF763069D2CE001A6F08 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
-				4E5652000000000000000040 /* App */,
+				94C3AF773069D2CE001A6F08 /* NVDARemoteTests */,
 			);
-			name = NVDARemoteApp;
-			packageProductDependencies = (
-				4E5652000000000000000020 /* RemoteCore */,
+			name = NVDARemoteTests;
+			productName = NVDARemoteTests;
+			productReference = 94C3AF743069D2CE001A6F08 /* NVDARemoteTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		94C3AF7D3069D2CE001A6F08 /* NVDARemoteUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 94C3AF8C3069D2CE001A6F08 /* Build configuration list for PBXNativeTarget "NVDARemoteUITests" */;
+			buildPhases = (
+				94C3AF7A3069D2CE001A6F08 /* Sources */,
+				94C3AF7B3069D2CE001A6F08 /* Frameworks */,
+				94C3AF7C3069D2CE001A6F08 /* Resources */,
 			);
-			productName = NVDARemoteApp;
-			productReference = 4E5652000000000000000030 /* NVDA Remote.app */;
-			productType = "com.apple.product-type.application";
+			buildRules = (
+			);
+			dependencies = (
+				94C3AF803069D2CE001A6F08 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				94C3AF813069D2CE001A6F08 /* NVDARemoteUITests */,
+			);
+			name = NVDARemoteUITests;
+			productName = NVDARemoteUITests;
+			productReference = 94C3AF7E3069D2CE001A6F08 /* NVDARemoteUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
 		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
-		4E56520000000000000000B0 /* Project object */ = {
+		94C3AF5F3069D2CD001A6F08 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 2700;
 				LastUpgradeCheck = 2700;
 				TargetAttributes = {
-					4E5652000000000000000080 = {
+					94C3AF663069D2CD001A6F08 = {
 						CreatedOnToolsVersion = 27.0;
+					};
+					94C3AF733069D2CE001A6F08 = {
+						CreatedOnToolsVersion = 27.0;
+						TestTargetID = 94C3AF663069D2CD001A6F08;
+					};
+					94C3AF7D3069D2CE001A6F08 = {
+						CreatedOnToolsVersion = 27.0;
+						TestTargetID = 94C3AF663069D2CD001A6F08;
 					};
 				};
 			};
-			buildConfigurationList = 4E56520000000000000000C0 /* Build configuration list for PBXProject "NVDARemote" */;
+			buildConfigurationList = 94C3AF623069D2CD001A6F08 /* Build configuration list for PBXProject "NVDARemote" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -101,93 +188,211 @@
 				fr,
 				Base,
 			);
-			mainGroup = 4E5652000000000000000060;
+			mainGroup = 94C3AF5E3069D2CD001A6F08;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				4E56520000000000000000D0 /* XCLocalSwiftPackageReference "NVDARemote" */,
+				944BFDD43069D39100748C4F /* XCLocalSwiftPackageReference "NVDARemote" */,
 			);
 			preferredProjectObjectVersion = 77;
-			productRefGroup = 4E5652000000000000000070 /* Products */;
+			productRefGroup = 94C3AF683069D2CD001A6F08 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				4E5652000000000000000080 /* NVDARemoteApp */,
+				94C3AF663069D2CD001A6F08 /* NVDARemote */,
+				94C3AF733069D2CE001A6F08 /* NVDARemoteTests */,
+				94C3AF7D3069D2CE001A6F08 /* NVDARemoteUITests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		4E5652000000000000000091 /* Resources */ = {
+		94C3AF653069D2CD001A6F08 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
 			files = (
 			);
-			runOnlyForDeploymentPostprocessing = 0;
+		};
+		94C3AF723069D2CE001A6F08 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			files = (
+			);
+		};
+		94C3AF7C3069D2CE001A6F08 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			files = (
+			);
 		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		4E5652000000000000000090 /* Sources */ = {
+		94C3AF633069D2CD001A6F08 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
 			files = (
 			);
-			runOnlyForDeploymentPostprocessing = 0;
+		};
+		94C3AF703069D2CE001A6F08 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			files = (
+			);
+		};
+		94C3AF7A3069D2CE001A6F08 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			files = (
+			);
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		94C3AF763069D2CE001A6F08 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 94C3AF663069D2CD001A6F08 /* NVDARemote */;
+			targetProxy = 94C3AF753069D2CE001A6F08 /* PBXContainerItemProxy */;
+		};
+		94C3AF803069D2CE001A6F08 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 94C3AF663069D2CD001A6F08 /* NVDARemote */;
+			targetProxy = 94C3AF7F3069D2CE001A6F08 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
-		4E56520000000000000000C1 /* Debug */ = {
+		94C3AF843069D2CE001A6F08 /* Debug configuration for PBXProject "NVDARemote" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = 633EG76YX5;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
 					"$(inherited)",
 				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
 			name = Debug;
 		};
-		4E56520000000000000000C2 /* Release */ = {
+		94C3AF853069D2CE001A6F08 /* Release configuration for PBXProject "NVDARemote" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = 633EG76YX5;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
 				SDKROOT = macosx;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 			};
 			name = Release;
 		};
-		4E56520000000000000000A1 /* Debug */ = {
+		94C3AF873069D2CE001A6F08 /* Debug configuration for PBXNativeTarget "NVDARemote" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 3;
+				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = 633EG76YX5;
 				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Config/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "NVDA Remote";
@@ -199,20 +404,30 @@
 				);
 				MARKETING_VERSION = 0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.math65.nvdaremote;
+				PRODUCT_MODULE_NAME = NVDARemote;
 				PRODUCT_NAME = "NVDA Remote";
+				REGISTER_APP_GROUPS = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 6.0;
 			};
 			name = Debug;
 		};
-		4E56520000000000000000A2 /* Release */ = {
+		94C3AF883069D2CE001A6F08 /* Release configuration for PBXNativeTarget "NVDARemote" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 3;
+				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = 633EG76YX5;
 				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Config/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "NVDA Remote";
@@ -224,48 +439,153 @@
 				);
 				MARKETING_VERSION = 0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.math65.nvdaremote;
+				PRODUCT_MODULE_NAME = NVDARemote;
 				PRODUCT_NAME = "NVDA Remote";
+				REGISTER_APP_GROUPS = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+		94C3AF8A3069D2CE001A6F08 /* Debug configuration for PBXNativeTarget "NVDARemoteTests" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
+				DEVELOPMENT_TEAM = 633EG76YX5;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.math65.NVDARemoteTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/NVDA Remote.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/NVDA Remote";
+			};
+			name = Debug;
+		};
+		94C3AF8B3069D2CE001A6F08 /* Release configuration for PBXNativeTarget "NVDARemoteTests" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
+				DEVELOPMENT_TEAM = 633EG76YX5;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.math65.NVDARemoteTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/NVDA Remote.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/NVDA Remote";
+			};
+			name = Release;
+		};
+		94C3AF8D3069D2CE001A6F08 /* Debug configuration for PBXNativeTarget "NVDARemoteUITests" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
+				DEVELOPMENT_TEAM = 633EG76YX5;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.math65.NVDARemoteUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TEST_TARGET_NAME = NVDARemote;
+			};
+			name = Debug;
+		};
+		94C3AF8E3069D2CE001A6F08 /* Release configuration for PBXNativeTarget "NVDARemoteUITests" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
+				DEVELOPMENT_TEAM = 633EG76YX5;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.math65.NVDARemoteUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TEST_TARGET_NAME = NVDARemote;
 			};
 			name = Release;
 		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		4E56520000000000000000A0 /* Build configuration list for PBXNativeTarget "NVDARemoteApp" */ = {
+		94C3AF623069D2CD001A6F08 /* Build configuration list for PBXProject "NVDARemote" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				4E56520000000000000000A1 /* Debug */,
-				4E56520000000000000000A2 /* Release */,
+				94C3AF843069D2CE001A6F08 /* Debug configuration for PBXProject "NVDARemote" */,
+				94C3AF853069D2CE001A6F08 /* Release configuration for PBXProject "NVDARemote" */,
 			);
-			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		4E56520000000000000000C0 /* Build configuration list for PBXProject "NVDARemote" */ = {
+		94C3AF863069D2CE001A6F08 /* Build configuration list for PBXNativeTarget "NVDARemote" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				4E56520000000000000000C1 /* Debug */,
-				4E56520000000000000000C2 /* Release */,
+				94C3AF873069D2CE001A6F08 /* Debug configuration for PBXNativeTarget "NVDARemote" */,
+				94C3AF883069D2CE001A6F08 /* Release configuration for PBXNativeTarget "NVDARemote" */,
 			);
-			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		94C3AF893069D2CE001A6F08 /* Build configuration list for PBXNativeTarget "NVDARemoteTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				94C3AF8A3069D2CE001A6F08 /* Debug configuration for PBXNativeTarget "NVDARemoteTests" */,
+				94C3AF8B3069D2CE001A6F08 /* Release configuration for PBXNativeTarget "NVDARemoteTests" */,
+			);
+			defaultConfigurationName = Release;
+		};
+		94C3AF8C3069D2CE001A6F08 /* Build configuration list for PBXNativeTarget "NVDARemoteUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				94C3AF8D3069D2CE001A6F08 /* Debug configuration for PBXNativeTarget "NVDARemoteUITests" */,
+				94C3AF8E3069D2CE001A6F08 /* Release configuration for PBXNativeTarget "NVDARemoteUITests" */,
+			);
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		4E56520000000000000000D0 /* XCLocalSwiftPackageReference "NVDARemote" */ = {
+		944BFDD43069D39100748C4F /* XCLocalSwiftPackageReference "NVDARemote" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = NVDARemote;
 		};
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		4E5652000000000000000020 /* RemoteCore */ = {
+		944BFDD53069D39100748C4F /* RemoteCore */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = RemoteCore;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
-	rootObject = 4E56520000000000000000B0 /* Project object */;
+	rootObject = 94C3AF5F3069D2CD001A6F08 /* Project object */;
+	validationLevel = 1;
 }

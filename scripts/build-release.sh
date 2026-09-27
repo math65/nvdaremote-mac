@@ -13,7 +13,7 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 PROJECT="NVDARemote.xcodeproj"
-SCHEME="NVDA Remote"
+SCHEME="NVDARemote"
 APP_NAME="NVDA Remote"
 DERIVED_DATA="build/Release"
 OUTPUT_DIR="BuildArtifacts"
@@ -43,9 +43,9 @@ APP_PATH="$DERIVED_DATA/Build/Products/Release/$APP_NAME.app"
 [[ -d "$APP_PATH" ]] || { echo "Build failed: $APP_PATH not found"; exit 1; }
 
 echo "==> Signing with $SIGN_IDENTITY..."
-# Nested code first (none today besides the resource bundle, which needs no signature),
-# then the app itself. No entitlements: the app is not sandboxed, and the keyboard tap,
-# HID braille access and hidutil need none.
+# No entitlements: the app cannot run in the App Sandbox (see README, "Building"), and the
+# hardened runtime needs no exception. Nested code first (none today besides the resource
+# bundle, which needs no signature), then the app itself.
 find "$APP_PATH/Contents" \( -name "*.dylib" -o -name "*.framework" \) -print0 |
 	while IFS= read -r -d '' nested; do
 		codesign --force --options runtime --timestamp --sign "$SIGN_IDENTITY" "$nested"

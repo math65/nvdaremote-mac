@@ -4,7 +4,8 @@
    version = "1.7">
    <BuildAction
       parallelizeBuildables = "YES"
-      buildImplicitDependencies = "YES">
+      buildImplicitDependencies = "YES"
+      buildArchitectures = "Automatic">
       <BuildActionEntries>
          <BuildActionEntry
             buildForTesting = "YES"
@@ -14,9 +15,8 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "4E5652000000000000000080"
+               BlueprintIdentifier = "94C3AF663069D2CD001A6F08"
                BuildableName = "NVDA Remote.app"
-               BlueprintName = "NVDARemoteApp"
                ReferencedContainer = "container:NVDARemote.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -26,16 +26,27 @@
       buildConfiguration = "Debug"
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
-      shouldUseLaunchSchemeArgsEnv = "YES">
+      shouldUseLaunchSchemeArgsEnv = "YES"
+      shouldAutocreateTestPlan = "YES">
       <Testables>
          <TestableReference
-            skipped = "NO">
+            skipped = "NO"
+            parallelizable = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "RemoteCoreTests"
-               BuildableName = "RemoteCoreTests"
-               BlueprintName = "RemoteCoreTests"
-               ReferencedContainer = "container:NVDARemote">
+               BlueprintIdentifier = "94C3AF733069D2CE001A6F08"
+               BuildableName = "NVDARemoteTests.xctest"
+               ReferencedContainer = "container:NVDARemote.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "94C3AF7D3069D2CE001A6F08"
+               BuildableName = "NVDARemoteUITests.xctest"
+               ReferencedContainer = "container:NVDARemote.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
@@ -49,14 +60,14 @@
       ignoresPersistentStateOnLaunch = "NO"
       debugDocumentVersioning = "YES"
       debugServiceExtension = "internal"
-      allowLocationSimulation = "YES">
+      allowLocationSimulation = "YES"
+      queueDebuggingEnabled = "No">
       <BuildableProductRunnable
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "4E5652000000000000000080"
+            BlueprintIdentifier = "94C3AF663069D2CD001A6F08"
             BuildableName = "NVDA Remote.app"
-            BlueprintName = "NVDARemoteApp"
             ReferencedContainer = "container:NVDARemote.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
@@ -64,16 +75,15 @@
    <ProfileAction
       buildConfiguration = "Release"
       shouldUseLaunchSchemeArgsEnv = "YES"
-      savedToolDataSourceName = ""
+      savedToolIdentifier = ""
       useCustomWorkingDirectory = "NO"
       debugDocumentVersioning = "YES">
       <BuildableProductRunnable
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "4E5652000000000000000080"
+            BlueprintIdentifier = "94C3AF663069D2CD001A6F08"
             BuildableName = "NVDA Remote.app"
-            BlueprintName = "NVDARemoteApp"
             ReferencedContainer = "container:NVDARemote.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>

@@ -91,16 +91,30 @@ macOS disables its keyboard tap and gives the keyboard back to the Mac.
 
 ## Building
 
-Open `NVDARemote.xcodeproj` in Xcode 26 or later and run the **NVDA Remote** scheme,
+Open `NVDARemote.xcodeproj` in Xcode 27 or later and run the **NVDARemote** scheme,
 or build from the command line:
 
 ```bash
-xcodebuild -project NVDARemote.xcodeproj -scheme "NVDA Remote" -derivedDataPath build/DerivedData build
+xcodebuild -project NVDARemote.xcodeproj -scheme NVDARemote -derivedDataPath build/DerivedData build
 ```
 
-The app is not sandboxed: the App Sandbox forbids the keyboard tap. Set your own
-development team in the project to sign it. With a stable signing identity, the
-keyboard permissions survive rebuilds.
+The app is not sandboxed, and cannot be: its keyboard capture swallows keys, which
+needs an active event tap, and macOS only allows that with the Accessibility
+permission. Sandboxed apps cannot get Accessibility: the prompt never shows and the
+app cannot be added by hand in System Settings (measured on macOS 27; Apple DTS:
+"It's not possible to use the Accessibility APIs from a sandboxed app",
+<https://developer.apple.com/forums/thread/805556>). Input Monitoring alone only
+allows listen-only taps. So the app is distributed with a Developer ID signature, the
+hardened runtime and notarization, not through the Mac App Store.
+
+Set your own development team in the project to sign it. With a stable signing
+identity, the keyboard permissions survive rebuilds.
+
+A signed and notarized build, ready to share:
+
+```bash
+scripts/build-release.sh
+```
 
 Tests of the protocol, keyboard mapping and sounds:
 

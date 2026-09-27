@@ -1,4 +1,5 @@
 import AppKit
+import ApplicationServices
 import Foundation
 import Observation
 import RemoteCore
@@ -189,6 +190,7 @@ final class AppModel {
 		static let showsInDock = "showsInDock"
 		static let showsInMenuBar = "showsInMenuBar"
 		static let showsBraille = "showsBraille"
+		static let hasAskedForPermissions = "hasAskedForPermissions"
 	}
 
 	init() {
@@ -236,6 +238,12 @@ final class AppModel {
 		// After a crash while controlling the PC, Caps Lock would still be remapped.
 		try? CapsLockRemap.remove()
 		refreshKeyboardPermissions()
+		// First launch: ask right away, otherwise the global shortcut would silently do
+		// nothing, since it cannot be captured without the permissions.
+		if !hasKeyboardPermissions, !defaults.bool(forKey: Keys.hasAskedForPermissions) {
+			defaults.set(true, forKey: Keys.hasAskedForPermissions)
+			DispatchQueue.main.async { [weak self] in self?.requestKeyboardPermissions() }
+		}
 
 		let center = NotificationCenter.default
 		observers.append(center.addObserver(
@@ -541,9 +549,16 @@ final class AppModel {
 
 	// MARK: - Keyboard
 
+	/// Shows macOS's permission requests, and opens the System Settings pane of the first
+	/// missing permission, where the user switches NVDA Remote on.
 	func requestKeyboardPermissions() {
 		KeyboardCapture.requestPermissions()
 		refreshKeyboardPermissions()
+		guard !hasKeyboardPermissions else { return }
+		let pane = AXIsProcessTrusted() ? "Privacy_ListenEvent" : "Privacy_Accessibility"
+		if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?\(pane)") {
+			NSWorkspace.shared.open(url)
+		}
 	}
 
 	/// Starts the capture once the permissions are there. They are granted in System
@@ -587,7 +602,8 @@ final class AppModel {
 			return
 		}
 		guard capture.isRunning else {
-			announce(String(localized: "The keyboard cannot be captured: grant the permissions in Settings first."))
+			announce(String(localized: "To control the PC, allow NVDA Remote in System Settings, under Accessibility and Input Monitoring."))
+			requestKeyboardPermissions()
 			return
 		}
 		if nvdaKey == .capsLock {
