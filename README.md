@@ -9,8 +9,9 @@ ne permet de capter la parole de VoiceOver.
 
 ## Où on en est
 
-Phase d'étude et de levée des risques. **Pas encore de code applicatif**, seulement
-des bancs d'essai qui répondent chacun à une question précise.
+La première tranche de l'application existe : **le Mac se connecte au PC et prononce
+la parole de NVDA**, avec ses bips. Elle se pilote pour l'instant en ligne de
+commande, voir plus bas. Pas encore de clavier ni de braille.
 
 Les deux risques structurants du projet sont levés :
 
@@ -25,12 +26,50 @@ parole en 40 millisecondes ; un `CGEventTap` posé au niveau HID capture tout, y
 compris les commandes VoiceOver ; et Verrouillage majuscules devient utilisable
 en la remappant vers F18 avec `hidutil`.
 
+## Première tranche : entendre NVDA depuis le Mac
+
+Le paquet [NVDARemote/](NVDARemote) contient une bibliothèque `RemoteCore`, destinée
+à être reprise telle quelle par l'application, et un exécutable `nvdaremote` pour
+l'essayer dès maintenant.
+
+Sur le PC, dans NVDA, Remote Access, choisir « Permettre à cette machine d'être
+contrôlée », puis « Copier le lien ». Sur le Mac :
+
+```bash
+cd NVDARemote && swift run -c release nvdaremote 'nvdaremote://nvdaremote.com:6837/?key=…&mode=master'
+```
+
+Options utiles : `--wpm 400` règle le débit en mots par minute, `--voice Audrey`
+choisit la voix, `--list-voices fr` liste les voix françaises, `--verbose` affiche
+chaque message reçu du PC. Contrôle+C pour quitter.
+
+Si le PC héberge lui-même la connexion, son certificat est auto-signé : le premier
+essai s'arrête en affichant l'empreinte du certificat. Après l'avoir vérifiée,
+relancer avec `--trust <empreinte>`. Elle est mémorisée comme le fait NVDA.
+
+Ce qui est pris en charge :
+
+| Message du PC | Traitement |
+|---|---|
+| `speak` | Parole système, changements de langue, pauses, priorité immédiate |
+| `cancel` | Coupure immédiate |
+| `pause_speech` | Pause et reprise |
+| `tone` | Bips, avec la balance gauche droite |
+| `client_joined`, `client_left` | Annonce de l'arrivée et du départ du PC, déclaration « pas de braille » |
+
+Pas encore traités : les sons de NVDA (`wave`), le presse-papiers, et les commandes
+de débit, de hauteur et de volume incluses dans la parole. Une parole interrompue
+par une priorité immédiate n'est pas reprise ensuite, contrairement à NVDA.
+
+Validation : 16 tests unitaires (`cd NVDARemote && swift test`), un essai de bout en
+bout sur le relais public avec un faux PC qui envoie de vrais messages NVDA, un
+essai de refus puis d'acceptation d'un certificat auto-signé, et surtout **un essai
+réussi avec un vrai PC sous NVDA** le 27 septembre 2026, via `nvdaremote.com`.
+
 ## Prochaine étape proposée
 
-Construire la première tranche réelle de l'application : se connecter au PC et
-**entendre NVDA parler depuis le Mac**. C'est du travail sans incertitude
-maintenant que le protocole est lu et la parole validée, et c'est le moment où le
-projet devient tangible. Le braille viendra après.
+Attaquer le clavier : c'est ce qui transforme
+l'écoute en contrôle, et le banc `KeyboardTap` a déjà levé les incertitudes.
 
 ## Documentation
 
@@ -69,6 +108,7 @@ retirer après. La procédure figure dans [docs/mesures-clavier.md](docs/mesures
 
 | Chemin | Contenu |
 |---|---|
+| `NVDARemote/` | Paquet Swift de l'application : `RemoteCore` et l'outil `nvdaremote` |
 | `docs/` | Étude de faisabilité et mesures |
 | `spikes/` | Bancs d'essai Swift |
 | `nvda/` | Clone de référence de NVDA, non versionné |
