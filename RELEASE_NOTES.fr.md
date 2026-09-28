@@ -1,36 +1,21 @@
-## NVDA Remote 1.0 bêta 1 (build 5) — 28 septembre 2026
+## NVDA Remote 1.0 bêta 2 (build 6) — 28 septembre 2026
 
-Voici la première bêta publique de NVDA Remote pour Mac, en route vers la version 1.0. Elle vous permet de contrôler un PC Windows équipé de NVDA directement depuis votre Mac : vous tapez sur le clavier du Mac, et vous entendez NVDA parler sur le Mac, avec ses bips et ses sons. L'application a été pensée d'abord pour les utilisateurs de VoiceOver, et elle s'utilise tout aussi bien à la vue.
+Cette deuxième bêta est consacrée au clavier : votre Mac et votre PC n'ont plus besoin d'avoir la même disposition, et beaucoup plus de claviers de PC sont pris en charge.
 
-Tout ce qui est décrit ci-dessous fonctionne, mais comme c'est une bêta, vous pouvez encore tomber sur quelques imperfections. Signalez-les-moi avec Aide, puis Contacter le développeur.
+### Les nouveautés
 
-### Ce que vous pouvez faire
+- **Tapez avec la disposition de votre Mac, quelle que soit celle du PC.** Chiffres, ponctuation et lettres accentuées sortent maintenant sur le PC exactement comme sur votre Mac. Par exemple, @ sur un Mac français tape @ sur un PC français, alors que le PC demande AltGr pour ce caractère, et Maj-& sur un Mac français tape 1 sur un PC anglais. Si la disposition du PC ne possède pas le caractère, comme é sur un PC américain, rien n'est tapé plutôt qu'un mauvais caractère. Les raccourcis avec Contrôle, Option, Commande ou la touche NVDA fonctionnent comme avant.
+- **Sept dispositions de PC en plus.** En plus du français et de l'américain, vous pouvez maintenant choisir belge, suisse romand, canadien français, Royaume-Uni, allemand, espagnol et italien, dans Réglages, PC. Elles ont été construites à partir des fichiers de disposition de Microsoft.
+- **La bonne disposition dès le départ.** La disposition du PC suit maintenant par défaut le clavier de votre Mac : un Mac canadien français choisit canadien français, un Mac britannique choisit Royaume-Uni, et ainsi de suite. Vous pouvez toujours la changer dans les Réglages.
+- **Un nouveau choix : les mêmes touches que sur un clavier de PC.** Si vous préférez que la disposition du PC décide de ce que tape chaque touche, comme si votre clavier était branché sur le PC, réglez Frappe sur « Mêmes touches que sur le clavier du PC » dans Réglages, PC. Le réglage par défaut, « Mêmes caractères que sur le Mac », tape ce qu'indiquent les touches de votre Mac.
 
-- **Vous connecter en un instant.** Cliquez sur le lien que NVDA vous donne avec « Copier le lien », ou tapez la clé vous-même. Le serveur public nvdaremote.com fonctionne sans rien régler, et vos connexions récentes sont gardées pour la prochaine fois.
-- **Entendre le PC sur votre Mac.** La parole de NVDA sort du Mac, dans la voix et la langue demandées par NVDA, et s'arrête dès que NVDA s'interrompt. Vous réglez le débit dans les Réglages.
-- **Passer le clavier d'un raccourci.** Contrôle-Commande-R pour taper sur le PC, et encore une fois pour revenir au Mac. Un bip aigu signifie que le PC a le clavier, un bip grave que c'est le Mac. Pendant que vous contrôlez le PC, toutes les touches y partent, commandes VoiceOver comprises.
-- **Partager le presse-papiers.** Le texte copié sur le PC arrive dans le presse-papiers du Mac. Contrôle-Commande-C envoie au PC ce que vous avez copié sur le Mac.
-- **Lire NVDA en braille.** Si votre plage braille est un modèle HID, comme une Brailliant BI X, NVDA la prend pendant que vous contrôlez le PC, touches de routage et clavier braille compris. VoiceOver la récupère quand vous revenez au Mac.
-- **Rester discrète.** L'application peut vivre dans la barre des menus, dans le Dock, ou les deux.
+### Corrections
 
-### Nouveau depuis la version de test 0.1
-
-- **Mises à jour automatiques.** L'application cherche elle-même les nouvelles versions et les installe avec votre accord. Vous pouvez aussi vérifier à tout moment depuis le menu de l'application ou l'icône de la barre des menus. Comme c'est une bêta, l'application vous propose aussi les bêtas suivantes ; vous pouvez le désactiver dans Réglages, Général.
-- **Contacter le développeur depuis l'application.** Aide, puis Contacter le développeur, pour signaler un problème, proposer une idée ou poser une question. Un signalement de problème joint quelques détails techniques pour aider, mais jamais votre clé de canal ni l'adresse de votre propre serveur.
-- **Une icône bien à elle**, et une lecture plus facile pour tout le monde : les textes trop pâles sont plus foncés, les explications que seul VoiceOver lisait s'affichent maintenant à l'écran, et les raccourcis sont présentés à la manière habituelle du Mac.
-
-### Avant de commencer
-
-- Un Mac sous macOS 14 Sonoma ou plus récent, et NVDA 2025.1 ou plus récent sur le PC, avec l'Accès à distance activé.
-- Pour contrôler le PC, autorisez NVDA Remote à la fois dans Accessibilité et dans Surveillance de l'entrée, dans Réglages Système, Confidentialité et sécurité. L'application vous les demande depuis ses réglages Clavier.
-
-### Bon à savoir
-
-- Certaines finesses de la parole de NVDA ne sont pas encore suivies : les changements de hauteur ou de volume au milieu d'une phrase, et l'épellation des caractères.
-- Le braille fonctionne pour l'instant avec les plages HID uniquement.
+- **Contacter le développeur garde votre place.** Pendant l'envoi d'un message, seul le bouton Envoyer est indisponible. Si l'envoi échoue, l'erreur est lue et vous restez dans le champ où vous tapiez.
+- **Retour à la clé après une déconnexion.** Dans la fenêtre de connexion, le focus revient sur le champ Clé quand vous vous déconnectez, prêt pour la connexion suivante.
 
 ### Téléchargement
 
-[NVDA-Remote-1.0-beta.1-5.zip](https://github.com/math65/nvdaremote-mac/releases/download/v1.0-beta.1/NVDA-Remote-1.0-beta.1-5.zip)
+[NVDA-Remote-1.0-beta.2-6.zip](https://github.com/math65/nvdaremote-mac/releases/download/v1.0-beta.2/NVDA-Remote-1.0-beta.2-6.zip)
 
-Décompressez-le et placez NVDA Remote dans votre dossier Applications. L'application est signée et vérifiée par Apple. Désormais, elle vous préviendra elle-même de la prochaine bêta, puis de la version 1.0.
+Si vous avez déjà la 1.0 bêta 1, l'application vous propose elle-même cette mise à jour. Sinon, décompressez le fichier et placez NVDA Remote dans votre dossier Applications.

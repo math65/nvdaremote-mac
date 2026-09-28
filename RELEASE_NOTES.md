@@ -1,36 +1,21 @@
-## NVDA Remote 1.0 beta 1 (build 5) — 2026-09-28
+## NVDA Remote 1.0 beta 2 (build 6) — 2026-09-28
 
-This is the first public beta of NVDA Remote for Mac, on the way to version 1.0. It lets you control a Windows PC running NVDA straight from your Mac: you type on your Mac keyboard, and you hear NVDA speak on your Mac, with its beeps and sounds. The app was made with VoiceOver users in mind, and it works just as well if you use it by sight.
+This second beta is about the keyboard: your Mac and your PC no longer need the same keyboard layout, and many more PC layouts are supported.
 
-Everything described below works, but being a beta, you may still come across rough edges. Please tell me about them with Help, then Contact the Developer.
+### Highlights
 
-### What you can do
+- **Type with your Mac's layout, whatever the PC uses.** Digits, punctuation and accented letters now come out on the PC exactly as on your Mac. For example, @ on a French Mac types @ on a French PC, even though the PC needs AltGr for it, and Shift-& on a French Mac types 1 on an English PC. If the PC's layout has no such character, such as é on a US PC, nothing is typed rather than a wrong character. Shortcuts with Control, Option, Command or the NVDA key work as before.
+- **Seven more PC layouts.** Besides French and US, you can now choose Belgian French, Swiss French, Canadian French, United Kingdom, German, Spanish and Italian, in Settings, PC. They were built from Microsoft's own layout files.
+- **The right layout from the start.** The PC layout now follows your Mac's keyboard by default: a Canadian French Mac picks Canadian French, a British Mac picks United Kingdom, and so on. You can still change it in Settings.
+- **A new choice: the same keys as on a PC keyboard.** If you prefer the PC's layout to decide what each key types, as if your keyboard were plugged into the PC, set Typing to "Same keys as on the PC keyboard" in Settings, PC. The default, "Same characters as on the Mac", keeps typing what your Mac's keys show.
 
-- **Connect in a moment.** Click the link NVDA gives you with "Copy link", or type the key yourself. The public server nvdaremote.com works out of the box, and your recent connections are kept for next time.
-- **Hear the PC on your Mac.** NVDA's speech comes out of your Mac, in the voice and language NVDA asks for, and it stops as soon as NVDA interrupts itself. You can set the speech rate in Settings.
-- **Switch the keyboard with one shortcut.** Press Control-Command-R to type on the PC, and again to come back to the Mac. A high beep means the PC has the keyboard, a low beep means the Mac has it. While you control the PC, every key goes there, VoiceOver commands included.
-- **Share the clipboard.** Text copied on the PC lands in your Mac clipboard. Press Control-Command-C to send what you copied on the Mac to the PC.
-- **Read NVDA in braille.** If your braille display is a HID model, such as a Brailliant BI X, NVDA takes it over while you control the PC, routing keys and braille keyboard included. VoiceOver gets it back when you return to the Mac.
-- **Keep it out of the way.** The app can live in the menu bar, in the Dock, or both.
+### Fixes
 
-### New since the 0.1 test version
-
-- **Automatic updates.** The app now checks for new versions on its own and installs them when you agree. You can also check at any time from the app menu or the menu bar icon. Since this is a beta, the app also offers the next betas; you can turn that off in Settings, General.
-- **Contact the developer from the app.** Help, then Contact the Developer, lets you report a problem, suggest an idea or ask a question. A problem report includes a few technical details to help, but never your channel key or the address of your own server.
-- **An icon of its own**, and easier reading for everyone: text that was too pale is darker, explanations that only VoiceOver used to read now show on screen, and shortcuts appear the usual Mac way.
-
-### Before you start
-
-- A Mac with macOS 14 Sonoma or later, and NVDA 2025.1 or later on the PC, with Remote Access turned on.
-- To control the PC, allow NVDA Remote under both Accessibility and Input Monitoring, in System Settings, Privacy & Security. The app asks for them from its Keyboard settings.
-
-### Good to know
-
-- Some of NVDA's finer speech details are not followed yet: changes of pitch or volume inside a sentence, and spelling out characters.
-- Braille works with HID displays only for now.
+- **Contact the Developer keeps your place.** While a message is being sent, only the Send button is unavailable. If sending fails, the error is read and you stay in the field you were typing in.
+- **Back to the key after disconnecting.** In the connection window, focus returns to the Key field when you disconnect, ready for the next connection.
 
 ### Download
 
-[NVDA-Remote-1.0-beta.1-5.zip](https://github.com/math65/nvdaremote-mac/releases/download/v1.0-beta.1/NVDA-Remote-1.0-beta.1-5.zip)
+[NVDA-Remote-1.0-beta.2-6.zip](https://github.com/math65/nvdaremote-mac/releases/download/v1.0-beta.2/NVDA-Remote-1.0-beta.2-6.zip)
 
-Unzip it and move NVDA Remote to your Applications folder. The app is signed and checked by Apple. From now on, it will tell you itself when a new beta, and then version 1.0, is out.
+If you already have 1.0 beta 1, the app offers this update itself. Otherwise, unzip it and move NVDA Remote to your Applications folder.
