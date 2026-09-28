@@ -20,15 +20,19 @@ struct ConnectionView: View {
 					.onSubmit(toggleConnection)
 					.disabled(model.isActive)
 					.focused($focusedField, equals: .server)
-				TextField("Key", text: $model.key, prompt: Text("channel key, or nvdaremote:// link"))
+				TextField("Key", text: $model.key, prompt: Text("Channel key or nvdaremote:// link"))
 					.onSubmit(toggleConnection)
 					.disabled(model.isActive)
 					.focused($focusedField, equals: .key)
-				Button(action: toggleConnection) {
-					model.isActive ? Text("Disconnect") : Text("Connect")
-				}
-				.keyboardShortcut(.defaultAction)
 				StatusRow(status: model.status)
+				// The main action, at the bottom right as in any Mac form.
+				HStack {
+					Spacer()
+					Button(action: toggleConnection) {
+						model.isActive ? Text("Disconnect") : Text("Connect")
+					}
+					.keyboardShortcut(.defaultAction)
+				}
 			}
 			if !model.recents.isEmpty, !model.isActive {
 				Section("Recent Connections") {
@@ -76,7 +80,7 @@ private struct StatusRow: View {
 			Text("Status")
 			Spacer()
 			Text(status)
-				.foregroundStyle(.secondary)
+				.foregroundStyle(.readableSecondary)
 				.multilineTextAlignment(.trailing)
 		}
 		.accessibilityElement(children: .ignore)

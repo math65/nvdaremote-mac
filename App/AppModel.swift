@@ -527,7 +527,34 @@ final class AppModel {
 		return shortcut.displayName(characters: capture.layout.characters(for: shortcut.keyCode))
 	}
 
-	/// The shortcut spelled out, for speech, braille and menu titles.
+	/// The shortcut as a menu key equivalent, so menus show it the Mac way (⌃⌘R) and
+	/// VoiceOver reads it natively. Pressing it never reaches the menu while the keyboard
+	/// capture runs: the capture swallows global shortcuts first.
+	func menuShortcut(for command: GlobalCommand) -> KeyboardShortcut? {
+		guard let shortcut = shortcuts[command] else { return nil }
+		let special: [UInt16: KeyEquivalent] = [
+			MacKeyCode.returnKey: .return, MacKeyCode.tab: .tab, MacKeyCode.space: .space,
+			MacKeyCode.delete: .delete, MacKeyCode.escape: .escape, 117: .deleteForward,
+			115: .home, 119: .end, 116: .pageUp, 121: .pageDown,
+			123: .leftArrow, 124: .rightArrow, 125: .downArrow, 126: .upArrow,
+		]
+		let key: KeyEquivalent
+		if let equivalent = special[shortcut.keyCode] {
+			key = equivalent
+		} else if let character = capture.layout.characters(for: shortcut.keyCode)?.plain.first {
+			key = KeyEquivalent(character)
+		} else {
+			return nil
+		}
+		var modifiers: EventModifiers = []
+		if shortcut.control { modifiers.insert(.control) }
+		if shortcut.option { modifiers.insert(.option) }
+		if shortcut.shift { modifiers.insert(.shift) }
+		if shortcut.command { modifiers.insert(.command) }
+		return KeyboardShortcut(key, modifiers: modifiers)
+	}
+
+	/// The shortcut spelled out, for speech and braille.
 	func spokenShortcutName(for command: GlobalCommand) -> String {
 		guard let shortcut = shortcuts[command] else { return "" }
 		return shortcut.spokenName(characters: capture.layout.characters(for: shortcut.keyCode))

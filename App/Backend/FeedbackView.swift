@@ -22,39 +22,45 @@ struct FeedbackView: View {
 	private let client = AppBackendClient()
 
 	var body: some View {
-		Form {
-			Picker("Message type", selection: $contactType) {
-				ForEach(AppBackendClient.ContactType.allCases) { type in
-					Text(type.title).tag(type)
+		VStack(spacing: 0) {
+			Form {
+				Section {
+					Picker("Message type", selection: $contactType) {
+						ForEach(AppBackendClient.ContactType.allCases) { type in
+							Text(type.title).tag(type)
+						}
+					}
+					.focused($typeFocused)
+
+					TextField("Your email address", text: $email)
+						.textContentType(.emailAddress)
+						.accessibilityHint(Text("The developer replies to this address."))
+					HelpText("The developer replies to this address.")
+				}
+
+				Section {
+					TextEditor(text: $message)
+						.font(.body)
+						.frame(height: 140)
+						.accessibilityLabel(Text("Message"))
+					if contactType == .bug {
+						// Said nowhere else: VoiceOver reads it too.
+						HelpText("Technical details are attached to help solve the problem: versions, settings and connection state. Never your channel key or your server address.", readByVoiceOver: true)
+					}
+				} header: {
+					// The text area carries the same name for VoiceOver.
+					Text("Message").accessibilityHidden(true)
+				}
+
+				if let errorMessage {
+					Text(errorMessage)
+						.foregroundStyle(.readableRed)
+						.accessibilityFocused($errorFocused)
 				}
 			}
-			.focused($typeFocused)
+			.formStyle(.grouped)
+			.scrollDisabled(true)
 
-			TextField("Your email address", text: $email)
-				.textContentType(.emailAddress)
-				.accessibilityHint(Text("The developer replies to this address."))
-
-			Section("Message") {
-				TextEditor(text: $message)
-					.frame(minHeight: 140)
-					.accessibilityLabel(Text("Message"))
-			}
-
-			if contactType == .bug {
-				Text("Technical details are attached to help solve the problem: versions, settings and connection state. Never your channel key or your server address.")
-					.font(.callout)
-					.foregroundStyle(.secondary)
-			}
-
-			if let errorMessage {
-				Text(errorMessage)
-					.foregroundStyle(.red)
-					.accessibilityFocused($errorFocused)
-			}
-		}
-		.formStyle(.grouped)
-		.disabled(isSending)
-		.safeAreaInset(edge: .bottom) {
 			HStack {
 				if isSending {
 					ProgressView()
@@ -68,9 +74,11 @@ struct FeedbackView: View {
 					.keyboardShortcut(.defaultAction)
 					.disabled(!canSend)
 			}
-			.padding()
+			.padding([.horizontal, .bottom], 20)
 		}
+		.disabled(isSending)
 		.frame(width: 480)
+		.fixedSize(horizontal: false, vertical: true)
 		.onAppear { typeFocused = true }
 		.onChange(of: errorMessage) { _, newValue in
 			if newValue != nil { errorFocused = true }

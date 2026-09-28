@@ -31,19 +31,24 @@ public struct KeyShortcut: Codable, Equatable, Sendable {
 			&& flags.contains(.maskShift) == shift
 	}
 
-	/// Human-readable name, for example "Ctrl+Cmd+R".
+	/// Name shown on screen with the Mac's modifier symbols, in Apple's order, for
+	/// example "⌃⌘R". VoiceOver reads `spokenName` instead.
 	public func displayName(characters: KeyTranslator.Characters?) -> String {
-		var parts: [String] = []
-		if control { parts.append("Ctrl") }
-		if option { parts.append("Option") }
-		if shift { parts.append(localized("Shift")) }
-		if command { parts.append("Cmd") }
-		parts.append(Self.keyName(keyCode, characters: characters))
-		return parts.joined(separator: "+")
+		var name = ""
+		if control { name += "⌃" }
+		if option { name += "⌥" }
+		if shift { name += "⇧" }
+		if command { name += "⌘" }
+		let symbols: [UInt16: String] = [
+			MacKeyCode.returnKey: "↩", MacKeyCode.tab: "⇥", MacKeyCode.delete: "⌫",
+			MacKeyCode.escape: "⎋", 117: "⌦", 115: "↖", 119: "↘", 116: "⇞", 121: "⇟",
+			123: "←", 124: "→", 125: "↓", 126: "↑",
+		]
+		return name + (symbols[keyCode] ?? Self.keyName(keyCode, characters: characters))
 	}
 
 	/// Name spelled out for speech and braille, for example "Control-Command-R":
-	/// VoiceOver reads the short form as "Ctrl plus Cmd plus R".
+	/// VoiceOver does not read the modifier symbols reliably.
 	public func spokenName(characters: KeyTranslator.Characters?) -> String {
 		var parts: [String] = []
 		if control { parts.append(localized("Control")) }

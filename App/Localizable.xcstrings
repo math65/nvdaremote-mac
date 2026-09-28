@@ -106,7 +106,7 @@
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Verrouillage majuscules n'a pas pu être rétabli : %@ Un redémarrage du Mac le rétablira."
+            "value": "Le verrouillage des majuscules n'a pas pu être rétabli : %@ Un redémarrage du Mac le rétablira."
           }
         }
       }
@@ -121,12 +121,12 @@
         }
       }
     },
-    "channel key, or nvdaremote:// link": {
+    "Channel key or nvdaremote:// link": {
       "localizations": {
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "clé du canal, ou lien nvdaremote://"
+            "value": "Clé du canal ou lien nvdaremote://"
           }
         }
       }
@@ -401,16 +401,6 @@
         }
       }
     },
-    "Look Again": {
-      "localizations": {
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Chercher à nouveau"
-          }
-        }
-      }
-    },
     "Message": {
       "localizations": {
         "fr": {
@@ -466,7 +456,7 @@
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Couper le son du PC quand je contrôle le Mac"
+            "value": "Couper le son du PC pendant le contrôle du Mac"
           }
         }
       }
@@ -537,6 +527,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "NVDA Remote"
+          }
+        }
+      }
+    },
+    "NVDA Remote Help": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aide de NVDA Remote"
           }
         }
       }
@@ -617,6 +617,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Disposition du clavier du PC"
+          }
+        }
+      }
+    },
+    "Permissions Needed": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Autorisations nécessaires"
           }
         }
       }
@@ -721,12 +731,32 @@
         }
       }
     },
+    "Search Again": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rechercher à nouveau"
+          }
+        }
+      }
+    },
     "Send": {
       "localizations": {
         "fr": {
           "stringUnit": {
             "state": "translated",
             "value": "Envoyer"
+          }
+        }
+      }
+    },
+    "Send Clipboard to PC": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Envoyer le presse-papiers au PC"
           }
         }
       }
@@ -836,7 +866,7 @@
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Arrêt : %@."
+            "value": "Arrêté : %@."
           }
         }
       }
@@ -971,12 +1001,12 @@
         }
       }
     },
-    "These shortcuts work from any app.": {
+    "These shortcuts work from any app. Click one to record a new shortcut.": {
       "localizations": {
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ces raccourcis fonctionnent depuis n'importe quelle application."
+            "value": "Ces raccourcis fonctionnent depuis n'importe quelle application. Cliquez sur l'un d'eux pour en enregistrer un nouveau."
           }
         }
       }
@@ -1006,7 +1036,7 @@
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Pour piloter le PC, l'application doit pouvoir intercepter le clavier. Autorisez-la dans Réglages Système, Confidentialité et sécurité, à la fois dans Accessibilité et dans Surveillance de l'entrée."
+            "value": "Pour contrôler le PC, l'application doit pouvoir intercepter le clavier. Autorisez-la dans Réglages Système, Confidentialité et sécurité, à la fois dans Accessibilité et dans Surveillance de l'entrée."
           }
         }
       }

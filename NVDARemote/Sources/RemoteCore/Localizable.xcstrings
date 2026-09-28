@@ -386,7 +386,7 @@
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "La plage braille est tenue par un autre programme et ne peut pas servir au PC."
+            "value": "La plage braille est utilisée par une autre application et ne peut pas servir au PC."
           }
         }
       }

@@ -34,9 +34,11 @@ struct RemoteMenu: View {
 			}
 		}
 		Divider()
-		Button(controlTitle, action: model.toggleComputerControl)
+		Button(title(controlTitle, for: .toggleControl), action: model.toggleComputerControl)
+			.keyboardShortcut(model.menuShortcut(for: .toggleControl))
 			.disabled(!model.isComputerConnected)
-		Button(clipboardTitle, action: model.pushClipboard)
+		Button(title(String(localized: "Send Clipboard to PC"), for: .pushClipboard), action: model.pushClipboard)
+			.keyboardShortcut(model.menuShortcut(for: .pushClipboard))
 			.disabled(!model.isComputerConnected)
 		Toggle("Mute the PC", isOn: $model.isMuted)
 			.disabled(!model.isActive)
@@ -56,17 +58,18 @@ struct RemoteMenu: View {
 		}
 	}
 
-	/// Global shortcuts are handled by the keyboard capture, not by the menu:
-	/// they are only shown in the title, spelled out so VoiceOver reads them well.
 	private var controlTitle: String {
-		let action = model.isControllingPC
+		model.isControllingPC
 			? String(localized: "Control the Mac")
 			: String(localized: "Control the PC")
-		return "\(action) (\(model.spokenShortcutName(for: .toggleControl)))"
 	}
 
-	private var clipboardTitle: String {
-		"\(GlobalCommand.pushClipboard.label) (\(model.spokenShortcutName(for: .pushClipboard)))"
+	/// Global shortcuts are handled by the keyboard capture; the menu shows them as key
+	/// equivalents. A key that cannot be one (F1 to F12) is spelled out in the title.
+	private func title(_ action: String, for command: GlobalCommand) -> String {
+		model.menuShortcut(for: command) == nil
+			? "\(action) (\(model.spokenShortcutName(for: command)))"
+			: action
 	}
 
 	private func showConnectionWindow() {

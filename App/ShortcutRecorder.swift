@@ -2,8 +2,8 @@ import AppKit
 import RemoteCore
 import SwiftUI
 
-/// A button that shows a global shortcut and records a new one: press it, then type
-/// the combination, or Escape to cancel.
+/// A global shortcut's row: the command's name, then a button showing the shortcut
+/// (⌃⌘R) that records a new one: press it, then type the combination, or Escape.
 struct ShortcutRecorder: View {
 	let command: GlobalCommand
 
@@ -11,17 +11,25 @@ struct ShortcutRecorder: View {
 	@State private var monitor: Any?
 
 	var body: some View {
-		Button(action: toggleRecording) {
-			if monitor == nil {
-				Text("\(command.label): \(model.shortcutName(for: command))")
-			} else {
-				Text("Type the new shortcut, or Escape to cancel")
+		HStack {
+			// VoiceOver gets the command's name in the button's label.
+			Text(command.label)
+				.accessibilityHidden(true)
+			Spacer()
+			Button(action: toggleRecording) {
+				if monitor == nil {
+					Text(verbatim: model.shortcutName(for: command))
+						.monospacedDigit()
+						.frame(minWidth: 60)
+				} else {
+					Text("Type the new shortcut, or Escape to cancel")
+				}
 			}
+			.accessibilityLabel(monitor == nil
+				? Text("\(command.label): \(model.spokenShortcutName(for: command))")
+				: Text("Type the new shortcut, or Escape to cancel"))
+			.accessibilityHint(Text("Works from any app. Press to record a new shortcut."))
 		}
-		.accessibilityLabel(monitor == nil
-			? Text("\(command.label): \(model.spokenShortcutName(for: command))")
-			: Text("Type the new shortcut, or Escape to cancel"))
-		.accessibilityHint(Text("Works from any app. Press to record a new shortcut."))
 		.onDisappear(perform: stopRecording)
 	}
 

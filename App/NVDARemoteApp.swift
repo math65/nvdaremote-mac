@@ -22,7 +22,11 @@ struct NVDARemoteApp: App {
 				Button("Check for Updates…", action: updater.checkForUpdates)
 					.disabled(!updater.canCheckForUpdates)
 			}
-			CommandGroup(after: .help) {
+			// No help book: the help is the project's page, whose README is the manual.
+			CommandGroup(replacing: .help) {
+				Button("NVDA Remote Help") {
+					NSWorkspace.shared.open(URL(string: "https://github.com/math65/nvdaremote-mac#readme")!)
+				}
 				ContactDeveloperButton()
 			}
 			// A single connection window: no New or Open commands.
