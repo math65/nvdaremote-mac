@@ -421,12 +421,12 @@
         }
       }
     },
-    "Message sent. Thank you!": {
+    "Message sent": {
       "localizations": {
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Message envoyé. Merci !"
+            "value": "Message envoyé"
           }
         }
       }
@@ -857,6 +857,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Des détails techniques sont joints pour aider à résoudre le problème : versions, réglages et état de la connexion. Jamais votre clé de canal ni l'adresse de votre serveur."
+          }
+        }
+      }
+    },
+    "Thank you! The developer will reply to %@.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Merci ! Le développeur vous répondra à %@."
           }
         }
       }

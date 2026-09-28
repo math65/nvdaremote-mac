@@ -1,3 +1,4 @@
+import AppKit
 import SwiftUI
 
 /// The "Contact the Developer" window: a problem report (with a technical snapshot),
@@ -88,6 +89,15 @@ struct FeedbackView: View {
 
 	private var canSend: Bool { !isSending && emailLooksPlausible && !trimmedMessage.isEmpty }
 
+	/// A modal confirmation rather than a spoken message: VoiceOver reads it in full and
+	/// the user decides when to move on.
+	private func showConfirmation() {
+		let alert = NSAlert()
+		alert.messageText = String(localized: "Message sent")
+		alert.informativeText = String(localized: "Thank you! The developer will reply to \(trimmedEmail).")
+		alert.runModal()
+	}
+
 	private func send() async {
 		guard canSend else { return }
 		isSending = true
@@ -106,7 +116,7 @@ struct FeedbackView: View {
 				try await client.sendContact(email: trimmedEmail, type: contactType, message: trimmedMessage)
 			}
 			UserDefaults.standard.set(trimmedEmail, forKey: Self.emailKey)
-			model.announce(String(localized: "Message sent. Thank you!"))
+			showConfirmation()
 			dismiss()
 		} catch {
 			let message = ((error as? AppBackendClient.BackendError) ?? .server).localizedMessage
