@@ -342,6 +342,7 @@ import Testing
 		let recorder = recorder
 		capture.onKey = { recorder.keys.append(($0, $1)) }
 		capture.characters = { Self.azertyMac[$0] }
+		capture.isANSIKeyboard = { false }
 		capture.setRemote(true)
 	}
 
@@ -359,11 +360,94 @@ import Testing
 		#expect(PCLayout(matchingMacLayout: "com.apple.keylayout.French") == .french)
 		#expect(PCLayout(matchingMacLayout: "com.apple.keylayout.French-PC") == .french)
 		#expect(PCLayout(matchingMacLayout: "com.apple.keylayout.ABC-AZERTY") == .french)
-		#expect(PCLayout(matchingMacLayout: "com.apple.keylayout.Belgian") == .french)
-		#expect(PCLayout(matchingMacLayout: "com.apple.keylayout.SwissFrench") == .us)
+		#expect(PCLayout(matchingMacLayout: "com.apple.keylayout.Belgian") == .belgian)
+		#expect(PCLayout(matchingMacLayout: "com.apple.keylayout.SwissFrench") == .swissFrench)
+		#expect(PCLayout(matchingMacLayout: "com.apple.keylayout.Canadian") == .canadianFrench)
+		#expect(PCLayout(matchingMacLayout: "com.apple.keylayout.CanadianFrench-PC") == .canadianFrench)
 		#expect(PCLayout(matchingMacLayout: "com.apple.keylayout.US") == .us)
-		#expect(PCLayout(matchingMacLayout: "com.apple.keylayout.British") == .us)
+		#expect(PCLayout(matchingMacLayout: "com.apple.keylayout.British") == .uk)
+		#expect(PCLayout(matchingMacLayout: "com.apple.keylayout.British-PC") == .uk)
+		#expect(PCLayout(matchingMacLayout: "com.apple.keylayout.German") == .german)
+		#expect(PCLayout(matchingMacLayout: "com.apple.keylayout.Austrian") == .german)
+		#expect(PCLayout(matchingMacLayout: "com.apple.keylayout.SwissGerman") == .us)
+		#expect(PCLayout(matchingMacLayout: "com.apple.keylayout.Spanish-ISO") == .spanish)
+		#expect(PCLayout(matchingMacLayout: "com.apple.keylayout.Italian-Pro") == .italian)
 		#expect(PCLayout(matchingMacLayout: nil) == .us)
+	}
+
+	/// "@" is somewhere different on nearly every PC layout.
+	@Test func atSignOnEachLayout() {
+		let expected: [PCLayout: TypedKey] = [
+			.french: TypedKey(0x30, altGr: true),
+			.belgian: TypedKey(0x32, altGr: true),
+			.swissFrench: TypedKey(0x32, altGr: true),
+			.canadianFrench: TypedKey(0x32, altGr: true),
+			.us: TypedKey(0x32, shift: true),
+			.uk: TypedKey(0xC0, shift: true),
+			.german: TypedKey(0x51, altGr: true),
+			.spanish: TypedKey(0x32, altGr: true),
+			.italian: TypedKey(0xC0, altGr: true),
+		]
+		for layout in PCLayout.allCases {
+			#expect(KeyTranslator(pcLayout: layout).typedKey(for: "@") == expected[layout], "\(layout)")
+		}
+	}
+
+	@Test func newLayoutsTypeTheirOwnCharacters() {
+		let uk = KeyTranslator(pcLayout: .uk)
+		#expect(uk.typedKey(for: "\"") == TypedKey(0x32, shift: true))
+		#expect(uk.typedKey(for: "£") == TypedKey(0x33, shift: true))
+		#expect(uk.typedKey(for: "#") == TypedKey(0xDE))
+		// On two keys: the plain one wins over AltGr-#.
+		#expect(uk.typedKey(for: "\\") == TypedKey(0xDC))
+		#expect(uk.typedKey(for: "É") == TypedKey(0x45, shift: true, altGr: true))
+		let german = KeyTranslator(pcLayout: .german)
+		#expect(german.typedKey(for: "ü") == TypedKey(0xBA))
+		#expect(german.typedKey(for: "ß") == TypedKey(0xDB))
+		#expect(german.typedKey(for: "€") == TypedKey(0x45, altGr: true))
+		#expect(german.typedKey(for: "^") == TypedKey(0xDC))
+		let swiss = KeyTranslator(pcLayout: .swissFrench)
+		// "§" is a plain key, not AltGr-5.
+		#expect(swiss.typedKey(for: "§") == TypedKey(0xBF))
+		#expect(swiss.typedKey(for: "è") == TypedKey(0xBA))
+		let canadian = KeyTranslator(pcLayout: .canadianFrench)
+		#expect(canadian.typedKey(for: "é") == TypedKey(0xBF))
+		#expect(canadian.typedKey(for: "#") == TypedKey(0xDE))
+		#expect(canadian.typedKey(for: "«") == TypedKey(0xE2))
+		let belgian = KeyTranslator(pcLayout: .belgian)
+		#expect(belgian.typedKey(for: "1") == TypedKey(0x31, shift: true))
+		#expect(belgian.typedKey(for: "!") == TypedKey(0x38))
+		#expect(KeyTranslator(pcLayout: .spanish).typedKey(for: "ñ") == TypedKey(0xC0))
+		#expect(KeyTranslator(pcLayout: .italian).typedKey(for: "{") == TypedKey(0xBA, shift: true, altGr: true))
+	}
+
+	/// By position, the AZERTY Mac's "a" key is the US PC's Q, and Shift passes as held.
+	@Test func positionsIgnoreTheMacsCharacters() {
+		capture.translator.pcLayout = .us
+		capture.translator.mapping = .positions
+		pressShift()
+		#expect(capture.handle(Event(type: .keyDown, keyCode: 12, flags: leftShift)))
+		#expect(capture.handle(Event(type: .keyDown, keyCode: 18, flags: leftShift)))
+		#expect(sent == ["a0↓", "51↓", "31↓"])
+	}
+
+	/// The key left of 1 is code 10 on ISO keyboards and code 50 on ANSI ones.
+	@Test func positionsFollowTheKeyboardType() {
+		let french = KeyTranslator(pcLayout: .french, mapping: .positions)
+		#expect(french.positionalKey(keyCode: 10, isANSIKeyboard: false) == WindowsKey(0xDE))
+		#expect(french.positionalKey(keyCode: 50, isANSIKeyboard: false) == WindowsKey(0xE2))
+		#expect(french.positionalKey(keyCode: 50, isANSIKeyboard: true) == WindowsKey(0xDE))
+		let german = KeyTranslator(pcLayout: .german, mapping: .positions)
+		#expect(german.positionalKey(keyCode: 16, isANSIKeyboard: false) == WindowsKey(0x5A))
+		#expect(german.positionalKey(keyCode: MacKeyCode.returnKey, isANSIKeyboard: false) == WindowsKey(0x0D))
+	}
+
+	/// Shift and AltGr together: Shift is added, AltGr pressed, and both put back.
+	@Test func shiftAndAltGrOnItalianPC() {
+		capture.translator.pcLayout = .italian
+		capture.characters = { $0 == 21 ? KeyTranslator.Characters(plain: "{", shifted: "{") : nil }
+		#expect(capture.handle(Event(type: .keyDown, keyCode: 21)))
+		#expect(sent == ["a0↓", "a2↓", "a5↓", "ba↓", "ba↑", "a5↑", "a2↑", "a0↑"])
 	}
 
 	@Test func tablesTypeEachCharacterOnce() {

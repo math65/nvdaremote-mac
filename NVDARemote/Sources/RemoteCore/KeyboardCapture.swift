@@ -129,6 +129,8 @@ public final class KeyboardCapture {
 	public let layout = MacKeyboardLayout()
 	/// The characters of a Mac key; tests replace it to stay independent of the Mac's layout.
 	var characters: (UInt16) -> KeyTranslator.Characters?
+	/// Whether the Mac's keyboard is ANSI (US style) rather than ISO; replaced by tests too.
+	var isANSIKeyboard: () -> Bool
 	private var tap: CFMachPort?
 	private var runLoopSource: CFRunLoopSource?
 	/// Keys sent to the PC as pressed, in the order they were pressed.
@@ -143,6 +145,7 @@ public final class KeyboardCapture {
 
 	public init() {
 		characters = { [layout] in layout.characters(for: $0) }
+		isANSIKeyboard = { [layout] in layout.isANSIKeyboard }
 	}
 
 	// MARK: - Permissions
@@ -319,7 +322,12 @@ public final class KeyboardCapture {
 		let characters = characters(effective)
 		let shift = flags.contains(.maskShift)
 		let key: WindowsKey
-		if let characters, isTyping(flags), !translator.isLayoutIndependent(keyCode: effective, characters: characters) {
+		if translator.mapping == .positions {
+			guard let positional = translator.positionalKey(keyCode: effective, isANSIKeyboard: isANSIKeyboard()) else {
+				return false
+			}
+			key = positional
+		} else if let characters, isTyping(flags), !translator.isLayoutIndependent(keyCode: effective, characters: characters) {
 			// Typing text: send the key that types the same character on the PC's layout.
 			guard let typed = translator.typedKey(for: shift ? characters.shifted : characters.plain) else {
 				// The PC's layout has no such key (é on a US PC): better nothing than a wrong character.

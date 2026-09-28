@@ -125,8 +125,21 @@ private struct KeyboardSettings: View {
 						Text(layout.label).tag(layout)
 					}
 				}
-				.accessibilityHint(Text("The layout set in Windows on the PC. You keep typing with your Mac's keyboard: digits, punctuation and accents come out as on your Mac whenever the PC's layout has them."))
-				HelpText("The layout set in Windows on the PC. You keep typing with your Mac's keyboard: digits, punctuation and accents come out as on your Mac whenever the PC's layout has them.")
+				.accessibilityHint(Text("The layout set in Windows on the PC."))
+				HelpText("The layout set in Windows on the PC.")
+				Picker("Typing", selection: $model.keyMapping) {
+					ForEach(KeyMapping.allCases, id: \.self) { mapping in
+						Text(mapping.label).tag(mapping)
+					}
+				}
+				.accessibilityHint(model.keyMapping == .characters
+					? Text("You keep typing with your Mac's layout: digits, punctuation and accents come out as on your Mac whenever the PC's layout has them.")
+					: Text("Each key acts as the key at the same place on a PC keyboard, and the PC's layout decides what it types, as if your keyboard were plugged into the PC."))
+				if model.keyMapping == .characters {
+					HelpText("You keep typing with your Mac's layout: digits, punctuation and accents come out as on your Mac whenever the PC's layout has them.")
+				} else {
+					HelpText("Each key acts as the key at the same place on a PC keyboard, and the PC's layout decides what it types, as if your keyboard were plugged into the PC.")
+				}
 			}
 		}
 		.formStyle(.grouped)

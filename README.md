@@ -94,12 +94,19 @@ Both shortcuts work from any app and can be changed in Settings.
 You keep typing with your Mac's own layout, whatever the PC uses. Letters are sent as
 themselves, so an AZERTY Mac types the right letters on an AZERTY or QWERTY PC. For
 digits, punctuation and accented letters, the app sends the key that types the same
-character on the PC's layout, set in Settings (French AZERTY or US QWERTY; by default,
-the one that matches the Mac's keyboard), and adjusts Shift and AltGr for it: Shift-&
-on an AZERTY Mac types 1 on a US PC, and @ types AltGr-à on a French PC. A character
-the PC's layout lacks, such as é on a US PC, is not sent rather than typed wrong. With
-Control, Option, Command or the NVDA key held, keys are commands: they keep their
-position and the modifiers you hold.
+character on the PC's layout, set in Settings, and adjusts Shift and AltGr for it:
+Shift-& on an AZERTY Mac types 1 on a US PC, and @ types AltGr-à on a French PC. A
+character the PC's layout lacks, such as é on a US PC, is not sent rather than typed
+wrong. With Control, Option, Command or the NVDA key held, keys are commands: they
+keep their position and the modifiers you hold.
+
+PC layouts: French, Belgian French, Swiss French, Canadian French, US, United Kingdom,
+German, Spanish and Italian. By default, the app picks the one that matches the Mac's
+keyboard. Their tables are generated from Microsoft's own layout files.
+
+If you prefer the PC's layout to decide, set Typing to "Same keys as on the PC
+keyboard" in Settings: each key is then sent as the key at the same place on a PC
+keyboard, with the modifiers you hold, as if your keyboard were plugged into the PC.
 
 When Caps Lock is the NVDA key, it is remapped to F18 with `hidutil` only while the
 PC is controlled, and restored when coming back to the Mac, when quitting, and at the

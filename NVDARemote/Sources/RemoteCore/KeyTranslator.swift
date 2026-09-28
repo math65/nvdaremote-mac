@@ -35,12 +35,42 @@ public enum NVDAKeyChoice: String, CaseIterable, Sendable {
 /// Keyboard layout configured on the PC. It determines which virtual-key code produces which character.
 public enum PCLayout: String, CaseIterable, Sendable {
 	case french
+	case belgian
+	case swissFrench
+	case canadianFrench
 	case us
+	case uk
+	case german
+	case spanish
+	case italian
 
 	public var label: String {
 		switch self {
 		case .french: localized("French (AZERTY)")
+		case .belgian: localized("Belgian French (AZERTY)")
+		case .swissFrench: localized("Swiss French (QWERTZ)")
+		case .canadianFrench: localized("Canadian French")
 		case .us: localized("US (QWERTY)")
+		case .uk: localized("United Kingdom (QWERTY)")
+		case .german: localized("German (QWERTZ)")
+		case .spanish: localized("Spanish (QWERTY)")
+		case .italian: localized("Italian (QWERTY)")
+		}
+	}
+}
+
+/// How Mac keys become PC keys when typing.
+public enum KeyMapping: String, CaseIterable, Sendable {
+	/// Each key types on the PC what it types on the Mac, whatever the two layouts.
+	case characters
+	/// Each key is sent as the PC key at the same place on the keyboard, and the PC's
+	/// layout decides what it types, as if the Mac's keyboard were plugged into the PC.
+	case positions
+
+	public var label: String {
+		switch self {
+		case .characters: localized("Same characters as on the Mac")
+		case .positions: localized("Same keys as on the PC keyboard")
 		}
 	}
 }
@@ -53,9 +83,20 @@ extension PCLayout {
 	///   "com.apple.keylayout.French".
 	public init(matchingMacLayout macInputSourceID: String?) {
 		let id = macInputSourceID ?? ""
-		let azerty = ["French", "Belgian", "AZERTY"].contains { id.contains($0) }
-		// Swiss French is a QWERTZ layout despite its name.
-		self = azerty && !id.contains("Swiss") ? .french : .us
+		// Most specific first: "SwissFrench" and "CanadianFrench-PC" also contain "French".
+		let matches: [(names: [String], layout: PCLayout)] = [
+			(["SwissFrench"], .swissFrench),
+			(["Canadian"], .canadianFrench),
+			(["Belgian"], .belgian),
+			(["French", "AZERTY"], .french),
+			(["British", "Irish"], .uk),
+			(["German", "Austrian"], .german),
+			(["Spanish"], .spanish),
+			(["Italian"], .italian),
+		]
+		// Swiss German is left out: its PC layout differs from both Swiss French and German.
+		let match = matches.first { $0.names.contains { id.contains($0) } && !id.contains("SwissGerman") }
+		self = match?.layout ?? .us
 	}
 }
 
@@ -115,10 +156,25 @@ public struct KeyTranslator: Sendable {
 
 	public var nvdaKey: NVDAKeyChoice
 	public var pcLayout: PCLayout
+	public var mapping: KeyMapping
 
-	public init(nvdaKey: NVDAKeyChoice = .capsLock, pcLayout: PCLayout = .french) {
+	public init(nvdaKey: NVDAKeyChoice = .capsLock, pcLayout: PCLayout = .french, mapping: KeyMapping = .characters) {
 		self.nvdaKey = nvdaKey
 		self.pcLayout = pcLayout
+		self.mapping = mapping
+	}
+
+	/// The PC key at the same place as a Mac key, for `KeyMapping.positions`: the PC's
+	/// layout then decides the character, and Shift, Option and the others pass as held.
+	/// - Parameter isANSIKeyboard: on ANSI keyboards (US style) the key left of 1 is
+	///   code 50, which is the key left of Z on ISO keyboards.
+	public func positionalKey(keyCode: UInt16, isANSIKeyboard: Bool) -> WindowsKey? {
+		if let special = specialKey(keyCode) {
+			return special
+		}
+		let position = isANSIKeyboard && keyCode == 50 ? 10 : keyCode
+		guard let vk = Self.positionChanges[pcLayout]?[position] ?? Self.usPositions[position] else { return nil }
+		return WindowsKey(vk)
 	}
 
 	/// - Parameter characters: what the key produces with the Mac's active layout;
@@ -177,7 +233,14 @@ public struct KeyTranslator: Sendable {
 	public func typedKey(for character: String) -> TypedKey? {
 		switch pcLayout {
 		case .french: Self.frenchTyped[character]
+		case .belgian: Self.belgianTyped[character]
+		case .swissFrench: Self.swissFrenchTyped[character]
+		case .canadianFrench: Self.canadianFrenchTyped[character]
 		case .us: Self.usTyped[character]
+		case .uk: Self.ukTyped[character]
+		case .german: Self.germanTyped[character]
+		case .spanish: Self.spanishTyped[character]
+		case .italian: Self.italianTyped[character]
 		}
 	}
 
@@ -256,7 +319,14 @@ public struct KeyTranslator: Sendable {
 	private var punctuation: [PunctuationKey] {
 		switch pcLayout {
 		case .french: Self.frenchPunctuation
+		case .belgian: Self.belgianPunctuation
+		case .swissFrench: Self.swissFrenchPunctuation
+		case .canadianFrench: Self.canadianFrenchPunctuation
 		case .us: Self.usPunctuation
+		case .uk: Self.ukPunctuation
+		case .german: Self.germanPunctuation
+		case .spanish: Self.spanishPunctuation
+		case .italian: Self.italianPunctuation
 		}
 	}
 
@@ -295,19 +365,157 @@ public struct KeyTranslator: Sendable {
 		PunctuationKey(vk: 0xE2, plain: "\\", position: 10),
 	]
 
+	// Generated from Microsoft's layout tables. On these ISO keyboards the key left of 1
+	// is code 10 on the Mac and the key left of Z is code 50, as measured on AZERTY.
+
+	private static let ukPunctuation = [
+		PunctuationKey(vk: 0xBD, plain: "-", position: 27),
+		PunctuationKey(vk: 0xBB, plain: "=", position: 24),
+		PunctuationKey(vk: 0xDB, plain: "[", position: 33),
+		PunctuationKey(vk: 0xDD, plain: "]", position: 30),
+		PunctuationKey(vk: 0xBA, plain: ";", position: 41),
+		PunctuationKey(vk: 0xC0, plain: "'", position: 39),
+		PunctuationKey(vk: 0xDF, plain: "`", position: 10),
+		PunctuationKey(vk: 0xDE, plain: "#", position: 42),
+		PunctuationKey(vk: 0xBC, plain: ",", position: 43),
+		PunctuationKey(vk: 0xBE, plain: ".", position: 47),
+		PunctuationKey(vk: 0xBF, plain: "/", position: 44),
+		PunctuationKey(vk: 0xDC, plain: "\\", position: 50),
+	]
+
+	private static let canadianFrenchPunctuation = [
+		PunctuationKey(vk: 0xBD, plain: "-", position: 27),
+		PunctuationKey(vk: 0xBB, plain: "=", position: 24),
+		PunctuationKey(vk: 0xDB, plain: "^", position: 33),
+		PunctuationKey(vk: 0xDD, plain: "¸", position: 30),
+		PunctuationKey(vk: 0xBA, plain: ";", position: 41),
+		PunctuationKey(vk: 0xC0, plain: "`", position: 39),
+		PunctuationKey(vk: 0xDE, plain: "#", position: 10),
+		PunctuationKey(vk: 0xDC, plain: "<", position: 42),
+		PunctuationKey(vk: 0xBC, plain: ",", position: 43),
+		PunctuationKey(vk: 0xBE, plain: ".", position: 47),
+		PunctuationKey(vk: 0xBF, plain: "é", position: 44),
+		PunctuationKey(vk: 0xE2, plain: "«", position: 50),
+	]
+
+	private static let belgianPunctuation = [
+		PunctuationKey(vk: 0xDB, plain: ")", position: 27),
+		PunctuationKey(vk: 0xBD, plain: "-", position: 24),
+		PunctuationKey(vk: 0xDD, plain: "^", position: 33),
+		PunctuationKey(vk: 0xBA, plain: "$", position: 30),
+		PunctuationKey(vk: 0xC0, plain: "ù", position: 39),
+		PunctuationKey(vk: 0xDE, plain: "²", position: 10),
+		PunctuationKey(vk: 0xDC, plain: "µ", position: 42),
+		PunctuationKey(vk: 0xBC, plain: ",", position: 46),
+		PunctuationKey(vk: 0xBE, plain: ";", position: 43),
+		PunctuationKey(vk: 0xBF, plain: ":", position: 47),
+		PunctuationKey(vk: 0xBB, plain: "=", position: 44),
+		PunctuationKey(vk: 0xE2, plain: "<", position: 50),
+	]
+
+	private static let swissFrenchPunctuation = [
+		PunctuationKey(vk: 0xDB, plain: "'", position: 27),
+		PunctuationKey(vk: 0xDD, plain: "^", position: 24),
+		PunctuationKey(vk: 0xBA, plain: "è", position: 33),
+		PunctuationKey(vk: 0xC0, plain: "¨", position: 30),
+		PunctuationKey(vk: 0xDE, plain: "é", position: 41),
+		PunctuationKey(vk: 0xDC, plain: "à", position: 39),
+		PunctuationKey(vk: 0xBF, plain: "§", position: 10),
+		PunctuationKey(vk: 0xDF, plain: "$", position: 42),
+		PunctuationKey(vk: 0xBC, plain: ",", position: 43),
+		PunctuationKey(vk: 0xBE, plain: ".", position: 47),
+		PunctuationKey(vk: 0xBD, plain: "-", position: 44),
+		PunctuationKey(vk: 0xE2, plain: "<", position: 50),
+	]
+
+	private static let germanPunctuation = [
+		PunctuationKey(vk: 0xDB, plain: "ß", position: 27),
+		PunctuationKey(vk: 0xDD, plain: "´", position: 24),
+		PunctuationKey(vk: 0xBA, plain: "ü", position: 33),
+		PunctuationKey(vk: 0xBB, plain: "+", position: 30),
+		PunctuationKey(vk: 0xC0, plain: "ö", position: 41),
+		PunctuationKey(vk: 0xDE, plain: "ä", position: 39),
+		PunctuationKey(vk: 0xDC, plain: "^", position: 10),
+		PunctuationKey(vk: 0xBF, plain: "#", position: 42),
+		PunctuationKey(vk: 0xBC, plain: ",", position: 43),
+		PunctuationKey(vk: 0xBE, plain: ".", position: 47),
+		PunctuationKey(vk: 0xBD, plain: "-", position: 44),
+		PunctuationKey(vk: 0xE2, plain: "<", position: 50),
+	]
+
+	private static let spanishPunctuation = [
+		PunctuationKey(vk: 0xDB, plain: "'", position: 27),
+		PunctuationKey(vk: 0xDD, plain: "¡", position: 24),
+		PunctuationKey(vk: 0xBA, plain: "`", position: 33),
+		PunctuationKey(vk: 0xBB, plain: "+", position: 30),
+		PunctuationKey(vk: 0xC0, plain: "ñ", position: 41),
+		PunctuationKey(vk: 0xDE, plain: "´", position: 39),
+		PunctuationKey(vk: 0xDC, plain: "º", position: 10),
+		PunctuationKey(vk: 0xBF, plain: "ç", position: 42),
+		PunctuationKey(vk: 0xBC, plain: ",", position: 43),
+		PunctuationKey(vk: 0xBE, plain: ".", position: 47),
+		PunctuationKey(vk: 0xBD, plain: "-", position: 44),
+		PunctuationKey(vk: 0xE2, plain: "<", position: 50),
+	]
+
+	private static let italianPunctuation = [
+		PunctuationKey(vk: 0xDB, plain: "'", position: 27),
+		PunctuationKey(vk: 0xDD, plain: "ì", position: 24),
+		PunctuationKey(vk: 0xBA, plain: "è", position: 33),
+		PunctuationKey(vk: 0xBB, plain: "+", position: 30),
+		PunctuationKey(vk: 0xC0, plain: "ò", position: 41),
+		PunctuationKey(vk: 0xDE, plain: "à", position: 39),
+		PunctuationKey(vk: 0xDC, plain: "\\", position: 10),
+		PunctuationKey(vk: 0xBF, plain: "ù", position: 42),
+		PunctuationKey(vk: 0xBC, plain: ",", position: 43),
+		PunctuationKey(vk: 0xBE, plain: ".", position: 47),
+		PunctuationKey(vk: 0xBD, plain: "-", position: 44),
+		PunctuationKey(vk: 0xE2, plain: "<", position: 50),
+	]
+
+	// MARK: - Positions, by PC layout
+
+	/// Windows key at each position of a US PC keyboard, by Mac key code (ISO: 10 is
+	/// left of 1, 50 left of Z).
+	private static let usPositions: [UInt16: Int] = [
+		18: 0x31, 19: 0x32, 20: 0x33, 21: 0x34, 23: 0x35, 22: 0x36, 26: 0x37, 28: 0x38, 25: 0x39, 29: 0x30, 27: 0xBD, 24: 0xBB,
+		12: 0x51, 13: 0x57, 14: 0x45, 15: 0x52, 17: 0x54, 16: 0x59, 32: 0x55, 34: 0x49, 31: 0x4F, 35: 0x50, 33: 0xDB, 30: 0xDD,
+		0: 0x41, 1: 0x53, 2: 0x44, 3: 0x46, 5: 0x47, 4: 0x48, 38: 0x4A, 40: 0x4B, 37: 0x4C, 41: 0xBA, 39: 0xDE, 42: 0xDC,
+		6: 0x5A, 7: 0x58, 8: 0x43, 9: 0x56, 11: 0x42, 45: 0x4E, 46: 0x4D, 43: 0xBC, 47: 0xBE, 44: 0xBF,
+		10: 0xC0, 50: 0xE2,
+	]
+
+	/// What differs from `usPositions` on each other layout.
+	private static let positionChanges: [PCLayout: [UInt16: Int]] = [
+		.french: [0: 0x51, 6: 0x57, 10: 0xDE, 12: 0x41, 13: 0x5A, 27: 0xDB, 30: 0xBA, 33: 0xDD, 39: 0xC0, 41: 0x4D, 43: 0xBE, 44: 0xDF, 46: 0xBC, 47: 0xBF],
+		.belgian: [0: 0x51, 6: 0x57, 10: 0xDE, 12: 0x41, 13: 0x5A, 24: 0xBD, 27: 0xDB, 30: 0xBA, 33: 0xDD, 39: 0xC0, 41: 0x4D, 43: 0xBE, 44: 0xBB, 46: 0xBC, 47: 0xBF],
+		.swissFrench: [6: 0x59, 10: 0xBF, 16: 0x5A, 24: 0xDD, 27: 0xDB, 30: 0xC0, 33: 0xBA, 39: 0xDC, 41: 0xDE, 42: 0xDF, 44: 0xBD],
+		.canadianFrench: [10: 0xDE, 39: 0xC0],
+		.uk: [10: 0xDF, 39: 0xC0, 42: 0xDE, 50: 0xDC],
+		.german: [6: 0x59, 10: 0xDC, 16: 0x5A, 24: 0xDD, 27: 0xDB, 30: 0xBB, 33: 0xBA, 41: 0xC0, 42: 0xBF, 44: 0xBD],
+		.spanish: [10: 0xDC, 24: 0xDD, 27: 0xDB, 30: 0xBB, 33: 0xBA, 41: 0xC0, 42: 0xBF, 44: 0xBD],
+		.italian: [10: 0xDC, 24: 0xDD, 27: 0xDB, 30: 0xBB, 33: 0xBA, 41: 0xC0, 42: 0xBF, 44: 0xBD],
+	]
+
 	// MARK: - Characters, by PC layout
 
-	/// Builds a character table from rows of (virtual-key code, plain, Shift, AltGr).
-	/// The first key listed for a character wins, so dead keys are listed before a
-	/// plain spelling of the same character: "^" then "e" must give "ê" on the PC,
-	/// as it does on the Mac.
-	private static func table(_ rows: [(vk: Int, plain: String?, shifted: String?, altGr: String?)]) -> [String: TypedKey] {
+	/// Builds a character table from rows of (virtual-key code, plain, Shift, AltGr),
+	/// plus the few characters typed with Shift and AltGr together. A character on
+	/// several keys goes to the one with the fewest modifiers, then to the first listed.
+	/// That also picks dead keys where it matters: "^" is a plain dead key on a French
+	/// PC but AltGr-9 types it alone, and "^" then "e" must give "ê", as on the Mac.
+	private static func table(
+		_ rows: [(vk: Int, plain: String?, shifted: String?, altGr: String?)],
+		shiftedAltGr: [(vk: Int, character: String)] = []
+	) -> [String: TypedKey] {
 		var table: [String: TypedKey] = [:]
-		for row in rows {
-			if let plain = row.plain, table[plain] == nil { table[plain] = TypedKey(row.vk) }
-			if let shifted = row.shifted, table[shifted] == nil { table[shifted] = TypedKey(row.vk, shift: true) }
-			if let altGr = row.altGr, table[altGr] == nil { table[altGr] = TypedKey(row.vk, altGr: true) }
+		func add(_ character: String?, _ key: TypedKey) {
+			if let character, table[character] == nil { table[character] = key }
 		}
+		for row in rows { add(row.plain, TypedKey(row.vk)) }
+		for row in rows { add(row.shifted, TypedKey(row.vk, shift: true)) }
+		for row in rows { add(row.altGr, TypedKey(row.vk, altGr: true)) }
+		for row in shiftedAltGr { add(row.character, TypedKey(row.vk, shift: true, altGr: true)) }
 		return table
 	}
 
@@ -361,5 +569,217 @@ public struct KeyTranslator: Sendable {
 		(0xBC, ",", "<", nil),
 		(0xBE, ".", ">", nil),
 		(0xBF, "/", "?", nil),
+	])
+
+	// The tables below are generated from Microsoft's layout tables (KLC files), not
+	// written by hand. Letters are only listed for what AltGr adds to them.
+
+	/// Windows "United Kingdom" layout (kbduk).
+	private static let ukTyped = table([
+		(0x31, "1", "!", nil),
+		(0x32, "2", "\"", nil),
+		(0x33, "3", "£", nil),
+		(0x34, "4", "$", "€"),
+		(0x35, "5", "%", nil),
+		(0x36, "6", "^", nil),
+		(0x37, "7", "&", nil),
+		(0x38, "8", "*", nil),
+		(0x39, "9", "(", nil),
+		(0x30, "0", ")", nil),
+		(0xBD, "-", "_", nil),
+		(0xBB, "=", "+", nil),
+		(0x45, nil, nil, "é"),
+		(0x55, nil, nil, "ú"),
+		(0x49, nil, nil, "í"),
+		(0x4F, nil, nil, "ó"),
+		(0xDB, "[", "{", nil),
+		(0xDD, "]", "}", nil),
+		(0x41, nil, nil, "á"),
+		(0xBA, ";", ":", nil),
+		(0xC0, "'", "@", nil),
+		(0xDF, "`", "¬", "¦"),
+		(0xDE, "#", "~", "\\"),
+		(0xBC, ",", "<", nil),
+		(0xBE, ".", ">", nil),
+		(0xBF, "/", "?", nil),
+		(0xDC, "\\", "|", nil),
+	], shiftedAltGr: [
+		(0x45, "É"),
+		(0x55, "Ú"),
+		(0x49, "Í"),
+		(0x4F, "Ó"),
+		(0x41, "Á"),
+	])
+
+	/// Windows "Canadian French" layout (kbdca).
+	private static let canadianFrenchTyped = table([
+		(0x31, "1", "!", "±"),
+		(0x32, "2", "\"", "@"),
+		(0x33, "3", "/", "£"),
+		(0x34, "4", "$", "¢"),
+		(0x35, "5", "%", "¤"),
+		(0x36, "6", "?", "¬"),
+		(0x37, "7", "&", "¦"),
+		(0x38, "8", "*", "²"),
+		(0x39, "9", "(", "³"),
+		(0x30, "0", ")", "¼"),
+		(0xBD, "-", "_", "½"),
+		(0xBB, "=", "+", "¾"),
+		(0x45, nil, nil, "€"),
+		(0x4F, nil, nil, "§"),
+		(0x50, nil, nil, "¶"),
+		(0xDB, "^", "^", "["),
+		(0xDD, "¸", "¨", "]"),
+		(0xBA, ";", ":", "~"),
+		(0xC0, "`", "`", "{"),
+		(0xDE, "#", "|", "\\"),
+		(0xDC, "<", ">", "}"),
+		(0x4D, nil, nil, "µ"),
+		(0xBC, ",", "'", "¯"),
+		(0xBE, ".", ".", nil),
+		(0xBF, "é", "É", "´"),
+		(0xE2, "«", "»", "°"),
+	])
+
+	/// Windows "Belgian French" layout (kbdbe).
+	private static let belgianTyped = table([
+		(0x31, "&", "1", "|"),
+		(0x32, "é", "2", "@"),
+		(0x33, "\"", "3", "#"),
+		(0x34, "'", "4", "{"),
+		(0x35, "(", "5", "["),
+		(0x36, "§", "6", "^"),
+		(0x37, "è", "7", nil),
+		(0x38, "!", "8", nil),
+		(0x39, "ç", "9", "{"),
+		(0x30, "à", "0", "}"),
+		(0xDB, ")", "°", nil),
+		(0xBD, "-", "_", nil),
+		(0x45, nil, nil, "€"),
+		(0xDD, "^", "¨", "["),
+		(0xBA, "$", "*", "]"),
+		(0xC0, "ù", "%", "´"),
+		(0xDE, "²", "³", nil),
+		(0xDC, "µ", "£", "`"),
+		(0xBC, ",", "?", nil),
+		(0xBE, ";", ".", nil),
+		(0xBF, ":", "/", nil),
+		(0xBB, "=", "+", "~"),
+		(0xE2, "<", ">", "\\"),
+	])
+
+	/// Windows "Swiss French" layout (kbdsf).
+	private static let swissFrenchTyped = table([
+		(0x31, "1", "+", "¦"),
+		(0x32, "2", "\"", "@"),
+		(0x33, "3", "*", "#"),
+		(0x34, "4", "ç", "°"),
+		(0x35, "5", "%", "§"),
+		(0x36, "6", "&", "¬"),
+		(0x37, "7", "/", "|"),
+		(0x38, "8", "(", "¢"),
+		(0x39, "9", ")", nil),
+		(0x30, "0", "=", nil),
+		(0xDB, "'", "?", "´"),
+		(0xDD, "^", "`", "~"),
+		(0x45, nil, nil, "€"),
+		(0xBA, "è", "ü", "["),
+		(0xC0, "¨", "!", "]"),
+		(0xDE, "é", "ö", nil),
+		(0xDC, "à", "ä", "{"),
+		(0xBF, "§", "°", nil),
+		(0xDF, "$", "£", "}"),
+		(0xBC, ",", ";", nil),
+		(0xBE, ".", ":", nil),
+		(0xBD, "-", "_", nil),
+		(0xE2, "<", ">", "\\"),
+	])
+
+	/// Windows "German" layout (kbdgr).
+	private static let germanTyped = table([
+		(0x31, "1", "!", nil),
+		(0x32, "2", "\"", "²"),
+		(0x33, "3", "§", "³"),
+		(0x34, "4", "$", nil),
+		(0x35, "5", "%", nil),
+		(0x36, "6", "&", nil),
+		(0x37, "7", "/", "{"),
+		(0x38, "8", "(", "["),
+		(0x39, "9", ")", "]"),
+		(0x30, "0", "=", "}"),
+		(0xDB, "ß", "?", "\\"),
+		(0xDD, "´", "`", nil),
+		(0x51, nil, nil, "@"),
+		(0x45, nil, nil, "€"),
+		(0xBA, "ü", "Ü", nil),
+		(0xBB, "+", "*", "~"),
+		(0xC0, "ö", "Ö", nil),
+		(0xDE, "ä", "Ä", nil),
+		(0xDC, "^", "°", nil),
+		(0xBF, "#", "'", nil),
+		(0x4D, nil, nil, "µ"),
+		(0xBC, ",", ";", nil),
+		(0xBE, ".", ":", nil),
+		(0xBD, "-", "_", nil),
+		(0xE2, "<", ">", "|"),
+	], shiftedAltGr: [
+		(0xDB, "ẞ"),
+	])
+
+	/// Windows "Spanish" layout (kbdsp).
+	private static let spanishTyped = table([
+		(0x31, "1", "!", "|"),
+		(0x32, "2", "\"", "@"),
+		(0x33, "3", "·", "#"),
+		(0x34, "4", "$", "~"),
+		(0x35, "5", "%", "€"),
+		(0x36, "6", "&", "¬"),
+		(0x37, "7", "/", nil),
+		(0x38, "8", "(", nil),
+		(0x39, "9", ")", nil),
+		(0x30, "0", "=", nil),
+		(0xDB, "'", "?", nil),
+		(0xDD, "¡", "¿", nil),
+		(0x45, nil, nil, "€"),
+		(0xBA, "`", "^", "["),
+		(0xBB, "+", "*", "]"),
+		(0xC0, "ñ", "Ñ", nil),
+		(0xDE, "´", "¨", "{"),
+		(0xDC, "º", "ª", "\\"),
+		(0xBF, "ç", "Ç", "}"),
+		(0xBC, ",", ";", nil),
+		(0xBE, ".", ":", nil),
+		(0xBD, "-", "_", nil),
+		(0xE2, "<", ">", nil),
+	])
+
+	/// Windows "Italian" layout (kbdit).
+	private static let italianTyped = table([
+		(0x31, "1", "!", nil),
+		(0x32, "2", "\"", nil),
+		(0x33, "3", "£", nil),
+		(0x34, "4", "$", nil),
+		(0x35, "5", "%", "€"),
+		(0x36, "6", "&", nil),
+		(0x37, "7", "/", nil),
+		(0x38, "8", "(", nil),
+		(0x39, "9", ")", nil),
+		(0x30, "0", "=", nil),
+		(0xDB, "'", "?", nil),
+		(0xDD, "ì", "^", nil),
+		(0x45, nil, nil, "€"),
+		(0xBA, "è", "é", "["),
+		(0xBB, "+", "*", "]"),
+		(0xC0, "ò", "ç", "@"),
+		(0xDE, "à", "°", "#"),
+		(0xDC, "\\", "|", nil),
+		(0xBF, "ù", "§", nil),
+		(0xBC, ",", ";", nil),
+		(0xBE, ".", ":", nil),
+		(0xBD, "-", "_", nil),
+		(0xE2, "<", ">", nil),
+	], shiftedAltGr: [
+		(0xBA, "{"),
+		(0xBB, "}"),
 	])
 }

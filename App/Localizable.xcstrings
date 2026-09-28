@@ -931,16 +931,6 @@
         }
       }
     },
-    "The layout set in Windows on the PC. You keep typing with your Mac's keyboard: digits, punctuation and accents come out as on your Mac whenever the PC's layout has them.": {
-      "localizations": {
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "La disposition réglée dans Windows sur le PC. Vous continuez de taper avec le clavier de votre Mac : chiffres, ponctuation et accents sortent comme sur le Mac, dès que la disposition du PC les possède."
-          }
-        }
-      }
-    },
     "The Mac key that acts as NVDA's Insert key on the PC.": {
       "localizations": {
         "fr": {
@@ -1177,6 +1167,46 @@
           "stringUnit": {
             "state": "translated",
             "value": "Votre adresse e-mail"
+          }
+        }
+      }
+    },
+    "The layout set in Windows on the PC.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La disposition réglée dans Windows sur le PC."
+          }
+        }
+      }
+    },
+    "Typing": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Frappe"
+          }
+        }
+      }
+    },
+    "You keep typing with your Mac's layout: digits, punctuation and accents come out as on your Mac whenever the PC's layout has them.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vous continuez de taper avec la disposition de votre Mac : chiffres, ponctuation et accents sortent comme sur le Mac, dès que la disposition du PC les possède."
+          }
+        }
+      }
+    },
+    "Each key acts as the key at the same place on a PC keyboard, and the PC's layout decides what it types, as if your keyboard were plugged into the PC.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chaque touche agit comme la touche au même emplacement sur un clavier de PC, et la disposition du PC décide de ce qu'elle tape, comme si votre clavier était branché sur le PC."
           }
         }
       }

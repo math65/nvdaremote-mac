@@ -500,6 +500,96 @@
           }
         }
       }
+    },
+    "Belgian French (AZERTY)": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Belge (AZERTY)"
+          }
+        }
+      }
+    },
+    "Swiss French (QWERTZ)": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Suisse romand (QWERTZ)"
+          }
+        }
+      }
+    },
+    "Canadian French": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Canadien français"
+          }
+        }
+      }
+    },
+    "United Kingdom (QWERTY)": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Royaume-Uni (QWERTY)"
+          }
+        }
+      }
+    },
+    "German (QWERTZ)": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Allemand (QWERTZ)"
+          }
+        }
+      }
+    },
+    "Spanish (QWERTY)": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Espagnol (QWERTY)"
+          }
+        }
+      }
+    },
+    "Italian (QWERTY)": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Italien (QWERTY)"
+          }
+        }
+      }
+    },
+    "Same characters as on the Mac": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mêmes caractères que sur le Mac"
+          }
+        }
+      }
+    },
+    "Same keys as on the PC keyboard": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mêmes touches que sur le clavier du PC"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

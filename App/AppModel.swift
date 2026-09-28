@@ -114,6 +114,13 @@ final class AppModel {
 		}
 	}
 
+	var keyMapping: KeyMapping {
+		didSet {
+			capture.translator.mapping = keyMapping
+			defaults.set(keyMapping.rawValue, forKey: Keys.keyMapping)
+		}
+	}
+
 	var shortcuts: [GlobalCommand: KeyShortcut] {
 		didSet {
 			capture.shortcuts = shortcuts
@@ -185,6 +192,7 @@ final class AppModel {
 		static let playsAppSounds = "playsAppSounds"
 		static let nvdaKey = "nvdaKey"
 		static let pcLayout = "pcLayout"
+		static let keyMapping = "keyMapping"
 		static let shortcuts = "shortcuts"
 		static let recents = "recentConnections"
 		static let showsInDock = "showsInDock"
@@ -217,6 +225,7 @@ final class AppModel {
 		// The PC usually has the same keyboard as the Mac: an AZERTY Mac, an AZERTY PC.
 		pcLayout = defaults.string(forKey: Keys.pcLayout).flatMap(PCLayout.init(rawValue:))
 			?? PCLayout(matchingMacLayout: MacKeyboardLayout().inputSourceID)
+		keyMapping = defaults.string(forKey: Keys.keyMapping).flatMap(KeyMapping.init(rawValue:)) ?? .characters
 		var shortcuts = Dictionary(uniqueKeysWithValues: GlobalCommand.allCases.map { ($0, $0.defaultShortcut) })
 		if let data = defaults.data(forKey: Keys.shortcuts),
 			let saved = try? JSONDecoder().decode([GlobalCommand: KeyShortcut].self, from: data)
@@ -228,7 +237,7 @@ final class AppModel {
 			.flatMap { try? JSONDecoder().decode([RecentConnection].self, from: $0) } ?? []
 		speech = SpeechOutput(wordsPerMinute: rate)
 
-		capture.translator = KeyTranslator(nvdaKey: nvdaKey, pcLayout: pcLayout)
+		capture.translator = KeyTranslator(nvdaKey: nvdaKey, pcLayout: pcLayout, mapping: keyMapping)
 		capture.shortcuts = shortcuts
 		capture.onCommand = { [weak self] command in self?.perform(command) }
 		capture.onKey = { [weak self] key, pressed in self?.session?.sendKey(key, pressed: pressed) }

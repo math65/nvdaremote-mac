@@ -12,6 +12,8 @@ public final class MacKeyboardLayout {
 	private var layoutData: Data?
 	/// The active layout's identifier, such as "com.apple.keylayout.French".
 	public private(set) var inputSourceID: String?
+	/// Whether the keyboard is ANSI (US style, no key left of Z) rather than ISO or JIS.
+	public private(set) var isANSIKeyboard = false
 
 	public init() {
 		reload()
@@ -21,6 +23,7 @@ public final class MacKeyboardLayout {
 		cache.removeAll()
 		layoutData = nil
 		inputSourceID = nil
+		isANSIKeyboard = KBGetLayoutType(Int16(LMGetKbdType())) == OSType(kKeyboardANSI)
 		guard let source = TISCopyCurrentKeyboardLayoutInputSource()?.takeRetainedValue() else { return }
 		if let id = TISGetInputSourceProperty(source, kTISPropertyInputSourceID) {
 			inputSourceID = Unmanaged<CFString>.fromOpaque(id).takeUnretainedValue() as String
