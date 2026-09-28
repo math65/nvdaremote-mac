@@ -134,8 +134,8 @@ scripts/build-release.sh
 ```
 
 Publishing a release (GitHub release, Sparkle appcast in `docs/` served by GitHub
-Pages) is `scripts/build-release.sh --release`, add `--beta` for the beta channel;
-the whole procedure is in [.claude/skills/release/SKILL.md](.claude/skills/release/SKILL.md).
+Pages) is `scripts/build-release.sh --release`; a version such as `1.0-beta.2` goes
+to the beta channel, a version such as `1.0` to everyone. The whole procedure is in [.claude/skills/release/SKILL.md](.claude/skills/release/SKILL.md).
 Builds made from a clone have no `App/AppBackendSecret.plist` (it is not versioned),
 so Contact the Developer is hidden in them.
 

@@ -19,12 +19,13 @@ Phase B without an explicit go-ahead from the user.**
 grep -m1 MARKETING_VERSION NVDARemote.xcodeproj/project.pbxproj
 ```
 
-A version with a prerelease suffix (`0.3-beta.1`) is a beta, published with
-`--release --beta`: only users who turned on "Receive beta versions" (Settings,
-General) get it, and the GitHub release is a prerelease. A bare version (`0.3`) is
-stable and reaches everyone. If the argument and the version disagree, stop and
-ask. Betas need their own marketing version, or the `v<version>` tag of the beta
-and the stable collide.
+A version with a prerelease suffix (`1.0-beta.2`) is a beta: only users with "Receive
+beta versions" on (Settings, General; on by default in beta builds) get it, and the
+GitHub release is a prerelease. A bare version (`1.0`) is stable and reaches
+everyone. `scripts/build-release.sh --release` reads the version and picks the
+channel itself; it refuses `--beta` on a stable version. If the user's argument and
+the version disagree, stop and ask. Betas need their own marketing version, or the
+`v<version>` tag of the beta and the stable collide.
 
 Always ask git what shipped, never session memory.
 
@@ -67,9 +68,11 @@ Prerequisites:
   tags exactly that commit, and pushes `docs/` (appcast and notes) itself.
 
 ```bash
-scripts/build-release.sh --release          # stable
-scripts/build-release.sh --release --beta   # beta
+scripts/build-release.sh --release   # the version number picks beta or stable
 ```
+
+The script prints the channel it chose ("Version 1.0-beta.2: beta channel…") before
+building: check it matches what the user asked for.
 
 Do not trust the exit status alone: read the output for `error:` or `failed`, then
 check:

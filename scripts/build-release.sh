@@ -8,9 +8,11 @@
 #   --no-notarize  sign and zip only (quick local check).
 #   --release      also update docs/appcast.xml (GitHub Pages), publish the zip as
 #                  GitHub release v<version>, and push docs/ when on main.
-#   --beta         with --release: the appcast item goes to Sparkle's "beta" channel
-#                  (only users who turned on beta versions get it) and the GitHub
-#                  release is a prerelease.
+#
+# The version number decides the channel, nobody has to remember it: a version with
+# a "-beta.N" suffix (1.0-beta.2) goes to Sparkle's "beta" channel (only users with
+# beta versions on get it) as a GitHub prerelease; a bare version (1.0) goes to
+# everyone. --beta is optional and only confirms: it is refused on a stable version.
 #
 # Needs: the notarytool keychain profile (default ttaccessible-notary; create one with
 #   xcrun notarytool store-credentials <name> --apple-id <id> --team-id 633EG76YX5),
@@ -65,6 +67,24 @@ if [[ $RELEASE -eq 1 ]]; then
 fi
 [[ $BETA -eq 0 || $RELEASE -eq 1 ]] || { echo "--beta only makes sense with --release."; exit 1; }
 
+VERSION=$(xcodebuild -project "$PROJECT" -scheme "$SCHEME" -configuration Release -showBuildSettings 2>/dev/null |
+	awk '$1 == "MARKETING_VERSION" { print $3; exit }')
+[[ -n "$VERSION" ]] || { echo "Could not read MARKETING_VERSION from $PROJECT."; exit 1; }
+if [[ "$VERSION" == *-beta* ]]; then
+	BETA=1
+elif [[ $BETA -eq 1 ]]; then
+	echo "--beta was given, but version $VERSION is a stable version. Publishing it to the beta"
+	echo "channel would never reach stable users. Use a version such as $VERSION-beta.1, or drop --beta."
+	exit 1
+fi
+if [[ $RELEASE -eq 1 ]]; then
+	if [[ $BETA -eq 1 ]]; then
+		echo "==> Version $VERSION: beta channel, GitHub prerelease."
+	else
+		echo "==> Version $VERSION: stable channel, offered to every user."
+	fi
+fi
+
 echo "==> Building $SCHEME (Release, arm64 + x86_64)..."
 LOG="$DERIVED_DATA/xcodebuild.log"
 mkdir -p "$DERIVED_DATA"
@@ -107,7 +127,8 @@ find "$APP_PATH/Contents" \( -name "*.dylib" -o -name "*.framework" \) -print0 |
 codesign --force --options runtime --timestamp --sign "$SIGN_IDENTITY" "$APP_PATH"
 codesign --verify --strict --deep --verbose=2 "$APP_PATH"
 
-VERSION=$(defaults read "$PWD/$APP_PATH/Contents/Info" CFBundleShortVersionString)
+BUILT_VERSION=$(defaults read "$PWD/$APP_PATH/Contents/Info" CFBundleShortVersionString)
+[[ "$BUILT_VERSION" == "$VERSION" ]] || { echo "Built version $BUILT_VERSION differs from $VERSION."; exit 1; }
 BUILD=$(defaults read "$PWD/$APP_PATH/Contents/Info" CFBundleVersion)
 mkdir -p "$OUTPUT_DIR"
 ZIP_BASENAME="NVDA-Remote-$VERSION-$BUILD"
