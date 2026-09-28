@@ -47,6 +47,10 @@ struct ConnectionView: View {
 		.onDisappear(perform: model.connectionWindowDidClose)
 		// A clicked nvdaremote:// link, such as NVDA's "Copy link".
 		.onOpenURL(perform: model.open)
+		// The fields are disabled while connected, which takes focus away: give it back.
+		.onChange(of: model.isActive) { _, isActive in
+			if !isActive { focusedField = .key }
+		}
 		.frame(width: 420)
 		.fixedSize(horizontal: false, vertical: true)
 	}

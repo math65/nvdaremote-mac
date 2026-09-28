@@ -76,7 +76,8 @@ struct FeedbackView: View {
 			}
 			.padding([.horizontal, .bottom], 20)
 		}
-		.disabled(isSending)
+		// Only Send is disabled while sending (see canSend): disabling the fields would
+		// take focus away from the one being edited, and leave it nowhere after an error.
 		.frame(width: 480)
 		.fixedSize(horizontal: false, vertical: true)
 		.onAppear { typeFocused = true }
