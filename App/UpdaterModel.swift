@@ -18,6 +18,10 @@ final class UpdaterModel {
 	@ObservationIgnored private var canCheckObservation: AnyCancellable?
 
 	init() {
+		// A beta build stays on the beta channel unless its user turns it off, so testers
+		// who installed it by hand get the next betas without touching Settings.
+		let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? ""
+		UserDefaults.standard.register(defaults: [Self.receivesBetaUpdatesKey: version.contains("-beta")])
 		controller = SPUStandardUpdaterController(
 			startingUpdater: true,
 			updaterDelegate: channelDelegate,

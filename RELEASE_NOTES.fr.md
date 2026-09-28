@@ -1,6 +1,8 @@
-## NVDA Remote 0.2 (build 4) — 28 septembre 2026
+## NVDA Remote 1.0 bêta 1 (build 5) — 28 septembre 2026
 
-Voici la première version publique de NVDA Remote pour Mac. Elle vous permet de contrôler un PC Windows équipé de NVDA directement depuis votre Mac : vous tapez sur le clavier du Mac, et vous entendez NVDA parler sur le Mac, avec ses bips et ses sons. L'application a été pensée d'abord pour les utilisateurs de VoiceOver, et elle s'utilise tout aussi bien à la vue.
+Voici la première bêta publique de NVDA Remote pour Mac, en route vers la version 1.0. Elle vous permet de contrôler un PC Windows équipé de NVDA directement depuis votre Mac : vous tapez sur le clavier du Mac, et vous entendez NVDA parler sur le Mac, avec ses bips et ses sons. L'application a été pensée d'abord pour les utilisateurs de VoiceOver, et elle s'utilise tout aussi bien à la vue.
+
+Tout ce qui est décrit ci-dessous fonctionne, mais comme c'est une bêta, vous pouvez encore tomber sur quelques imperfections. Signalez-les-moi avec Aide, puis Contacter le développeur.
 
 ### Ce que vous pouvez faire
 
@@ -11,9 +13,9 @@ Voici la première version publique de NVDA Remote pour Mac. Elle vous permet de
 - **Lire NVDA en braille.** Si votre plage braille est un modèle HID, comme une Brailliant BI X, NVDA la prend pendant que vous contrôlez le PC, touches de routage et clavier braille compris. VoiceOver la récupère quand vous revenez au Mac.
 - **Rester discrète.** L'application peut vivre dans la barre des menus, dans le Dock, ou les deux.
 
-### Nouveau depuis la 0.1
+### Nouveau depuis la version de test 0.1
 
-- **Mises à jour automatiques.** L'application cherche elle-même les nouvelles versions et les installe avec votre accord. Vous pouvez aussi vérifier à tout moment depuis le menu de l'application ou l'icône de la barre des menus. Si vous aimez essayer les nouveautés en avance, activez les versions bêta dans Réglages, Général.
+- **Mises à jour automatiques.** L'application cherche elle-même les nouvelles versions et les installe avec votre accord. Vous pouvez aussi vérifier à tout moment depuis le menu de l'application ou l'icône de la barre des menus. Comme c'est une bêta, l'application vous propose aussi les bêtas suivantes ; vous pouvez le désactiver dans Réglages, Général.
 - **Contacter le développeur depuis l'application.** Aide, puis Contacter le développeur, pour signaler un problème, proposer une idée ou poser une question. Un signalement de problème joint quelques détails techniques pour aider, mais jamais votre clé de canal ni l'adresse de votre propre serveur.
 - **Une icône bien à elle**, et une lecture plus facile pour tout le monde : les textes trop pâles sont plus foncés, les explications que seul VoiceOver lisait s'affichent maintenant à l'écran, et les raccourcis sont présentés à la manière habituelle du Mac.
 
@@ -29,6 +31,6 @@ Voici la première version publique de NVDA Remote pour Mac. Elle vous permet de
 
 ### Téléchargement
 
-[NVDA-Remote-0.2-4.zip](https://github.com/math65/nvdaremote-mac/releases/download/v0.2/NVDA-Remote-0.2-4.zip)
+[NVDA-Remote-1.0-beta.1-5.zip](https://github.com/math65/nvdaremote-mac/releases/download/v1.0-beta.1/NVDA-Remote-1.0-beta.1-5.zip)
 
-Décompressez-le et placez NVDA Remote dans votre dossier Applications. L'application est signée et vérifiée par Apple. Désormais, elle vous préviendra elle-même quand une nouvelle version sortira.
+Décompressez-le et placez NVDA Remote dans votre dossier Applications. L'application est signée et vérifiée par Apple. Désormais, elle vous préviendra elle-même de la prochaine bêta, puis de la version 1.0.

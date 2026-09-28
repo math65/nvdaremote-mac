@@ -47,9 +47,10 @@ Not yet available, or simplified compared with NVDA:
 ## Installing
 
 Download the latest `NVDA-Remote-<version>.zip` from
-[Releases](https://github.com/math65/nvdaremote-mac/releases/latest), unzip it and
-move **NVDA Remote** to the Applications folder. The app is signed and notarized by
-Apple.
+[Releases](https://github.com/math65/nvdaremote-mac/releases), unzip it and move
+**NVDA Remote** to the Applications folder. The app is signed and notarized by Apple.
+Version 1.0 is in beta for now: beta builds stay on the beta channel unless you turn
+it off in Settings.
 
 The app then updates itself: it checks for new versions at launch and once a day,
 and **Check for Updates…** in the app menu (or the menu bar icon) checks right away.
