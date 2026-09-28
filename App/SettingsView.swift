@@ -18,9 +18,11 @@ struct SettingsView: View {
 
 private struct GeneralSettings: View {
 	@Environment(AppModel.self) private var model
+	@Environment(UpdaterModel.self) private var updater
 
 	var body: some View {
 		@Bindable var model = model
+		@Bindable var updater = updater
 		Form {
 			// At least one of the two must stay visible, or the app could not be reached.
 			Toggle("Show in the Dock", isOn: $model.showsInDock)
@@ -34,6 +36,11 @@ private struct GeneralSettings: View {
 				.foregroundStyle(.secondary)
 				// Already the control's hint: VoiceOver would read it twice.
 				.accessibilityHidden(true)
+			Section("Updates") {
+				Toggle("Check for updates automatically", isOn: $updater.automaticallyChecksForUpdates)
+				Toggle("Receive beta versions", isOn: $updater.receivesBetaUpdates)
+					.accessibilityHint(Text("Beta versions bring new features sooner, but may be less stable."))
+			}
 		}
 		.formStyle(.grouped)
 	}

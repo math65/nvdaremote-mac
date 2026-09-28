@@ -44,6 +44,22 @@ Not yet available, or simplified compared with NVDA:
 - Braille works with HID braille displays only; displays that VoiceOver drives with a
   brand driver or over a Bluetooth serial link cannot be taken yet.
 
+## Installing
+
+Download the latest `NVDA-Remote-<version>.zip` from
+[Releases](https://github.com/math65/nvdaremote-mac/releases/latest), unzip it and
+move **NVDA Remote** to the Applications folder. The app is signed and notarized by
+Apple.
+
+The app then updates itself: it checks for new versions at launch and once a day,
+and **Check for Updates…** in the app menu (or the menu bar icon) checks right away.
+To try new features before everyone else, turn on **Receive beta versions** in
+Settings, General.
+
+To report a problem or send a suggestion, use **Help > Contact the Developer…**. A
+problem report includes technical details (versions, settings, connection state),
+never your channel key or your server address.
+
 ## Requirements
 
 - macOS 14 Sonoma or later.
@@ -116,6 +132,12 @@ A signed and notarized build, ready to share:
 scripts/build-release.sh
 ```
 
+Publishing a release (GitHub release, Sparkle appcast in `docs/` served by GitHub
+Pages) is `scripts/build-release.sh --release`, add `--beta` for the beta channel;
+the whole procedure is in [.claude/skills/release/SKILL.md](.claude/skills/release/SKILL.md).
+Builds made from a clone have no `App/AppBackendSecret.plist` (it is not versioned),
+so Contact the Developer is hidden in them.
+
 Tests of the protocol, keyboard mapping and sounds:
 
 ```bash
@@ -135,7 +157,7 @@ cd NVDARemote && swift run -c release nvdaremote --verbose 'nvdaremote://nvdarem
 |---|---|
 | `NVDARemote.xcodeproj`, `App/`, `Config/` | The macOS app (SwiftUI) and its `Info.plist` additions |
 | `NVDARemote/` | Swift package: the `RemoteCore` library (protocol, speech, sounds, keyboard) and the `nvdaremote` tool |
-| `docs/` | Feasibility study and measurements |
+| `docs/` | Feasibility study and measurements; also the Sparkle appcast and release notes served by GitHub Pages |
 | `spikes/` | Standalone benchmarks that validated speech and keyboard capture |
 | `nvda/` | Reference clone of NVDA, not versioned |
 

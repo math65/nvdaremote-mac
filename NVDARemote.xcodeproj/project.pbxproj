@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		944BFDD63069D39100748C4F /* RemoteCore in Frameworks */ = {isa = PBXBuildFile; productRef = 944BFDD53069D39100748C4F /* RemoteCore */; };
+		94D5A2013069E00000A1B2C3 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = 94D5A2033069E00000A1B2C3 /* Sparkle */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -56,6 +57,7 @@
 			isa = PBXFrameworksBuildPhase;
 			files = (
 				944BFDD63069D39100748C4F /* RemoteCore in Frameworks */,
+				94D5A2013069E00000A1B2C3 /* Sparkle in Frameworks */,
 			);
 		};
 		94C3AF713069D2CE001A6F08 /* Frameworks */ = {
@@ -110,6 +112,7 @@
 			name = NVDARemote;
 			packageProductDependencies = (
 				944BFDD53069D39100748C4F /* RemoteCore */,
+				94D5A2033069E00000A1B2C3 /* Sparkle */,
 			);
 			productName = NVDARemote;
 			productReference = 94C3AF673069D2CD001A6F08 /* NVDA Remote.app */;
@@ -192,6 +195,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				944BFDD43069D39100748C4F /* XCLocalSwiftPackageReference "NVDARemote" */,
+				94D5A2023069E00000A1B2C3 /* XCRemoteSwiftPackageReference "Sparkle" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 94C3AF683069D2CD001A6F08 /* Products */;
@@ -579,10 +583,26 @@
 		};
 /* End XCLocalSwiftPackageReference section */
 
+/* Begin XCRemoteSwiftPackageReference section */
+		94D5A2023069E00000A1B2C3 /* XCRemoteSwiftPackageReference "Sparkle" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/sparkle-project/Sparkle";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.6.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
 /* Begin XCSwiftPackageProductDependency section */
 		944BFDD53069D39100748C4F /* RemoteCore */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = RemoteCore;
+		};
+		94D5A2033069E00000A1B2C3 /* Sparkle */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 94D5A2023069E00000A1B2C3 /* XCRemoteSwiftPackageReference "Sparkle" */;
+			productName = Sparkle;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

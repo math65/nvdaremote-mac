@@ -5,15 +5,27 @@
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
 			<key>CFBundleURLName</key>
 			<string>com.math65.nvdaremote</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>nvdaremote</string>
 			</array>
-			<key>CFBundleTypeRole</key>
-			<string>Viewer</string>
 		</dict>
 	</array>
+	<key>SUEnableAutomaticChecks</key>
+	<true/>
+	<key>SUEnableDownloaderService</key>
+	<true/>
+	<key>SUEnableInstallerLauncherService</key>
+	<true/>
+	<key>SUFeedURL</key>
+	<string>https://math65.github.io/nvdaremote-mac/appcast.xml</string>
+	<key>SUPublicEDKey</key>
+	<string>DSDUNhrNE0tBI9oT++xFgxQW4Hs6/8SyiNNDTXfj/to=</string>
+	<key>SUScheduledCheckInterval</key>
+	<integer>86400</integer>
 </dict>
 </plist>

@@ -9,6 +9,7 @@ struct RemoteMenu: View {
 	var isMenuBarExtra: Bool
 
 	@Environment(AppModel.self) private var model
+	@Environment(UpdaterModel.self) private var updater
 	@Environment(\.openWindow) private var openWindow
 	@Environment(\.openSettings) private var openSettings
 
@@ -47,6 +48,9 @@ struct RemoteMenu: View {
 				NSApp.activate()
 				openSettings()
 			}
+			Button("Check for Updates…", action: updater.checkForUpdates)
+				.disabled(!updater.canCheckForUpdates)
+			ContactDeveloperButton()
 			Divider()
 			Button("Quit NVDA Remote") { NSApp.terminate(nil) }
 		}

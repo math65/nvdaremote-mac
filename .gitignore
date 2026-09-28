@@ -22,3 +22,9 @@ __pycache__/
 
 # Signed release builds
 /BuildArtifacts/
+
+# Sparkle appcast work folder (scripts/build-release.sh)
+/.appcast-staging/
+
+# app-backend Bearer secret, never versioned (public repository)
+App/AppBackendSecret.plist

@@ -41,6 +41,16 @@
         }
       }
     },
+    "Beta versions bring new features sooner, but may be less stable.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Les versions bêta apportent les nouveautés plus tôt, mais peuvent être moins stables."
+          }
+        }
+      }
+    },
     "Braille": {
       "localizations": {
         "fr": {
@@ -117,6 +127,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "clé du canal, ou lien nvdaremote://"
+          }
+        }
+      }
+    },
+    "Check for updates automatically": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rechercher automatiquement les mises à jour"
+          }
+        }
+      }
+    },
+    "Check for Updates…": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rechercher des mises à jour…"
           }
         }
       }
@@ -251,6 +281,26 @@
         }
       }
     },
+    "Contact the Developer": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Contacter le développeur"
+          }
+        }
+      }
+    },
+    "Contact the Developer…": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Contacter le développeur…"
+          }
+        }
+      }
+    },
     "Control the Mac": {
       "localizations": {
         "fr": {
@@ -361,6 +411,46 @@
         }
       }
     },
+    "Message": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Message"
+          }
+        }
+      }
+    },
+    "Message sent. Thank you!": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Message envoyé. Merci !"
+          }
+        }
+      }
+    },
+    "Message type": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Type de message"
+          }
+        }
+      }
+    },
+    "Messages to the developer are not available in this version.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "L'envoi de messages au développeur n'est pas disponible dans cette version."
+          }
+        }
+      }
+    },
     "Mute the PC": {
       "localizations": {
         "fr": {
@@ -451,6 +541,16 @@
         }
       }
     },
+    "OK": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OK"
+          }
+        }
+      }
+    },
     "One of the two always stays visible.": {
       "localizations": {
         "fr": {
@@ -467,6 +567,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "L'une des deux reste toujours visible. Avec l'icône de la barre des menus, l'icône du Dock n'apparaît que lorsque la fenêtre de connexion est ouverte."
+          }
+        }
+      }
+    },
+    "Other": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Autre"
           }
         }
       }
@@ -531,6 +641,26 @@
         }
       }
     },
+    "Problem": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Problème"
+          }
+        }
+      }
+    },
+    "Question": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Question"
+          }
+        }
+      }
+    },
     "Quit NVDA Remote": {
       "localizations": {
         "fr": {
@@ -547,6 +677,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Débit"
+          }
+        }
+      }
+    },
+    "Receive beta versions": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recevoir les versions bêta"
           }
         }
       }
@@ -577,6 +717,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Demander les autorisations"
+          }
+        }
+      }
+    },
+    "Send": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Envoyer"
+          }
+        }
+      }
+    },
+    "Sending…": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Envoi…"
           }
         }
       }
@@ -681,6 +841,26 @@
         }
       }
     },
+    "Suggestion": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Suggestion"
+          }
+        }
+      }
+    },
+    "Technical details are attached to help solve the problem: versions, settings and connection state. Never your channel key or your server address.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Des détails techniques sont joints pour aider à résoudre le problème : versions, réglages et état de la connexion. Jamais votre clé de canal ni l'adresse de votre serveur."
+          }
+        }
+      }
+    },
     "The clipboard contains no text.": {
       "localizations": {
         "fr": {
@@ -697,6 +877,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "La connexion en cours sera fermée."
+          }
+        }
+      }
+    },
+    "The developer replies to this address.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Le développeur vous répond à cette adresse."
           }
         }
       }
@@ -721,12 +911,42 @@
         }
       }
     },
+    "The message could not be sent. Check your internet connection and try again.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Le message n'a pas pu être envoyé. Vérifiez votre connexion Internet et réessayez."
+          }
+        }
+      }
+    },
+    "The message was refused. Check the email address and the message.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Le message a été refusé. Vérifiez l'adresse e-mail et le message."
+          }
+        }
+      }
+    },
     "The PC hosts the connection itself and presents its own certificate. Only trust it if you are expecting this PC.\n\nFingerprint: %@": {
       "localizations": {
         "fr": {
           "stringUnit": {
             "state": "translated",
             "value": "Le PC héberge lui-même la connexion et présente son propre certificat. Ne lui faites confiance que si vous attendez bien ce PC.\n\nEmpreinte : %@"
+          }
+        }
+      }
+    },
+    "The server could not take the message. Try again later.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Le serveur n'a pas pu recevoir le message. Réessayez plus tard."
           }
         }
       }
@@ -777,6 +997,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Pour piloter le PC, l'application doit pouvoir intercepter le clavier. Autorisez-la dans Réglages Système, Confidentialité et sécurité, à la fois dans Accessibilité et dans Surveillance de l'entrée."
+          }
+        }
+      }
+    },
+    "Too many messages were sent recently. Try again in an hour.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trop de messages ont été envoyés récemment. Réessayez dans une heure."
           }
         }
       }
@@ -841,6 +1071,16 @@
         }
       }
     },
+    "Updates": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mises à jour"
+          }
+        }
+      }
+    },
     "Use the braille display for NVDA": {
       "localizations": {
         "fr": {
@@ -887,6 +1127,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Fonctionne avec les plages braille HID, en USB ou en Bluetooth, comme la série Brailliant BI X. Les plages que VoiceOver pilote avec un pilote de marque ne peuvent pas être prises."
+          }
+        }
+      }
+    },
+    "Your email address": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Votre adresse e-mail"
           }
         }
       }
