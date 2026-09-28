@@ -91,11 +91,15 @@ Both shortcuts work from any app and can be changed in Settings.
 | Caps Lock (default), Right Option or fn | NVDA key (Insert) |
 | Keypad | Numeric keypad, for NVDA's desktop layout |
 
-Letters are mapped by the character they produce, so an AZERTY Mac drives an AZERTY
-or QWERTY PC correctly. Digits work on the AZERTY top row with Shift. Punctuation
-follows the PC keyboard layout chosen in Settings (French or US). Known limitation on
-an AZERTY Mac: without Shift, the `!` key types `_` on the PC and the `§` key types
-`-`, in exchange for reliable digits.
+You keep typing with your Mac's own layout, whatever the PC uses. Letters are sent as
+themselves, so an AZERTY Mac types the right letters on an AZERTY or QWERTY PC. For
+digits, punctuation and accented letters, the app sends the key that types the same
+character on the PC's layout, set in Settings (French AZERTY or US QWERTY; by default,
+the one that matches the Mac's keyboard), and adjusts Shift and AltGr for it: Shift-&
+on an AZERTY Mac types 1 on a US PC, and @ types AltGr-à on a French PC. A character
+the PC's layout lacks, such as é on a US PC, is not sent rather than typed wrong. With
+Control, Option, Command or the NVDA key held, keys are commands: they keep their
+position and the modifiers you hold.
 
 When Caps Lock is the NVDA key, it is remapped to F18 with `hidutil` only while the
 PC is controlled, and restored when coming back to the Mac, when quitting, and at the

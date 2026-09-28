@@ -317,3 +317,132 @@ import Testing
 		#expect(object == ["type": "set_braille_info", "name": "voiceOver", "numCells": 40])
 	}
 }
+
+/// Typing text across layouts: the user keeps the Mac's layout, the PC gets the same
+/// characters whenever its own layout can type them.
+@MainActor @Suite struct CrossLayoutTypingTests {
+	typealias Event = KeyboardCapture.KeyEvent
+	typealias Chars = KeyTranslator.Characters
+
+	let capture = KeyboardCapture()
+	let recorder = KeyboardCaptureFlowTests.Recorder()
+
+	/// A few keys of a French AZERTY Mac, by key code.
+	static let azertyMac: [UInt16: Chars] = [
+		12: Chars(plain: "a", shifted: "A"),
+		18: Chars(plain: "&", shifted: "1"),
+		19: Chars(plain: "é", shifted: "2"),
+		10: Chars(plain: "@", shifted: "#"),
+		47: Chars(plain: ":", shifted: "/"),
+		28: Chars(plain: "!", shifted: "8"),
+		22: Chars(plain: "§", shifted: "6"),
+	]
+
+	init() {
+		let recorder = recorder
+		capture.onKey = { recorder.keys.append(($0, $1)) }
+		capture.characters = { Self.azertyMac[$0] }
+		capture.setRemote(true)
+	}
+
+	var sent: [String] {
+		recorder.keys.map { "\(String($0.0.vk, radix: 16))\($0.1 ? "↓" : "↑")" }
+	}
+
+	let leftShift = CGEventFlags(rawValue: CGEventFlags.maskShift.rawValue | 0x0002)
+
+	func pressShift() {
+		_ = capture.handle(Event(type: .flagsChanged, keyCode: MacKeyCode.shift, flags: leftShift))
+	}
+
+	@Test func defaultPCLayoutFollowsTheMacKeyboard() {
+		#expect(PCLayout(matchingMacLayout: "com.apple.keylayout.French") == .french)
+		#expect(PCLayout(matchingMacLayout: "com.apple.keylayout.French-PC") == .french)
+		#expect(PCLayout(matchingMacLayout: "com.apple.keylayout.ABC-AZERTY") == .french)
+		#expect(PCLayout(matchingMacLayout: "com.apple.keylayout.Belgian") == .french)
+		#expect(PCLayout(matchingMacLayout: "com.apple.keylayout.SwissFrench") == .us)
+		#expect(PCLayout(matchingMacLayout: "com.apple.keylayout.US") == .us)
+		#expect(PCLayout(matchingMacLayout: "com.apple.keylayout.British") == .us)
+		#expect(PCLayout(matchingMacLayout: nil) == .us)
+	}
+
+	@Test func tablesTypeEachCharacterOnce() {
+		let us = KeyTranslator(pcLayout: .us)
+		#expect(us.typedKey(for: "1") == TypedKey(0x31))
+		#expect(us.typedKey(for: "!") == TypedKey(0x31, shift: true))
+		#expect(us.typedKey(for: ":") == TypedKey(0xBA, shift: true))
+		#expect(us.typedKey(for: "é") == nil)
+		let french = KeyTranslator(pcLayout: .french)
+		#expect(french.typedKey(for: "1") == TypedKey(0x31, shift: true))
+		#expect(french.typedKey(for: "@") == TypedKey(0x30, altGr: true))
+		#expect(french.typedKey(for: "§") == TypedKey(0xDF, shift: true))
+		// The dead key comes first, so "^" then "e" still gives "ê".
+		#expect(french.typedKey(for: "^") == TypedKey(0xDD))
+	}
+
+	/// Shift-& types "1" on an AZERTY Mac: a US PC gets "1" without Shift.
+	@Test func azertyDigitOnUSPC() {
+		capture.translator.pcLayout = .us
+		pressShift()
+		#expect(capture.handle(Event(type: .keyDown, keyCode: 18, flags: leftShift)))
+		#expect(capture.handle(Event(type: .keyUp, keyCode: 18, flags: leftShift)))
+		#expect(sent == ["a0↓", "a0↑", "31↓", "31↑", "a0↓"])
+	}
+
+	/// "&" alone on the Mac needs Shift on a US PC.
+	@Test func azertySymbolOnUSPC() {
+		capture.translator.pcLayout = .us
+		#expect(capture.handle(Event(type: .keyDown, keyCode: 18)))
+		#expect(capture.handle(Event(type: .keyUp, keyCode: 18)))
+		#expect(sent == ["a0↓", "37↓", "37↑", "a0↑"])
+	}
+
+	/// "@" is a plain key on an AZERTY Mac, AltGr-à on a French PC.
+	@Test func altGrOnFrenchPC() {
+		capture.translator.pcLayout = .french
+		#expect(capture.handle(Event(type: .keyDown, keyCode: 10)))
+		#expect(sent == ["a2↓", "a5↓", "30↓", "30↑", "a5↑", "a2↑"])
+	}
+
+	/// Where both layouts agree, the key is held and released as usual.
+	@Test func sameCharacterSameModifiers() {
+		capture.translator.pcLayout = .french
+		#expect(capture.handle(Event(type: .keyDown, keyCode: 28)))
+		#expect(capture.handle(Event(type: .keyUp, keyCode: 28)))
+		pressShift()
+		#expect(capture.handle(Event(type: .keyDown, keyCode: 18, flags: leftShift)))
+		#expect(sent == ["df↓", "df↑", "a0↓", "31↓"])
+	}
+
+	/// "§", a plain key on the Mac, is Shift-! on a French PC: the former limitation is gone.
+	@Test func sectionSignOnFrenchPC() {
+		capture.translator.pcLayout = .french
+		#expect(capture.handle(Event(type: .keyDown, keyCode: 22)))
+		#expect(sent == ["a0↓", "df↓", "df↑", "a0↑"])
+	}
+
+	/// A US PC has no "é": nothing is typed rather than a wrong character.
+	@Test func missingCharacterSendsNothing() {
+		capture.translator.pcLayout = .us
+		#expect(capture.handle(Event(type: .keyDown, keyCode: 19)))
+		#expect(capture.handle(Event(type: .keyUp, keyCode: 19)))
+		#expect(recorder.keys.isEmpty)
+	}
+
+	/// With Control held it is a command: the key follows its position, modifiers untouched.
+	@Test func commandsKeepTheUsersModifiers() {
+		capture.translator.pcLayout = .us
+		let leftControl = CGEventFlags(rawValue: CGEventFlags.maskControl.rawValue | 0x0001)
+		_ = capture.handle(Event(type: .flagsChanged, keyCode: MacKeyCode.control, flags: leftControl))
+		#expect(capture.handle(Event(type: .keyDown, keyCode: 18, flags: leftControl)))
+		#expect(sent == ["a2↓", "31↓"])
+	}
+
+	/// Letters are sent as themselves, Shift included, whatever the PC's layout.
+	@Test func lettersPassThrough() {
+		capture.translator.pcLayout = .us
+		pressShift()
+		#expect(capture.handle(Event(type: .keyDown, keyCode: 12, flags: leftShift)))
+		#expect(sent == ["a0↓", "41↓"])
+	}
+}

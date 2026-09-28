@@ -10,6 +10,8 @@ import Foundation
 public final class MacKeyboardLayout {
 	private var cache: [UInt16: KeyTranslator.Characters?] = [:]
 	private var layoutData: Data?
+	/// The active layout's identifier, such as "com.apple.keylayout.French".
+	public private(set) var inputSourceID: String?
 
 	public init() {
 		reload()
@@ -18,9 +20,12 @@ public final class MacKeyboardLayout {
 	public func reload() {
 		cache.removeAll()
 		layoutData = nil
-		guard let source = TISCopyCurrentKeyboardLayoutInputSource()?.takeRetainedValue(),
-			let pointer = TISGetInputSourceProperty(source, kTISPropertyUnicodeKeyLayoutData)
-		else { return }
+		inputSourceID = nil
+		guard let source = TISCopyCurrentKeyboardLayoutInputSource()?.takeRetainedValue() else { return }
+		if let id = TISGetInputSourceProperty(source, kTISPropertyInputSourceID) {
+			inputSourceID = Unmanaged<CFString>.fromOpaque(id).takeUnretainedValue() as String
+		}
+		guard let pointer = TISGetInputSourceProperty(source, kTISPropertyUnicodeKeyLayoutData) else { return }
 		layoutData = Unmanaged<CFData>.fromOpaque(pointer).takeUnretainedValue() as Data
 	}
 

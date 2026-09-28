@@ -127,6 +127,8 @@ public final class KeyboardCapture {
 	public var isRunning: Bool { tap != nil }
 
 	public let layout = MacKeyboardLayout()
+	/// The characters of a Mac key; tests replace it to stay independent of the Mac's layout.
+	var characters: (UInt16) -> KeyTranslator.Characters?
 	private var tap: CFMachPort?
 	private var runLoopSource: CFRunLoopSource?
 	/// Keys sent to the PC as pressed, in the order they were pressed.
@@ -139,7 +141,9 @@ public final class KeyboardCapture {
 	/// Global shortcut keys whose key-down was swallowed: their key-up must be swallowed too.
 	private var swallowedKeyUps: Set<UInt16> = []
 
-	public init() {}
+	public init() {
+		characters = { [layout] in layout.characters(for: $0) }
+	}
 
 	// MARK: - Permissions
 
@@ -312,17 +316,71 @@ public final class KeyboardCapture {
 			return true
 		}
 		let effective = effectiveKeyCode(keyCode)
-		guard let key = translator.translate(
-			keyCode: effective,
-			characters: layout.characters(for: effective),
-			shift: flags.contains(.maskShift),
-		) else { return false }
+		let characters = characters(effective)
+		let shift = flags.contains(.maskShift)
+		let key: WindowsKey
+		if let characters, isTyping(flags), !translator.isLayoutIndependent(keyCode: effective, characters: characters) {
+			// Typing text: send the key that types the same character on the PC's layout.
+			guard let typed = translator.typedKey(for: shift ? characters.shifted : characters.plain) else {
+				// The PC's layout has no such key (é on a US PC): better nothing than a wrong character.
+				return false
+			}
+			if typed.altGr || typed.shift != isShiftDownOnPC {
+				type(typed)
+				// Typed at once: the key-up has nothing left to send.
+				swallowedKeyUps.insert(keyCode)
+				return true
+			}
+			key = typed.key
+		} else {
+			guard let translated = translator.translate(keyCode: effective, characters: characters, shift: shift) else {
+				return false
+			}
+			key = translated
+		}
 		heldKeys[keyCode] = key
 		if !sentDown.contains(key) {
 			sentDown.append(key)
 		}
 		onKey?(key, true)
 		return true
+	}
+
+	/// Plain typing: Shift at most. With Control, Option, Command or the NVDA key held,
+	/// the key is a command, sent by `translate` with the user's own modifiers.
+	private func isTyping(_ flags: CGEventFlags) -> Bool {
+		flags.isDisjoint(with: [.maskControl, .maskAlternate, .maskCommand]) && !sentDown.contains(.insert)
+	}
+
+	private static let shiftKeys = [WindowsKey(0xA0), WindowsKey(0xA1)]
+	private static let altGrKeys = [WindowsKey(0xA2), WindowsKey(0xA5, extended: true)]
+
+	private var isShiftDownOnPC: Bool {
+		sentDown.contains { Self.shiftKeys.contains($0) }
+	}
+
+	/// Types a character whose modifiers on the PC differ from those held on the Mac:
+	/// adjusts Shift and AltGr (Left Control plus Right Alt), taps the key, then puts
+	/// the modifiers back as the user holds them. A held key repeats the whole sequence.
+	private func type(_ typed: TypedKey) {
+		let heldShifts = sentDown.filter { Self.shiftKeys.contains($0) }
+		var modifiers: [(WindowsKey, Bool)] = []
+		if typed.shift, heldShifts.isEmpty {
+			modifiers.append((Self.shiftKeys[0], true))
+		} else if !typed.shift {
+			modifiers += heldShifts.map { ($0, false) }
+		}
+		if typed.altGr {
+			modifiers += Self.altGrKeys.map { ($0, true) }
+		}
+		for (key, pressed) in modifiers {
+			onKey?(key, pressed)
+		}
+		onKey?(typed.key, true)
+		onKey?(typed.key, false)
+		for (key, pressed) in modifiers.reversed() {
+			onKey?(key, !pressed)
+		}
 	}
 
 	private func release(_ keyCode: UInt16) -> Bool {

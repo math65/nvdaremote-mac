@@ -125,8 +125,8 @@ private struct KeyboardSettings: View {
 						Text(layout.label).tag(layout)
 					}
 				}
-				.accessibilityHint(Text("The layout set in Windows on the PC, used to type punctuation correctly."))
-				HelpText("The layout set in Windows on the PC, used to type punctuation correctly.")
+				.accessibilityHint(Text("The layout set in Windows on the PC. You keep typing with your Mac's keyboard: digits, punctuation and accents come out as on your Mac whenever the PC's layout has them."))
+				HelpText("The layout set in Windows on the PC. You keep typing with your Mac's keyboard: digits, punctuation and accents come out as on your Mac whenever the PC's layout has them.")
 			}
 		}
 		.formStyle(.grouped)

@@ -45,6 +45,35 @@ public enum PCLayout: String, CaseIterable, Sendable {
 	}
 }
 
+extension PCLayout {
+	/// The PC layout that most likely matches the Mac's own keyboard layout: someone
+	/// who types on a French AZERTY Mac usually has a French AZERTY PC. Used as the
+	/// default until the user picks one in Settings.
+	/// - Parameter macInputSourceID: the Mac layout's input source identifier, such as
+	///   "com.apple.keylayout.French".
+	public init(matchingMacLayout macInputSourceID: String?) {
+		let id = macInputSourceID ?? ""
+		let azerty = ["French", "Belgian", "AZERTY"].contains { id.contains($0) }
+		// Swiss French is a QWERTZ layout despite its name.
+		self = azerty && !id.contains("Swiss") ? .french : .us
+	}
+}
+
+/// A character as the PC types it: the key, and the modifiers the PC's layout needs
+/// for it. Shift may differ from what the user holds on the Mac, for example "1" is
+/// Shift-& on a French Mac but a plain key on a US PC.
+public struct TypedKey: Equatable, Sendable {
+	public var key: WindowsKey
+	public var shift: Bool
+	public var altGr: Bool
+
+	public init(_ vk: Int, shift: Bool = false, altGr: Bool = false) {
+		key = WindowsKey(vk)
+		self.shift = shift
+		self.altGr = altGr
+	}
+}
+
 /// macOS key codes used here (Carbon `kVK_*` constants).
 public enum MacKeyCode {
 	public static let returnKey: UInt16 = 36
@@ -128,6 +157,28 @@ public struct KeyTranslator: Sendable {
 			return WindowsKey(entry.vk)
 		}
 		return nil
+	}
+
+	/// Keys sent the same whatever the layouts: navigation, function and modifier keys,
+	/// the keypad, and letters (their virtual-key code types the same letter on every
+	/// Latin layout, and Shift keeps its meaning).
+	public func isLayoutIndependent(keyCode: UInt16, characters: Characters) -> Bool {
+		if specialKey(keyCode) != nil {
+			return true
+		}
+		let plain = characters.plain.lowercased()
+		guard let letter = plain.unicodeScalars.first, plain.unicodeScalars.count == 1 else { return false }
+		return ("a"..."z").contains(letter)
+	}
+
+	/// How the PC types a character that is neither a letter nor a layout-independent
+	/// key, or `nil` if its layout cannot type it. Letters are left to `translate`:
+	/// their virtual-key code types the same letter on every Latin layout.
+	public func typedKey(for character: String) -> TypedKey? {
+		switch pcLayout {
+		case .french: Self.frenchTyped[character]
+		case .us: Self.usTyped[character]
+		}
 	}
 
 	private static func digit(_ text: String) -> Int? {
@@ -243,4 +294,72 @@ public struct KeyTranslator: Sendable {
 		// ISO keyboards the key at its place is code 10, left of 1.
 		PunctuationKey(vk: 0xE2, plain: "\\", position: 10),
 	]
+
+	// MARK: - Characters, by PC layout
+
+	/// Builds a character table from rows of (virtual-key code, plain, Shift, AltGr).
+	/// The first key listed for a character wins, so dead keys are listed before a
+	/// plain spelling of the same character: "^" then "e" must give "ê" on the PC,
+	/// as it does on the Mac.
+	private static func table(_ rows: [(vk: Int, plain: String?, shifted: String?, altGr: String?)]) -> [String: TypedKey] {
+		var table: [String: TypedKey] = [:]
+		for row in rows {
+			if let plain = row.plain, table[plain] == nil { table[plain] = TypedKey(row.vk) }
+			if let shifted = row.shifted, table[shifted] == nil { table[shifted] = TypedKey(row.vk, shift: true) }
+			if let altGr = row.altGr, table[altGr] == nil { table[altGr] = TypedKey(row.vk, altGr: true) }
+		}
+		return table
+	}
+
+	/// Windows "French" layout (kbdfr).
+	private static let frenchTyped = table([
+		(0xDD, "^", "¨", nil), // dead keys
+		(0x31, "&", "1", nil),
+		(0x32, "é", "2", "~"),
+		(0x33, "\"", "3", "#"),
+		(0x34, "'", "4", "{"),
+		(0x35, "(", "5", "["),
+		(0x36, "-", "6", "|"),
+		(0x37, "è", "7", "`"),
+		(0x38, "_", "8", "\\"),
+		(0x39, "ç", "9", "^"),
+		(0x30, "à", "0", "@"),
+		(0xDB, ")", "°", "]"),
+		(0xBB, "=", "+", "}"),
+		(0xDE, "²", nil, nil),
+		(0xBA, "$", "£", "¤"),
+		(0xC0, "ù", "%", nil),
+		(0xDC, "*", "µ", nil),
+		(0xBC, ",", "?", nil),
+		(0xBE, ";", ".", nil),
+		(0xBF, ":", "/", nil),
+		(0xDF, "!", "§", nil),
+		(0xE2, "<", ">", nil),
+		(0x45, nil, nil, "€"),
+	])
+
+	/// Windows "US" layout (kbdus).
+	private static let usTyped = table([
+		(0x31, "1", "!", nil),
+		(0x32, "2", "@", nil),
+		(0x33, "3", "#", nil),
+		(0x34, "4", "$", nil),
+		(0x35, "5", "%", nil),
+		(0x36, "6", "^", nil),
+		(0x37, "7", "&", nil),
+		(0x38, "8", "*", nil),
+		(0x39, "9", "(", nil),
+		(0x30, "0", ")", nil),
+		(0xBD, "-", "_", nil),
+		(0xBB, "=", "+", nil),
+		(0xDB, "[", "{", nil),
+		(0xDD, "]", "}", nil),
+		(0xDC, "\\", "|", nil),
+		(0xBA, ";", ":", nil),
+		(0xDE, "'", "\"", nil),
+		(0xC0, "`", "~", nil),
+		(0xBC, ",", "<", nil),
+		(0xBE, ".", ">", nil),
+		(0xBF, "/", "?", nil),
+	])
 }

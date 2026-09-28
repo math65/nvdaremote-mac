@@ -214,9 +214,9 @@ final class AppModel {
 		showsInDock = dock || !defaults.bool(forKey: Keys.showsInMenuBar)
 		showsBraille = defaults.bool(forKey: Keys.showsBraille)
 		nvdaKey = defaults.string(forKey: Keys.nvdaKey).flatMap(NVDAKeyChoice.init(rawValue:)) ?? .capsLock
-		// The PC usually shares the user's language: French AZERTY for French speakers.
+		// The PC usually has the same keyboard as the Mac: an AZERTY Mac, an AZERTY PC.
 		pcLayout = defaults.string(forKey: Keys.pcLayout).flatMap(PCLayout.init(rawValue:))
-			?? (Locale.current.language.languageCode == .french ? .french : .us)
+			?? PCLayout(matchingMacLayout: MacKeyboardLayout().inputSourceID)
 		var shortcuts = Dictionary(uniqueKeysWithValues: GlobalCommand.allCases.map { ($0, $0.defaultShortcut) })
 		if let data = defaults.data(forKey: Keys.shortcuts),
 			let saved = try? JSONDecoder().decode([GlobalCommand: KeyShortcut].self, from: data)

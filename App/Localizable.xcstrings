@@ -931,12 +931,12 @@
         }
       }
     },
-    "The layout set in Windows on the PC, used to type punctuation correctly.": {
+    "The layout set in Windows on the PC. You keep typing with your Mac's keyboard: digits, punctuation and accents come out as on your Mac whenever the PC's layout has them.": {
       "localizations": {
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "La disposition réglée dans Windows sur le PC, pour taper correctement la ponctuation."
+            "value": "La disposition réglée dans Windows sur le PC. Vous continuez de taper avec le clavier de votre Mac : chiffres, ponctuation et accents sortent comme sur le Mac, dès que la disposition du PC les possède."
           }
         }
       }
