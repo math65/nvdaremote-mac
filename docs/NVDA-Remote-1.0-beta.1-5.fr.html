@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NVDA-Remote-1.0-beta.1-5.fr</title>
+<style>
+:root {
+  --bg: #ffffff;
+  --fg: #1d1d1f;
+  --muted: #6e6e73;
+  --code-bg: #f5f5f7;
+  --link: #0066cc;
+  --link-hover: #0040a0;
+  --rule: #e5e5ea;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1e1e1e;
+    --fg: #ececec;
+    --muted: #a0a0a0;
+    --code-bg: #2d2d2d;
+    --link: #4eaaff;
+    --link-hover: #82c4ff;
+    --rule: #3a3a3a;
+  }
+}
+html, body {
+  background: var(--bg);
+  color: var(--fg);
+}
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+  font-size: 14px;
+  line-height: 1.55;
+  margin: 0;
+  padding: 1rem 1.25rem 1.5rem;
+  -webkit-text-size-adjust: 100%;
+}
+h1, h2, h3, h4 {
+  font-weight: 600;
+  line-height: 1.25;
+  margin: 1.4em 0 0.5em;
+}
+h1 { font-size: 1.35rem; }
+h2 { font-size: 1.15rem; border-bottom: 1px solid var(--rule); padding-bottom: 0.2em; }
+h3 { font-size: 1.02rem; }
+h4 { font-size: 0.95rem; color: var(--muted); }
+p { margin: 0.6em 0; }
+ul, ol { padding-left: 1.4em; margin: 0.6em 0; }
+li { margin: 0.25em 0; }
+li > p { margin: 0.3em 0; }
+a { color: var(--link); text-decoration: none; }
+a:hover, a:focus { color: var(--link-hover); text-decoration: underline; }
+code {
+  background: var(--code-bg);
+  padding: 0.1em 0.4em;
+  border-radius: 4px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.88em;
+}
+pre {
+  background: var(--code-bg);
+  padding: 0.75em 1em;
+  border-radius: 6px;
+  overflow-x: auto;
+  font-size: 0.88em;
+  line-height: 1.45;
+}
+pre code { background: transparent; padding: 0; border-radius: 0; }
+blockquote {
+  border-left: 3px solid var(--rule);
+  margin: 0.8em 0;
+  padding: 0.1em 0 0.1em 1em;
+  color: var(--muted);
+}
+hr { border: 0; border-top: 1px solid var(--rule); margin: 1.5em 0; }
+strong { font-weight: 600; }
+</style>
+</head>
+<body>
+<h2 id="nvda-remote-10-bêta-1-build-5--28-septembre-2026">NVDA Remote
+1.0 bêta 1 (build 5) — 28 septembre 2026</h2>
+<p>Voici la première bêta publique de NVDA Remote pour Mac, en route
+vers la version 1.0. Elle vous permet de contrôler un PC Windows équipé
+de NVDA directement depuis votre Mac : vous tapez sur le clavier du Mac,
+et vous entendez NVDA parler sur le Mac, avec ses bips et ses sons.
+L'application a été pensée d'abord pour les utilisateurs de VoiceOver,
+et elle s'utilise tout aussi bien à la vue.</p>
+<p>Tout ce qui est décrit ci-dessous fonctionne, mais comme c'est une
+bêta, vous pouvez encore tomber sur quelques imperfections.
+Signalez-les-moi avec Aide, puis Contacter le développeur.</p>
+<h3 id="ce-que-vous-pouvez-faire">Ce que vous pouvez faire</h3>
+<ul>
+<li><strong>Vous connecter en un instant.</strong> Cliquez sur le lien
+que NVDA vous donne avec « Copier le lien », ou tapez la clé vous-même.
+Le serveur public nvdaremote.com fonctionne sans rien régler, et vos
+connexions récentes sont gardées pour la prochaine fois.</li>
+<li><strong>Entendre le PC sur votre Mac.</strong> La parole de NVDA
+sort du Mac, dans la voix et la langue demandées par NVDA, et s'arrête
+dès que NVDA s'interrompt. Vous réglez le débit dans les Réglages.</li>
+<li><strong>Passer le clavier d'un raccourci.</strong>
+Contrôle-Commande-R pour taper sur le PC, et encore une fois pour
+revenir au Mac. Un bip aigu signifie que le PC a le clavier, un bip
+grave que c'est le Mac. Pendant que vous contrôlez le PC, toutes les
+touches y partent, commandes VoiceOver comprises.</li>
+<li><strong>Partager le presse-papiers.</strong> Le texte copié sur le
+PC arrive dans le presse-papiers du Mac. Contrôle-Commande-C envoie au
+PC ce que vous avez copié sur le Mac.</li>
+<li><strong>Lire NVDA en braille.</strong> Si votre plage braille est un
+modèle HID, comme une Brailliant BI X, NVDA la prend pendant que vous
+contrôlez le PC, touches de routage et clavier braille compris.
+VoiceOver la récupère quand vous revenez au Mac.</li>
+<li><strong>Rester discrète.</strong> L'application peut vivre dans la
+barre des menus, dans le Dock, ou les deux.</li>
+</ul>
+<h3 id="nouveau-depuis-la-version-de-test-01">Nouveau depuis la version
+de test 0.1</h3>
+<ul>
+<li><strong>Mises à jour automatiques.</strong> L'application cherche
+elle-même les nouvelles versions et les installe avec votre accord. Vous
+pouvez aussi vérifier à tout moment depuis le menu de l'application ou
+l'icône de la barre des menus. Comme c'est une bêta, l'application vous
+propose aussi les bêtas suivantes ; vous pouvez le désactiver dans
+Réglages, Général.</li>
+<li><strong>Contacter le développeur depuis l'application.</strong>
+Aide, puis Contacter le développeur, pour signaler un problème, proposer
+une idée ou poser une question. Un signalement de problème joint
+quelques détails techniques pour aider, mais jamais votre clé de canal
+ni l'adresse de votre propre serveur.</li>
+<li><strong>Une icône bien à elle</strong>, et une lecture plus facile
+pour tout le monde : les textes trop pâles sont plus foncés, les
+explications que seul VoiceOver lisait s'affichent maintenant à l'écran,
+et les raccourcis sont présentés à la manière habituelle du Mac.</li>
+</ul>
+<h3 id="avant-de-commencer">Avant de commencer</h3>
+<ul>
+<li>Un Mac sous macOS 14 Sonoma ou plus récent, et NVDA 2025.1 ou plus
+récent sur le PC, avec l'Accès à distance activé.</li>
+<li>Pour contrôler le PC, autorisez NVDA Remote à la fois dans
+Accessibilité et dans Surveillance de l'entrée, dans Réglages Système,
+Confidentialité et sécurité. L'application vous les demande depuis ses
+réglages Clavier.</li>
+</ul>
+<h3 id="bon-à-savoir">Bon à savoir</h3>
+<ul>
+<li>Certaines finesses de la parole de NVDA ne sont pas encore suivies :
+les changements de hauteur ou de volume au milieu d'une phrase, et
+l'épellation des caractères.</li>
+<li>Le braille fonctionne pour l'instant avec les plages HID
+uniquement.</li>
+</ul>
+<h3 id="téléchargement">Téléchargement</h3>
+<p><a
+href="https://github.com/math65/nvdaremote-mac/releases/download/v1.0-beta.1/NVDA-Remote-1.0-beta.1-5.zip">NVDA-Remote-1.0-beta.1-5.zip</a></p>
+<p>Décompressez-le et placez NVDA Remote dans votre dossier
+Applications. L'application est signée et vérifiée par Apple. Désormais,
+elle vous préviendra elle-même de la prochaine bêta, puis de la version
+1.0.</p>
+</body>
+</html>

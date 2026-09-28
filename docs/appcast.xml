@@ -1,0 +1,18 @@
+<?xml version="1.0" standalone="yes"?>
+<rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" version="2.0">
+    <channel>
+        <title>NVDA Remote</title>
+        <item>
+            <title>1.0-beta.1</title>
+            <pubDate>Mon, 28 Sep 2026 17:01:54 +0200</pubDate>
+            <link>https://github.com/math65/nvdaremote-mac/releases/tag/v1.0-beta.1</link>
+            <sparkle:channel>beta</sparkle:channel>
+            <sparkle:version>5</sparkle:version>
+            <sparkle:shortVersionString>1.0-beta.1</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <sparkle:releaseNotesLink xml:lang="en">https://math65.github.io/nvdaremote-mac/NVDA-Remote-1.0-beta.1-5.html</sparkle:releaseNotesLink>
+            <sparkle:releaseNotesLink xml:lang="fr">https://math65.github.io/nvdaremote-mac/NVDA-Remote-1.0-beta.1-5.fr.html</sparkle:releaseNotesLink>
+            <enclosure url="https://github.com/math65/nvdaremote-mac/releases/download/v1.0-beta.1/NVDA-Remote-1.0-beta.1-5.zip" length="4976111" type="application/octet-stream" sparkle:edSignature="98bNg7NJFkzNAJMVL5da8UTMCU6ZRSn4uOlKNxSLN9PpdbJKMzi9LaGCEDo9pAAG2Da4sgXb8NCyFktNsVYzAw=="/>
+        </item>
+    </channel>
+</rss>
